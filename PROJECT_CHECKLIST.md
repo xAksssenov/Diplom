@@ -45,16 +45,16 @@
 ## 2) Backend (Django + PostgreSQL)
 
 ### 2.1 Базовая настройка
-- [ ] Инициализировать Django-проект в `Backend/`
-- [ ] Подключить PostgreSQL
-- [ ] Разделить приложения по доменам (users, recipes, meal_plans, reviews, moderation, notifications и т.д.)
-- [ ] Настроить DRF + OpenAPI/Swagger (по желанию, но желательно)
+- [x] Инициализировать Django-проект в `Backend/`
+- [x] Подключить PostgreSQL
+- [x] Разделить приложения по доменам (users, recipes, meal_plans, reviews, moderation, notifications и т.д.)
+- [x] Настроить DRF + OpenAPI/Swagger (по желанию, но желательно)
 
 ### 2.2 Модели и БД
-- [ ] Реализовать таблицы из ТЗ: `users`, `roles`, `categories`, `recipes`, `ingredients`, `recipe_ingredients`, `meal_plans`, `meal_plan_items`, `shopping_lists`, `shopping_list_items`, `reviews`, `complaints`, `favorites`, `notifications`
-- [ ] Добавить недостающие служебные поля (`updated_at`, soft delete где нужно)
-- [ ] Нормализовать поля `ingredients`, `nutrition_info` (структурно, без дублирования)
-- [ ] Проставить индексы и ограничения целостности
+- [x] Реализовать таблицы из ТЗ: `users`, `roles`, `categories`, `recipes`, `ingredients`, `recipe_ingredients`, `meal_plans`, `meal_plan_items`, `shopping_lists`, `shopping_list_items`, `reviews`, `complaints`, `favorites`, `notifications`
+- [x] Добавить недостающие служебные поля (`updated_at`, soft delete где нужно)
+- [x] Нормализовать поля `ingredients`, `nutrition_info` (структурно, без дублирования)
+- [x] Проставить индексы и ограничения целостности
 
 ### 2.3 Авторизация и роли
 - [ ] Регистрация и вход пользователя
