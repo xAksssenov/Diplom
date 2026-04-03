@@ -9,14 +9,57 @@ import {
   Text,
   Title,
 } from '@mantine/core'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FallbackCard } from '../../components/FallbackCard'
 import { MealInfo } from '../../components/MealInfo'
-import { mealPlans, planReviews } from '../../data/mockData'
+import { fetchMealPlanById, fetchPlanReviews } from '../../shared/api/foodApi'
+import { PageError, PageLoader } from '../../shared/ui/PageStates'
+import type { MealPlan, PlanReview } from '../../types/domain'
 
 export function MealPlanDetailPage() {
   const { planId } = useParams<{ planId: string }>()
-  const plan = mealPlans.find((item) => item.id === planId)
+  const [plan, setPlan] = useState<MealPlan | null>(null)
+  const [reviews, setReviews] = useState<PlanReview[]>([])
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [reloadToken, setReloadToken] = useState(0)
+
+  useEffect(() => {
+    if (!planId) return
+
+    Promise.all([fetchMealPlanById(planId), fetchPlanReviews()])
+      .then(([planData, reviewsData]) => {
+        setPlan(planData)
+        setReviews(reviewsData)
+        setStatus('ready')
+      })
+      .catch(() => setStatus('error'))
+  }, [planId, reloadToken])
+
+  const filteredReviews = useMemo(
+    () => reviews.filter((review) => review.planId === (planId ?? '')),
+    [reviews, planId],
+  )
+
+  if (!planId) {
+    return <PageError message="Некорректный id плана." onRetry={() => {}} />
+  }
+
+  if (status === 'loading') {
+    return <PageLoader title="Загружаем план питания..." />
+  }
+
+  if (status === 'error') {
+    return (
+      <PageError
+        message="Не удалось загрузить план питания."
+        onRetry={() => {
+          setStatus('loading')
+          setReloadToken((value) => value + 1)
+        }}
+      />
+    )
+  }
 
   if (!plan) {
     return <FallbackCard message="План питания не найден." />
@@ -102,9 +145,7 @@ export function MealPlanDetailPage() {
         <Stack gap="sm">
           <Title order={3}>Отзывы и оценки по плану</Title>
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
-            {planReviews
-              .filter((review) => review.planId === plan.id)
-              .map((review) => (
+            {filteredReviews.map((review) => (
                 <Card key={review.id} withBorder radius="md" p="sm">
                   <Stack gap={6}>
                     <Text size="sm">

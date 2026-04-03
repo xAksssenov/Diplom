@@ -1,11 +1,13 @@
 import { Badge, Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { planReviews } from '../../data/mockData'
+import { fetchPlanReviews } from '../../shared/api/foodApi'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
+import type { PlanReview } from '../../types/domain'
 
 export function ReviewsPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [planReviews, setPlanReviews] = useState<PlanReview[]>([])
 
   useEffect(() => {
     if (status !== 'loading') {
@@ -13,11 +15,12 @@ export function ReviewsPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      try {
-        setStatus('ready')
-      } catch {
-        setStatus('error')
-      }
+      fetchPlanReviews()
+        .then((data) => {
+          setPlanReviews(data)
+          setStatus('ready')
+        })
+        .catch(() => setStatus('error'))
     }, 450)
 
     return () => window.clearTimeout(timeoutId)

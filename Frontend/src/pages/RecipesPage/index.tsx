@@ -2,11 +2,13 @@ import { Badge, Box, Button, Card, Grid, Group, Paper, SimpleGrid, Stack, Text, 
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FilterGroup } from '../../components/FilterGroup'
-import { recipes } from '../../data/mockData'
+import { fetchRecipes } from '../../shared/api/foodApi'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
+import type { Recipe } from '../../types/domain'
 
 export function RecipesPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [recipes, setRecipes] = useState<Recipe[]>([])
 
   useEffect(() => {
     if (status !== 'loading') {
@@ -14,11 +16,12 @@ export function RecipesPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      try {
-        setStatus('ready')
-      } catch {
-        setStatus('error')
-      }
+      fetchRecipes()
+        .then((data) => {
+          setRecipes(data)
+          setStatus('ready')
+        })
+        .catch(() => setStatus('error'))
     }, 500)
 
     return () => window.clearTimeout(timeoutId)

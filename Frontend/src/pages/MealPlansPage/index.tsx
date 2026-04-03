@@ -2,11 +2,13 @@ import { Badge, Button, Card, Grid, Group, Paper, SimpleGrid, Stack, Text, Title
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FilterGroup } from '../../components/FilterGroup'
-import { mealPlans } from '../../data/mockData'
+import { fetchMealPlans } from '../../shared/api/foodApi'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
+import type { MealPlan } from '../../types/domain'
 
 export function MealPlansPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
 
   useEffect(() => {
     if (status !== 'loading') {
@@ -14,11 +16,12 @@ export function MealPlansPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      try {
-        setStatus('ready')
-      } catch {
-        setStatus('error')
-      }
+      fetchMealPlans()
+        .then((data) => {
+          setMealPlans(data)
+          setStatus('ready')
+        })
+        .catch(() => setStatus('error'))
     }, 550)
 
     return () => window.clearTimeout(timeoutId)

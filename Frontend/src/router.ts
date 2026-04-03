@@ -1,5 +1,3 @@
-import { mealPlans, recipes } from './data/mockData'
-
 export function getBreadcrumbSegments(currentPath: string) {
   const cleanedPath = currentPath.replace(/\/+$/, '') || '/'
   const staticLabels: Record<string, string> = {
@@ -13,19 +11,17 @@ export function getBreadcrumbSegments(currentPath: string) {
 
   if (/^\/recipes\/[a-z0-9-]+$/i.test(cleanedPath)) {
     const recipeId = cleanedPath.split('/')[2]
-    const recipe = recipes.find((item) => item.id === recipeId)
     return [
       { path: '/recipes', label: 'Рецепты' },
-      { path: cleanedPath, label: recipe?.title ?? 'Рецепт' },
+      { path: cleanedPath, label: `Рецепт #${recipeId}` },
     ]
   }
 
   if (/^\/meal-plans\/[a-z0-9-]+$/i.test(cleanedPath)) {
     const planId = cleanedPath.split('/')[2]
-    const plan = mealPlans.find((item) => item.id === planId)
     return [
       { path: '/meal-plans', label: 'Планы питания' },
-      { path: cleanedPath, label: plan?.title ?? 'План питания' },
+      { path: cleanedPath, label: `План #${planId}` },
     ]
   }
 

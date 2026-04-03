@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
   Button,
@@ -12,7 +12,7 @@ import {
 } from '@mantine/core'
 import { useUnit } from 'effector-react'
 import { useNavigate } from 'react-router-dom'
-import { recipes } from '../../data/mockData'
+import { fetchRecipes, submitPlannerToBackend } from '../../shared/api/foodApi'
 import {
   $daysCount,
   $plannerError,
@@ -29,6 +29,8 @@ import {
   slotsSwapped,
 } from '../../features/planner/model'
 import { appendModerationStatus } from '../../lib/moderationStorage'
+import { PageError, PageLoader } from '../../shared/ui/PageStates'
+import type { Recipe } from '../../types/domain'
 import './styles.css'
 
 type MealSlotType = 'breakfast' | 'lunch' | 'dinner' | `snack-${number}`
@@ -57,6 +59,8 @@ function getTodayDate() {
 export function PlannerPage() {
   const navigate = useNavigate()
   const [dragFrom, setDragFrom] = useState<string | null>(null)
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [recipesStatus, setRecipesStatus] = useState<'loading' | 'ready' | 'error'>('loading')
 
   const {
     daysCount,
@@ -101,6 +105,32 @@ export function PlannerPage() {
     [daysCount],
   )
 
+  useEffect(() => {
+    if (recipesStatus !== 'loading') {
+      return
+    }
+
+    fetchRecipes()
+      .then((data) => {
+        setRecipes(data)
+        setRecipesStatus('ready')
+      })
+      .catch(() => setRecipesStatus('error'))
+  }, [recipesStatus])
+
+  if (recipesStatus === 'loading') {
+    return <PageLoader title="Загружаем рецепты для конструктора..." />
+  }
+
+  if (recipesStatus === 'error') {
+    return (
+      <PageError
+        message="Не удалось загрузить каталог рецептов."
+        onRetry={() => setRecipesStatus('loading')}
+      />
+    )
+  }
+
   const onDropToSlot = (slotKey: string, payload: string) => {
     if (payload.startsWith('recipe:')) {
       assignRecipe({ slotKey, recipeId: payload.replace('recipe:', '') })
@@ -112,7 +142,7 @@ export function PlannerPage() {
     }
   }
 
-  const submitPlan = () => {
+  const submitPlan = async () => {
     const requiredSlots = dayIndexes.flatMap((dayIndex) =>
       ['breakfast', 'lunch', 'dinner'].map((slot) => `${dayIndex}:${slot}`),
     )
@@ -129,16 +159,32 @@ export function PlannerPage() {
         ? 'Пользовательский план на 1 день'
         : `Пользовательский план на ${daysCount} дней`
 
-    appendModerationStatus({
-      id: `planner-${Date.now()}`,
-      type: 'План питания',
-      title: newStatusTitle,
-      status: 'На ревью',
-      updatedAt: getTodayDate(),
-    })
-
-    resetMessages()
-    setSubmitMessage('План отправлен на модерацию. Статус доступен в личном кабинете.')
+    try {
+      const backendPlanId = await submitPlannerToBackend({ daysCount, slotsMap })
+      appendModerationStatus({
+        id: `planner-${backendPlanId}`,
+        type: 'План питания',
+        title: `План #${backendPlanId}`,
+        status: 'На ревью',
+        updatedAt: getTodayDate(),
+      })
+      resetMessages()
+      setSubmitMessage(
+        `План #${backendPlanId} отправлен на модерацию. Статус доступен в личном кабинете.`,
+      )
+    } catch {
+      appendModerationStatus({
+        id: `planner-${Date.now()}`,
+        type: 'План питания',
+        title: newStatusTitle,
+        status: 'На ревью',
+        updatedAt: getTodayDate(),
+      })
+      resetMessages()
+      setSubmitMessage(
+        'План отправлен локально. Войдите в аккаунт, чтобы отправлять планы напрямую на сервер.',
+      )
+    }
   }
 
   return (

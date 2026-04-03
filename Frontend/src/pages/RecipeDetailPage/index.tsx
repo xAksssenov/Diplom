@@ -9,15 +9,50 @@ import {
   Text,
   Title,
 } from '@mantine/core'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FallbackCard } from '../../components/FallbackCard'
-import { recipes } from '../../data/mockData'
+import { fetchRecipeById } from '../../shared/api/foodApi'
+import { PageError, PageLoader } from '../../shared/ui/PageStates'
+import type { Recipe } from '../../types/domain'
 
 export function RecipeDetailPage() {
   const { recipeId } = useParams<{ recipeId: string }>()
-  const recipe = recipes.find((item) => item.id === recipeId)
+  const [recipe, setRecipe] = useState<Recipe | null>(null)
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [activeImage, setActiveImage] = useState(0)
+  const [reloadToken, setReloadToken] = useState(0)
+
+  useEffect(() => {
+    if (!recipeId) return
+
+    fetchRecipeById(recipeId)
+      .then((data) => {
+        setRecipe(data)
+        setStatus('ready')
+      })
+      .catch(() => setStatus('error'))
+  }, [recipeId, reloadToken])
+
+  if (!recipeId) {
+    return <PageError message="Некорректный id рецепта." onRetry={() => {}} />
+  }
+
+  if (status === 'loading') {
+    return <PageLoader title="Загружаем рецепт..." />
+  }
+
+  if (status === 'error') {
+    return (
+      <PageError
+        message="Не удалось загрузить рецепт."
+        onRetry={() => {
+          setStatus('loading')
+          setReloadToken((value) => value + 1)
+        }}
+      />
+    )
+  }
 
   if (!recipe) {
     return <FallbackCard message="Рецепт не найден." />
