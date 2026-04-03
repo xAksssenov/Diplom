@@ -1,4 +1,15 @@
 import { useMemo, useState } from 'react'
+import {
+  Alert,
+  Button,
+  Card,
+  Grid,
+  NumberInput,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
 import { useUnit } from 'effector-react'
 import { useNavigate } from 'react-router-dom'
 import { recipes } from '../../data/mockData'
@@ -131,60 +142,72 @@ export function PlannerPage() {
   }
 
   return (
-    <section className="content-stack">
-      <article className="glass-card">
-        <h1>Конструктор плана питания</h1>
-        <p>
+    <Stack gap="md">
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Title order={1}>Конструктор плана питания</Title>
+        <Text mt={6}>
           Выберите период планирования, добавьте перекусы и перетащите рецепты в календарь.
-        </p>
-      </article>
+        </Text>
+      </Card>
 
-      <section className="split-layout planner-layout">
-        <aside className="glass-card planner-controls">
-          <h2>Параметры плана</h2>
-          <label className="planner-label">
-            <span>Количество дней</span>
-            <input
-              type="number"
+      <Grid gap="md" align="start">
+        <Grid.Col span={{ base: 12, lg: 4 }}>
+          <Card withBorder radius="md" p="lg" className="planner-controls">
+          <Title order={3}>Параметры плана</Title>
+          <Stack mt={10}>
+            <NumberInput
+              label="Количество дней"
               min={1}
               max={14}
               value={daysCount}
-              onChange={(event) => {
-                const value = Number(event.target.value)
-                setDays(Number.isNaN(value) ? 1 : Math.min(14, Math.max(1, value)))
+              onChange={(value: number | string) => {
+                const next = typeof value === 'number' ? value : Number(value)
+                setDays(Number.isNaN(next) ? 1 : Math.min(14, Math.max(1, next)))
               }}
             />
-          </label>
-          <label className="planner-label">
-            <span>Перекусов в день</span>
-            <input
-              type="number"
+            <NumberInput
+              label="Перекусов в день"
               min={0}
               max={4}
               value={snacksCount}
-              onChange={(event) => {
-                const value = Number(event.target.value)
-                setSnacks(Number.isNaN(value) ? 0 : Math.min(4, Math.max(0, value)))
+              onChange={(value: number | string) => {
+                const next = typeof value === 'number' ? value : Number(value)
+                setSnacks(Number.isNaN(next) ? 0 : Math.min(4, Math.max(0, next)))
               }}
             />
-          </label>
+          </Stack>
 
-          <p className="planner-note">Обязательные приемы пищи: завтрак, обед, ужин.</p>
+          <Text className="planner-note">Обязательные приемы пищи: завтрак, обед, ужин.</Text>
 
-          <button type="button" className="text-link" onClick={submitPlan}>
+          <Button mt={8} color="grape" onClick={submitPlan}>
             Отправить план на модерацию
-          </button>
-          <button type="button" className="text-link" onClick={() => navigate('/profile')}>
+          </Button>
+          <Button
+            mt={8}
+            variant="light"
+            color="grape"
+            onClick={() => navigate('/profile')}
+          >
             Открыть статусы в ЛК
-          </button>
+          </Button>
 
-          {errorMessage ? <p className="planner-error">{errorMessage}</p> : null}
-          {submitMessage ? <p className="planner-success">{submitMessage}</p> : null}
-        </aside>
+            {errorMessage ? (
+            <Alert mt={10} color="red" title="Проверьте заполнение плана">
+              {errorMessage}
+            </Alert>
+          ) : null}
+          {submitMessage ? (
+            <Alert mt={10} color="green" title="Отправка выполнена">
+              {submitMessage}
+            </Alert>
+          ) : null}
+          </Card>
+        </Grid.Col>
 
-        <div className="content-stack">
-          <article className="glass-card">
-            <h2>Каталог рецептов</h2>
+        <Grid.Col span={{ base: 12, lg: 8 }}>
+        <Stack gap="md">
+          <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+            <Title order={3}>Каталог рецептов</Title>
             <div className="planner-recipes">
               {recipes.map((recipe) => (
                 <button
@@ -202,15 +225,15 @@ export function PlannerPage() {
                 </button>
               ))}
             </div>
-          </article>
+          </Card>
 
-          <article className="glass-card">
-            <h2>Календарь плана</h2>
+          <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+            <Title order={3}>Календарь плана</Title>
             <div className="planner-calendar">
               {dayIndexes.map((dayIndex) => (
                 <section key={dayIndex} className="planner-day-card">
-                  <h3>День {dayIndex}</h3>
-                  <div className="planner-slot-list">
+                  <Title order={4}>День {dayIndex}</Title>
+                  <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm" mt={8}>
                     {slotTypes.map((slotType) => {
                       const slotKey = `${dayIndex}:${slotType}`
                       const recipeId = slotsMap[slotKey]
@@ -263,13 +286,14 @@ export function PlannerPage() {
                         </div>
                       )
                     })}
-                  </div>
+                  </SimpleGrid>
                 </section>
               ))}
             </div>
-          </article>
-        </div>
-      </section>
-    </section>
+          </Card>
+        </Stack>
+        </Grid.Col>
+      </Grid>
+    </Stack>
   )
 }

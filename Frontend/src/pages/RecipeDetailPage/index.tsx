@@ -1,8 +1,18 @@
+import {
+  Accordion,
+  Badge,
+  Button,
+  Card,
+  Group,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FallbackCard } from '../../components/FallbackCard'
 import { recipes } from '../../data/mockData'
-import './styles.css'
 
 export function RecipeDetailPage() {
   const { recipeId } = useParams<{ recipeId: string }>()
@@ -14,89 +24,121 @@ export function RecipeDetailPage() {
   }
 
   return (
-    <section className="content-stack">
-      <div className="glass-card details-top">
-        <div className="recipe-gallery">
-          <div
-            className="recipe-gallery__main"
-            style={{ background: recipe.images[activeImage] }}
-          />
-          <div className="recipe-gallery__thumbs">
-            {recipe.images.map((imageColor, index) => (
-              <button
-                key={imageColor}
-                className={`thumb ${index === activeImage ? 'thumb--active' : ''}`}
-                style={{ background: imageColor }}
-                type="button"
-                onClick={() => setActiveImage(index)}
-              />
-            ))}
-          </div>
-        </div>
+    <Stack gap="md">
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+          <Stack gap="sm">
+            <Card
+              withBorder
+              radius="md"
+              p={0}
+              style={{ minHeight: 280, background: recipe.images[activeImage] }}
+            />
+            <Group gap="xs">
+              {recipe.images.map((imageColor, index) => (
+                <Button
+                  key={imageColor}
+                  type="button"
+                  onClick={() => setActiveImage(index)}
+                  variant={index === activeImage ? 'filled' : 'light'}
+                  color="grape"
+                  style={{ background: imageColor, color: '#2c184f' }}
+                >
+                  {index + 1}
+                </Button>
+              ))}
+            </Group>
+          </Stack>
 
-        <div className="recipe-info">
-          <h1>{recipe.title}</h1>
-          <p>{recipe.subtitle}</p>
-          <div className="meta-row">
-            <span>{recipe.cookingTime}</span>
-            <span>★ {recipe.rating}</span>
-            <span>{recipe.calories} ккал</span>
-          </div>
-          <div className="tag-row">
-            {recipe.tags.map((tag) => (
-              <span key={tag} className="tag-pill">
-                {tag}
-              </span>
-            ))}
-          </div>
-          <div className="action-row">
-            <button type="button" className="text-link">
-              В избранное
-            </button>
-            <button type="button" className="text-link" onClick={() => window.print()}>
-              Напечатать
-            </button>
-          </div>
-        </div>
-      </div>
+          <Stack gap="sm">
+            <Title order={1}>{recipe.title}</Title>
+            <Text>{recipe.subtitle}</Text>
+            <Group gap="xs">
+              <Badge color="grape" variant="light">
+                {recipe.cookingTime}
+              </Badge>
+              <Badge color="grape" variant="light">
+                ★ {recipe.rating}
+              </Badge>
+              <Badge color="grape" variant="light">
+                {recipe.calories} ккал
+              </Badge>
+            </Group>
+            <Group gap="xs">
+              {recipe.tags.map((tag) => (
+                <Badge key={tag} variant="dot" color="violet">
+                  {tag}
+                </Badge>
+              ))}
+            </Group>
+            <Group gap="xs">
+              <Button color="grape">В избранное</Button>
+              <Button color="grape" variant="outline" onClick={() => window.print()}>
+                Напечатать
+              </Button>
+            </Group>
+          </Stack>
+        </SimpleGrid>
+      </Card>
 
-      <div className="details-grid">
-        <article className="glass-card">
-          <h2>Пищевая ценность</h2>
-          <div className="nutrition-grid">
-            <span>Калории: {recipe.calories}</span>
-            <span>Белки: {recipe.nutrition.protein} г</span>
-            <span>Жиры: {recipe.nutrition.fat} г</span>
-            <span>Углеводы: {recipe.nutrition.carbs} г</span>
-          </div>
-        </article>
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+        <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+          <Stack gap="xs">
+            <Title order={3}>Пищевая ценность</Title>
+            <Badge color="grape" variant="light" w="fit-content">
+              Калории: {recipe.calories}
+            </Badge>
+            <Badge color="grape" variant="light" w="fit-content">
+              Белки: {recipe.nutrition.protein} г
+            </Badge>
+            <Badge color="grape" variant="light" w="fit-content">
+              Жиры: {recipe.nutrition.fat} г
+            </Badge>
+            <Badge color="grape" variant="light" w="fit-content">
+              Углеводы: {recipe.nutrition.carbs} г
+            </Badge>
+          </Stack>
+        </Card>
 
-        <article className="glass-card">
-          <h2>Отзывы и оценки</h2>
-          <p>Средняя оценка: {recipe.rating} / 5</p>
-          <button type="button" className="text-link">
-            Оставить отзыв
-          </button>
-        </article>
-      </div>
+        <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+          <Stack gap="sm">
+            <Title order={3}>Отзывы и оценки</Title>
+            <Text>Средняя оценка: {recipe.rating} / 5</Text>
+            <Button color="grape" variant="light" w="fit-content">
+              Оставить отзыв
+            </Button>
+          </Stack>
+        </Card>
+      </SimpleGrid>
 
-      <details className="glass-card collapsible" open>
-        <summary>Ингредиенты</summary>
-        <ul>
-          {recipe.ingredients.map((ingredient) => (
-            <li key={ingredient}>{ingredient}</li>
-          ))}
-        </ul>
-      </details>
-
-      <details className="glass-card collapsible" open>
-        <summary>Процесс приготовления</summary>
-        <ol>
-          {recipe.steps.map((step) => (
-            <li key={step}>{step}</li>
-          ))}
-        </ol>
-      </details>
-    </section>
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Accordion defaultValue="ingredients" variant="separated">
+          <Accordion.Item value="ingredients">
+            <Accordion.Control>Ингредиенты</Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap={6}>
+                {recipe.ingredients.map((ingredient) => (
+                  <Text key={ingredient} size="sm">
+                    - {ingredient}
+                  </Text>
+                ))}
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+          <Accordion.Item value="steps">
+            <Accordion.Control>Процесс приготовления</Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap={6}>
+                {recipe.steps.map((step, index) => (
+                  <Text key={step} size="sm">
+                    {index + 1}. {step}
+                  </Text>
+                ))}
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+      </Card>
+    </Stack>
   )
 }

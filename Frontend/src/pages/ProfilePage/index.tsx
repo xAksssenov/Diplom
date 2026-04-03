@@ -1,3 +1,15 @@
+import {
+  Avatar,
+  Badge,
+  Card,
+  Group,
+  SimpleGrid,
+  Stack,
+  Switch,
+  Tabs,
+  Text,
+  Title,
+} from '@mantine/core'
 import { useUnit } from 'effector-react'
 import {
   $emailNotifications,
@@ -12,7 +24,6 @@ import {
   favoriteTagToggled,
   profileVisibilityToggled,
 } from '../../features/profile/model'
-import './styles.css'
 
 const availableTags = [
   'Завтрак',
@@ -52,132 +63,167 @@ export function ProfilePage() {
   })
 
   return (
-    <section className="content-stack">
-      <article className="glass-card profile-head">
-        <div className="profile-avatar" aria-hidden>
-          AK
-        </div>
-        <div className="profile-main-info">
-          <h1>Алексей К.</h1>
-          <p>Email: ak@example.com</p>
-          <p>Цель: Поддержание веса</p>
-          <p>Рост/вес: 181 см / 78 кг</p>
-        </div>
-      </article>
+    <Stack gap="md">
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Group align="center" gap="md">
+          <Avatar size={78} radius="xl" color="grape">
+            AK
+          </Avatar>
+          <Stack gap={4}>
+            <Title order={1}>Алексей К.</Title>
+            <Text>Email: ak@example.com</Text>
+            <Text>Цель: Поддержание веса</Text>
+            <Text>Рост/вес: 181 см / 78 кг</Text>
+          </Stack>
+        </Group>
+      </Card>
 
-      <article className="glass-card">
-        <h2>Особенности здоровья</h2>
-        <div className="tag-row">
-          <span className="tag-pill">Непереносимость лактозы</span>
-          <span className="tag-pill">Чувствительность к глютену</span>
-          <span className="tag-pill">Норма соли под контролем</span>
-        </div>
-      </article>
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Особенности здоровья</Title>
+          <Group gap="xs">
+            <Badge variant="light" color="grape">
+              Непереносимость лактозы
+            </Badge>
+            <Badge variant="light" color="grape">
+              Чувствительность к глютену
+            </Badge>
+            <Badge variant="light" color="grape">
+              Норма соли под контролем
+            </Badge>
+          </Group>
+        </Stack>
+      </Card>
 
-      <article className="glass-card">
-        <h2>Любимые теги</h2>
-        <p>Быстрый выбор персональных предпочтений:</p>
-        <div className="tag-row">
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Любимые теги</Title>
+          <Text>Быстрый выбор персональных предпочтений:</Text>
+          <Group gap="xs">
           {availableTags.map((tag) => {
             const active = favoriteTags.includes(tag)
             return (
-              <button
+              <Badge
                 key={tag}
-                type="button"
-                className={`tag-pill ${active ? 'tag-pill--active' : ''}`}
+                variant={active ? 'filled' : 'light'}
+                color="grape"
+                style={{ cursor: 'pointer' }}
                 onClick={() => toggleTag(tag)}
               >
                 {tag}
-              </button>
+              </Badge>
             )
           })}
-        </div>
-      </article>
+          </Group>
+        </Stack>
+      </Card>
 
-      <article className="glass-card">
-        <h2>Избранное</h2>
-        <div className="profile-tabs">
-          <button
-            type="button"
-            className={`profile-tab ${favoriteTab === 'mealPlans' ? 'profile-tab--active' : ''}`}
-            onClick={() => setFavoriteTab('mealPlans')}
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Избранное</Title>
+          <Tabs
+            value={favoriteTab}
+            onChange={(value) => setFavoriteTab((value ?? 'mealPlans') as 'mealPlans' | 'recipes')}
           >
-            Планы питания
-          </button>
-          <button
-            type="button"
-            className={`profile-tab ${favoriteTab === 'recipes' ? 'profile-tab--active' : ''}`}
-            onClick={() => setFavoriteTab('recipes')}
-          >
-            Рецепты
-          </button>
-        </div>
+            <Tabs.List>
+              <Tabs.Tab value="mealPlans">Планы питания</Tabs.Tab>
+              <Tabs.Tab value="recipes">Рецепты</Tabs.Tab>
+            </Tabs.List>
 
-        <div className="cards-grid">
-          {favoriteTab === 'mealPlans' &&
-            favoriteMealPlans.map((plan) => (
-              <article key={plan.id} className="glass-card compact-card">
-                <h3>{plan.title}</h3>
-                <p>{plan.planType}</p>
-                <div className="meta-row">
-                  <span>{plan.calories} ккал</span>
-                  <span>★ {plan.rating}</span>
-                </div>
-              </article>
-            ))}
+            <Tabs.Panel value="mealPlans" pt="sm">
+              <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
+                {favoriteMealPlans.map((plan) => (
+                  <Card key={plan.id} withBorder radius="md" p="sm">
+                    <Stack gap={6}>
+                      <Title order={5}>{plan.title}</Title>
+                      <Text size="sm">{plan.planType}</Text>
+                      <Group gap="xs">
+                        <Badge variant="light" color="grape">
+                          {plan.calories} ккал
+                        </Badge>
+                        <Badge variant="light" color="grape">
+                          ★ {plan.rating}
+                        </Badge>
+                      </Group>
+                    </Stack>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            </Tabs.Panel>
 
-          {favoriteTab === 'recipes' &&
-            favoriteRecipes.map((recipe) => (
-              <article key={recipe.id} className="glass-card compact-card">
-                <h3>{recipe.title}</h3>
-                <p>{recipe.subtitle}</p>
-                <div className="meta-row">
-                  <span>{recipe.cookingTime}</span>
-                  <span>★ {recipe.rating}</span>
-                </div>
-              </article>
-            ))}
-        </div>
-      </article>
+            <Tabs.Panel value="recipes" pt="sm">
+              <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
+                {favoriteRecipes.map((recipe) => (
+                  <Card key={recipe.id} withBorder radius="md" p="sm">
+                    <Stack gap={6}>
+                      <Title order={5}>{recipe.title}</Title>
+                      <Text size="sm">{recipe.subtitle}</Text>
+                      <Group gap="xs">
+                        <Badge variant="light" color="grape">
+                          {recipe.cookingTime}
+                        </Badge>
+                        <Badge variant="light" color="grape">
+                          ★ {recipe.rating}
+                        </Badge>
+                      </Group>
+                    </Stack>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            </Tabs.Panel>
+          </Tabs>
+        </Stack>
+      </Card>
 
-      <article className="glass-card">
-        <h2>Статусы модерации</h2>
-        <div className="status-list">
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Статусы модерации</Title>
           {moderationStatuses.map((statusItem) => (
-            <div key={statusItem.id} className="status-row">
-              <p>
+            <Card key={statusItem.id} withBorder radius="md" p="sm">
+              <Stack gap={6}>
+                <Text size="sm">
                 <strong>{statusItem.type}:</strong> {statusItem.title}
-              </p>
-              <div className="meta-row">
-                <span>{statusItem.status}</span>
-                <span>Обновлено: {statusItem.updatedAt}</span>
-              </div>
-            </div>
+                </Text>
+                <Group gap="xs">
+                  <Badge
+                    color={
+                      statusItem.status === 'Одобрено'
+                        ? 'green'
+                        : statusItem.status === 'На ревью'
+                          ? 'yellow'
+                          : 'red'
+                    }
+                    variant="light"
+                  >
+                    {statusItem.status}
+                  </Badge>
+                  <Badge color="gray" variant="light">
+                    Обновлено: {statusItem.updatedAt}
+                  </Badge>
+                </Group>
+              </Stack>
+            </Card>
           ))}
-        </div>
-      </article>
+        </Stack>
+      </Card>
 
-      <article className="glass-card">
-        <h2>Базовые настройки аккаунта</h2>
-        <div className="settings-list">
-          <label className="settings-row">
-            <span>Email-уведомления о модерации</span>
-            <input
-              type="checkbox"
-              checked={emailNotifications}
-              onChange={() => toggleEmailNotifications()}
-            />
-          </label>
-          <label className="settings-row">
-            <span>Публичность профиля</span>
-            <input
-              type="checkbox"
-              checked={profileVisibility}
-              onChange={() => toggleProfileVisibility()}
-            />
-          </label>
-        </div>
-      </article>
-    </section>
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Базовые настройки аккаунта</Title>
+          <Switch
+            checked={emailNotifications}
+            onChange={() => toggleEmailNotifications()}
+            label="Email-уведомления о модерации"
+            color="grape"
+          />
+          <Switch
+            checked={profileVisibility}
+            onChange={() => toggleProfileVisibility()}
+            label="Публичность профиля"
+            color="grape"
+          />
+        </Stack>
+      </Card>
+    </Stack>
   )
 }

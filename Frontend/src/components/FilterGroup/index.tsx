@@ -1,4 +1,4 @@
-import './styles.css'
+import { Badge, Group, Stack, Text } from '@mantine/core'
 
 type FilterGroupProps = {
   title: string
@@ -7,15 +7,15 @@ type FilterGroupProps = {
 
 export function FilterGroup({ title, values }: FilterGroupProps) {
   return (
-    <div className="filter-group">
-      <h3>{title}</h3>
-      <div className="tag-row">
+    <Stack gap={8}>
+      <Text fw={600}>{title}</Text>
+      <Group gap="xs">
         {values.map((value) => (
-          <button key={value} type="button" className="tag-pill">
+          <Badge key={value} variant="light" color="grape" radius="xl" size="lg">
             {value}
-          </button>
+          </Badge>
         ))}
-      </div>
-    </div>
+      </Group>
+    </Stack>
   )
 }

@@ -1,7 +1,7 @@
+import { Box, Button, Group, Paper, TextInput, Title } from '@mantine/core'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { textKeys } from '../../shared/config/texts'
 import type { MainRoute } from '../../types/domain'
-import './styles.css'
 
 const mainNavItems: { path: MainRoute; label: string }[] = [
   { path: '/', label: textKeys.nav.about },
@@ -15,46 +15,66 @@ export function Header() {
   const location = useLocation()
 
   return (
-    <header className="header">
-      <div className="header__left">
-        <button className="brand" type="button" onClick={() => navigate('/')}>
-          {textKeys.appName}
-        </button>
-        <nav className="nav-links">
+    <Paper
+      mt={16}
+      p="md"
+      radius="md"
+      withBorder
+      style={{ background: 'var(--bg-header)', color: 'var(--text-on-header)' }}
+    >
+      <Group justify="space-between" align="center" wrap="wrap" gap="md">
+        <Group align="center" gap="md">
+          <Button variant="subtle" c="white" onClick={() => navigate('/')}>
+            <Title order={4} c="white" tt="lowercase">
+              {textKeys.appName}
+            </Title>
+          </Button>
+          <Group gap={6} wrap="wrap">
           {mainNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'nav-link--active' : ''}`
-              }
               end={item.path === '/'}
             >
-              {item.label}
+              {({ isActive }) => (
+                <Button
+                  size="compact-sm"
+                  variant={isActive ? 'filled' : 'subtle'}
+                  color={isActive ? 'grape' : 'gray'}
+                  c="white"
+                >
+                  {item.label}
+                </Button>
+              )}
             </NavLink>
           ))}
-        </nav>
-      </div>
+          </Group>
+        </Group>
 
-      <div className="header__search">
-        <input placeholder="Поиск по странице" aria-label="Поиск по странице" />
-      </div>
+        <Box style={{ minWidth: 250, flex: 1, maxWidth: 360 }}>
+          <TextInput
+            placeholder="Поиск по странице"
+            aria-label="Поиск по странице"
+            radius="md"
+          />
+        </Box>
 
-      <div className="header__right">
-        <button
-          type="button"
-          className={`header-cta ${location.pathname === '/planner' ? 'header-cta--active' : ''}`}
-          onClick={() => navigate('/planner')}
-        >
-          Конструктор
-        </button>
-        <NavLink to="/profile" className="nav-link">
-          {textKeys.nav.profile}
-        </NavLink>
-        <NavLink to="/settings" className="nav-link">
-          {textKeys.nav.settings}
-        </NavLink>
-      </div>
-    </header>
+        <Group align="center" gap="xs">
+          <Button
+            color="grape"
+            variant={location.pathname === '/planner' ? 'filled' : 'light'}
+            onClick={() => navigate('/planner')}
+          >
+            Конструктор
+          </Button>
+          <Button component={NavLink} to="/profile" variant="subtle" c="white">
+            {textKeys.nav.profile}
+          </Button>
+          <Button component={NavLink} to="/settings" variant="subtle" c="white">
+            {textKeys.nav.settings}
+          </Button>
+        </Group>
+      </Group>
+    </Paper>
   )
 }

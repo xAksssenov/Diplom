@@ -1,24 +1,21 @@
+import { Breadcrumbs as MantineBreadcrumbs, Paper } from '@mantine/core'
 import { Link, useLocation } from 'react-router-dom'
 import { getBreadcrumbSegments } from '../../router'
-import './styles.css'
 
 export function Breadcrumbs() {
   const location = useLocation()
   const segments = getBreadcrumbSegments(location.pathname)
 
   return (
-    <div className="breadcrumbs">
-      <Link to="/" className="breadcrumbs__link">
-        Главная
-      </Link>
-      {segments.map((segment) => (
-        <span key={segment.path}>
-          {' / '}
-          <Link to={segment.path} className="breadcrumbs__link">
+    <Paper withBorder radius="md" p="sm" style={{ background: 'var(--bg-surface)' }}>
+      <MantineBreadcrumbs separator="/" separatorMargin="xs">
+        <Link to="/">Главная</Link>
+        {segments.map((segment) => (
+          <Link key={segment.path} to={segment.path}>
             {segment.label}
           </Link>
-        </span>
-      ))}
-    </div>
+        ))}
+      </MantineBreadcrumbs>
+    </Paper>
   )
 }

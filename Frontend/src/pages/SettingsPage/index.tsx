@@ -1,10 +1,12 @@
-import './styles.css'
+import { Card, Stack, Text, Title } from '@mantine/core'
 
 export function SettingsPage() {
   return (
-    <section className="glass-card settings-page">
-      <h1>Настройки</h1>
-      <p>Каркас раздела базовых настроек аккаунта.</p>
-    </section>
+    <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+      <Stack gap="xs">
+        <Title order={1}>Настройки</Title>
+        <Text>Каркас раздела базовых настроек аккаунта.</Text>
+      </Stack>
+    </Card>
   )
 }

@@ -1,23 +1,25 @@
+import { Button, Card, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { Link } from 'react-router-dom'
 import { PreviewCard } from '../../components/PreviewCard'
 import { textKeys } from '../../shared/config/texts'
-import './styles.css'
 
 export function AboutPage() {
   return (
-    <section>
-      <div className="glass-card">
-        <h1>Планируйте питание под свои цели</h1>
-        <p>
+    <Stack gap="md">
+      <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={1}>Планируйте питание под свои цели</Title>
+          <Text>
           FoodPlanner объединяет рецепты, планы питания и отзывы в одном месте.
           Выберите готовый план или соберите свой.
-        </p>
-        <Link to="/meal-plans" className="cta-link">
-          {textKeys.cta.planner}
-        </Link>
-      </div>
+          </Text>
+          <Button component={Link} to="/meal-plans" color="grape" w="fit-content">
+            {textKeys.cta.planner}
+          </Button>
+        </Stack>
+      </Card>
 
-      <div className="cards-grid">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
         <PreviewCard
           title="Рецепты"
           description="Подборки по тегам, калорийности и диетическим предпочтениям."
@@ -33,7 +35,7 @@ export function AboutPage() {
           description="Просматривайте отзывы пользователей и переходите к планам."
           linkPath="/reviews"
         />
-      </div>
-    </section>
+      </SimpleGrid>
+    </Stack>
   )
 }

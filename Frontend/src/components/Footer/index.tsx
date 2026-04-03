@@ -1,17 +1,25 @@
+import { Button, Group, Paper, Text } from '@mantine/core'
 import { textKeys } from '../../shared/config/texts'
-import './styles.css'
 
 export function Footer() {
   return (
-    <footer className="footer">
-      <p>{textKeys.footer.copy}</p>
-      <div className="footer__links">
+    <Paper
+      mt="auto"
+      withBorder
+      radius="md"
+      p="md"
+      style={{ background: 'var(--bg-surface)' }}
+    >
+      <Group justify="space-between" align="center" wrap="wrap">
+        <Text>{textKeys.footer.copy}</Text>
+        <Group gap="xs">
         {textKeys.footer.links.map((linkName) => (
-          <button key={linkName} type="button">
+          <Button key={linkName} type="button" variant="light" color="grape">
             {linkName}
-          </button>
+          </Button>
         ))}
-      </div>
-    </footer>
+        </Group>
+      </Group>
+    </Paper>
   )
 }

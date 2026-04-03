@@ -1,4 +1,4 @@
-import './styles.css'
+import { Card, Stack, Text, Title } from '@mantine/core'
 
 type FallbackCardProps = {
   message: string
@@ -6,9 +6,11 @@ type FallbackCardProps = {
 
 export function FallbackCard({ message }: FallbackCardProps) {
   return (
-    <section className="glass-card fallback-card">
-      <h1>Раздел недоступен</h1>
-      <p>{message}</p>
-    </section>
+    <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+      <Stack gap="xs">
+        <Title order={1}>Раздел недоступен</Title>
+        <Text>{message}</Text>
+      </Stack>
+    </Card>
   )
 }

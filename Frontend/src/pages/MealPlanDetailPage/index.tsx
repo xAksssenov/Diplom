@@ -1,8 +1,18 @@
+import {
+  Accordion,
+  Badge,
+  Button,
+  Card,
+  Group,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
 import { useParams } from 'react-router-dom'
 import { FallbackCard } from '../../components/FallbackCard'
 import { MealInfo } from '../../components/MealInfo'
 import { mealPlans, planReviews } from '../../data/mockData'
-import './styles.css'
 
 export function MealPlanDetailPage() {
   const { planId } = useParams<{ planId: string }>()
@@ -13,72 +23,102 @@ export function MealPlanDetailPage() {
   }
 
   return (
-    <section className="content-stack">
-      <article className="glass-card">
-        <h1>{plan.title}</h1>
-        <p>{plan.description}</p>
-        <div className="meta-row">
-          <span>Оценок: {plan.reviewsCount}</span>
-          <span>★ {plan.rating}</span>
-          <span>{plan.calories} ккал</span>
-          <span>
-            Б/Ж/У: {plan.protein}/{plan.fat}/{plan.carbs}
-          </span>
-        </div>
-        <div className="action-row">
-          <button type="button" className="text-link">
-            Оценить план
-          </button>
-          <button type="button" className="text-link">
-            Комментарий
-          </button>
-          <button type="button" className="text-link">
-            В избранное
-          </button>
-        </div>
-      </article>
+    <Stack gap="md">
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={1}>{plan.title}</Title>
+          <Text>{plan.description}</Text>
+          <Group gap="xs">
+            <Badge color="grape" variant="light">
+              Оценок: {plan.reviewsCount}
+            </Badge>
+            <Badge color="grape" variant="light">
+              ★ {plan.rating}
+            </Badge>
+            <Badge color="grape" variant="light">
+              {plan.calories} ккал
+            </Badge>
+            <Badge color="grape" variant="light">
+              Б/Ж/У: {plan.protein}/{plan.fat}/{plan.carbs}
+            </Badge>
+          </Group>
+          <Group gap="xs">
+            <Button color="grape">Оценить план</Button>
+            <Button color="grape" variant="light">
+              Комментарий
+            </Button>
+            <Button color="grape" variant="outline">
+              В избранное
+            </Button>
+          </Group>
+        </Stack>
+      </Card>
 
       {plan.days.map((day) => (
-        <article className="glass-card" key={day.day}>
-          <h2>День {day.day}</h2>
-
-          <details className="collapsible" open>
-            <summary>Завтрак</summary>
-            <MealInfo meal={day.meals.breakfast} />
-          </details>
-
-          <details className="collapsible">
-            <summary>Обед</summary>
-            <MealInfo meal={day.meals.lunch} />
-          </details>
-
-          <details className="collapsible">
-            <summary>Ужин</summary>
-            <MealInfo meal={day.meals.dinner} />
-          </details>
-
-          <details className="collapsible">
-            <summary>Перекусы ({day.meals.snacks.length})</summary>
-            {day.meals.snacks.map((snack) => (
-              <MealInfo key={snack.title} meal={snack} />
-            ))}
-          </details>
-        </article>
+        <Card
+          withBorder
+          radius="md"
+          p="lg"
+          key={day.day}
+          style={{ background: 'var(--bg-surface)' }}
+        >
+          <Stack gap="sm">
+            <Title order={3}>День {day.day}</Title>
+            <Accordion defaultValue="breakfast" variant="separated">
+              <Accordion.Item value="breakfast">
+                <Accordion.Control>Завтрак</Accordion.Control>
+                <Accordion.Panel>
+                  <MealInfo meal={day.meals.breakfast} />
+                </Accordion.Panel>
+              </Accordion.Item>
+              <Accordion.Item value="lunch">
+                <Accordion.Control>Обед</Accordion.Control>
+                <Accordion.Panel>
+                  <MealInfo meal={day.meals.lunch} />
+                </Accordion.Panel>
+              </Accordion.Item>
+              <Accordion.Item value="dinner">
+                <Accordion.Control>Ужин</Accordion.Control>
+                <Accordion.Panel>
+                  <MealInfo meal={day.meals.dinner} />
+                </Accordion.Panel>
+              </Accordion.Item>
+              <Accordion.Item value="snacks">
+                <Accordion.Control>Перекусы ({day.meals.snacks.length})</Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="xs">
+                    {day.meals.snacks.map((snack) => (
+                      <MealInfo key={snack.title} meal={snack} />
+                    ))}
+                  </Stack>
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+          </Stack>
+        </Card>
       ))}
 
-      <article className="glass-card">
-        <h2>Отзывы и оценки по плану</h2>
-        {planReviews
-          .filter((review) => review.planId === plan.id)
-          .map((review) => (
-            <div key={review.id} className="inline-review">
-              <p>
-                {review.author}: {review.comment}
-              </p>
-              <span>★ {review.rating}</span>
-            </div>
-          ))}
-      </article>
-    </section>
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Отзывы и оценки по плану</Title>
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
+            {planReviews
+              .filter((review) => review.planId === plan.id)
+              .map((review) => (
+                <Card key={review.id} withBorder radius="md" p="sm">
+                  <Stack gap={6}>
+                    <Text size="sm">
+                      <strong>{review.author}:</strong> {review.comment}
+                    </Text>
+                    <Badge color="violet" variant="light" w="fit-content">
+                      ★ {review.rating}
+                    </Badge>
+                  </Stack>
+                </Card>
+              ))}
+          </SimpleGrid>
+        </Stack>
+      </Card>
+    </Stack>
   )
 }

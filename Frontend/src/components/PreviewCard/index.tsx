@@ -1,5 +1,5 @@
+import { Button, Card, Stack, Text, Title } from '@mantine/core'
 import { Link } from 'react-router-dom'
-import './styles.css'
 
 type PreviewCardProps = {
   title: string
@@ -9,12 +9,14 @@ type PreviewCardProps = {
 
 export function PreviewCard({ title, description, linkPath }: PreviewCardProps) {
   return (
-    <article className="glass-card">
-      <h2>{title}</h2>
-      <p>{description}</p>
-      <Link to={linkPath} className="text-link">
-        Смотреть все
-      </Link>
-    </article>
+    <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
+      <Stack gap="sm">
+        <Title order={3}>{title}</Title>
+        <Text>{description}</Text>
+        <Button component={Link} to={linkPath} color="grape" variant="light">
+          Смотреть все
+        </Button>
+      </Stack>
+    </Card>
   )
 }

@@ -1,13 +1,56 @@
+import { Badge, Button, Card, Grid, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FilterGroup } from '../../components/FilterGroup'
 import { mealPlans } from '../../data/mockData'
-import './styles.css'
+import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 
 export function MealPlansPage() {
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+
+  useEffect(() => {
+    if (status !== 'loading') {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      try {
+        setStatus('ready')
+      } catch {
+        setStatus('error')
+      }
+    }, 550)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [status])
+
+  if (status === 'loading') {
+    return <PageLoader title="Загружаем планы питания..." />
+  }
+
+  if (status === 'error') {
+    return (
+      <PageError
+        message="Не удалось получить планы питания."
+        onRetry={() => setStatus('loading')}
+      />
+    )
+  }
+
+  if (!mealPlans.length) {
+    return (
+      <PageEmpty
+        title="Планов пока нет"
+        description="Сформируйте первый план или вернитесь позже."
+      />
+    )
+  }
+
   return (
-    <section className="split-layout">
-      <aside className="glass-card filters-panel">
-        <h2>Фильтры планов</h2>
+    <Grid gap="md" align="start">
+      <Grid.Col span={{ base: 12, md: 4, lg: 3 }}>
+        <Paper withBorder radius="md" p="md" style={{ background: 'var(--bg-surface)' }}>
+        <Title order={3}>Фильтры планов</Title>
         <FilterGroup title="Тип плана" values={['На день', 'На неделю', 'На месяц']} />
         <FilterGroup title="Цель" values={['Похудение', 'Поддержание веса', 'Набор массы']} />
         <FilterGroup
@@ -15,36 +58,61 @@ export function MealPlansPage() {
           values={['Веганское', 'Без глютена', 'Без лактозы']}
         />
         <FilterGroup title="Калорийность" values={['1200-1600', '1600-2200', '2200+']} />
-      </aside>
+        </Paper>
+      </Grid.Col>
 
-      <div className="content-stack">
-        <div className="glass-card">
-          <h1>Планы питания</h1>
-          <p>Подбор планов с детальной разбивкой по дням и приемам пищи.</p>
-        </div>
+      <Grid.Col span={{ base: 12, md: 8, lg: 9 }}>
+      <Stack gap="md">
+        <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
+          <Stack gap="xs">
+            <Title order={1}>Планы питания</Title>
+            <Text>Подбор планов с детальной разбивкой по дням и приемам пищи.</Text>
+          </Stack>
+        </Card>
 
-        <div className="cards-grid">
+        <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
           {mealPlans.map((plan) => (
-            <article className="glass-card plan-card" key={plan.id}>
-              <h2>{plan.title}</h2>
-              <p>{plan.description}</p>
-              <div className="meta-row">
-                <span>{plan.planType}</span>
-                <span>{plan.goal}</span>
-                <span>{plan.calories} ккал</span>
-              </div>
-              <div className="meta-row">
-                <span>★ {plan.rating}</span>
-                <span>{plan.reviewsCount} оценок</span>
-                <span>{plan.diet}</span>
-              </div>
-              <Link to={`/meal-plans/${plan.id}`} className="text-link">
-                Открыть план
-              </Link>
-            </article>
+            <Card
+              withBorder
+              radius="md"
+              padding="lg"
+              key={plan.id}
+              style={{ background: 'var(--bg-surface)' }}
+            >
+              <Stack gap="xs">
+                <Title order={3}>{plan.title}</Title>
+                <Text>{plan.description}</Text>
+                <Group gap="xs">
+                  <Badge variant="light" color="grape">
+                    {plan.planType}
+                  </Badge>
+                  <Badge variant="light" color="grape">
+                    {plan.goal}
+                  </Badge>
+                  <Badge variant="light" color="grape">
+                    {plan.calories} ккал
+                  </Badge>
+                </Group>
+                <Group gap="xs">
+                  <Badge variant="dot" color="violet">
+                    ★ {plan.rating}
+                  </Badge>
+                  <Badge variant="dot" color="violet">
+                    {plan.reviewsCount} оценок
+                  </Badge>
+                  <Badge variant="dot" color="violet">
+                    {plan.diet}
+                  </Badge>
+                </Group>
+                <Button component={Link} to={`/meal-plans/${plan.id}`} color="grape">
+                  Открыть план
+                </Button>
+              </Stack>
+            </Card>
           ))}
-        </div>
-      </div>
-    </section>
+        </SimpleGrid>
+      </Stack>
+      </Grid.Col>
+    </Grid>
   )
 }

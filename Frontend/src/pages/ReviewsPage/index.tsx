@@ -1,29 +1,85 @@
+import { Badge, Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { planReviews } from '../../data/mockData'
-import './styles.css'
+import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 
 export function ReviewsPage() {
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+
+  useEffect(() => {
+    if (status !== 'loading') {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      try {
+        setStatus('ready')
+      } catch {
+        setStatus('error')
+      }
+    }, 450)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [status])
+
+  if (status === 'loading') {
+    return <PageLoader title="Загружаем отзывы..." />
+  }
+
+  if (status === 'error') {
+    return (
+      <PageError
+        message="Сервис отзывов временно недоступен."
+        onRetry={() => setStatus('loading')}
+      />
+    )
+  }
+
+  if (!planReviews.length) {
+    return (
+      <PageEmpty
+        title="Отзывов пока нет"
+        description="Будьте первым, кто оценит план питания."
+      />
+    )
+  }
+
   return (
-    <section className="content-stack">
-      <div className="glass-card">
-        <h1>Оценки и отзывы</h1>
-        <p>Отзывы на планы питания с быстрым переходом к деталям.</p>
-      </div>
-      <div className="cards-grid">
+    <Stack gap="md">
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="xs">
+          <Title order={1}>Оценки и отзывы</Title>
+          <Text>Отзывы на планы питания с быстрым переходом к деталям.</Text>
+        </Stack>
+      </Card>
+      <SimpleGrid cols={{ base: 1, md: 2, xl: 3 }} spacing="md">
         {planReviews.map((review) => (
-          <article key={review.id} className="glass-card review-card">
-            <h2>{review.planTitle}</h2>
-            <p>{review.comment}</p>
-            <div className="meta-row">
-              <span>{review.author}</span>
-              <span>★ {review.rating}</span>
-            </div>
-            <Link to={`/meal-plans/${review.planId}`} className="text-link">
-              Перейти к плану
-            </Link>
-          </article>
+          <Card
+            key={review.id}
+            withBorder
+            radius="md"
+            p="lg"
+            style={{ background: 'var(--bg-surface)' }}
+          >
+            <Stack gap="xs">
+              <Title order={3}>{review.planTitle}</Title>
+              <Text>{review.comment}</Text>
+              <Group gap="xs">
+                <Badge variant="light" color="grape">
+                  {review.author}
+                </Badge>
+                <Badge variant="light" color="grape">
+                  ★ {review.rating}
+                </Badge>
+              </Group>
+              <Button component={Link} to={`/meal-plans/${review.planId}`} color="grape">
+                Перейти к плану
+              </Button>
+            </Stack>
+          </Card>
         ))}
-      </div>
-    </section>
+      </SimpleGrid>
+    </Stack>
   )
 }
