@@ -1,10 +1,8 @@
-import { planReviews } from '../data/mockData'
+import { Link } from 'react-router-dom'
+import { planReviews } from '../../data/mockData'
+import './styles.css'
 
-type ReviewsPageProps = {
-  onNavigate: (path: string) => void
-}
-
-export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
+export function ReviewsPage() {
   return (
     <section className="content-stack">
       <div className="glass-card">
@@ -20,13 +18,9 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
               <span>{review.author}</span>
               <span>★ {review.rating}</span>
             </div>
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => onNavigate(`/meal-plans/${review.planId}`)}
-            >
+            <Link to={`/meal-plans/${review.planId}`} className="text-link">
               Перейти к плану
-            </button>
+            </Link>
           </article>
         ))}
       </div>

@@ -1,12 +1,17 @@
 import { useState } from 'react'
-import type { Recipe } from '../types/domain'
+import { useParams } from 'react-router-dom'
+import { FallbackCard } from '../../components/FallbackCard'
+import { recipes } from '../../data/mockData'
+import './styles.css'
 
-type RecipeDetailPageProps = {
-  recipe: Recipe
-}
-
-export function RecipeDetailPage({ recipe }: RecipeDetailPageProps) {
+export function RecipeDetailPage() {
+  const { recipeId } = useParams<{ recipeId: string }>()
+  const recipe = recipes.find((item) => item.id === recipeId)
   const [activeImage, setActiveImage] = useState(0)
+
+  if (!recipe) {
+    return <FallbackCard message="Рецепт не найден." />
+  }
 
   return (
     <section className="content-stack">

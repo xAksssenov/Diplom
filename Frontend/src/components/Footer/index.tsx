@@ -1,4 +1,5 @@
-import { textKeys } from '../shared/config/texts'
+import { textKeys } from '../../shared/config/texts'
+import './styles.css'
 
 export function Footer() {
   return (

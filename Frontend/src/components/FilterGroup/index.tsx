@@ -1,3 +1,5 @@
+import './styles.css'
+
 type FilterGroupProps = {
   title: string
   values: string[]

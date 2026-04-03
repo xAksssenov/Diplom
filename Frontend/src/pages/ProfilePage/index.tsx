@@ -1,9 +1,18 @@
-import { useMemo, useState } from 'react'
-import { mealPlans, recipes } from '../data/mockData'
-import { getModerationStatuses } from '../lib/moderationStorage'
-import type { ModerationStatusItem } from '../types/domain'
-
-type FavoritesTab = 'mealPlans' | 'recipes'
+import { useUnit } from 'effector-react'
+import {
+  $emailNotifications,
+  $favoriteMealPlans,
+  $favoriteRecipes,
+  $favoriteTab,
+  $favoriteTags,
+  $moderationStatuses,
+  $profileVisibility,
+  emailNotificationsToggled,
+  favoriteTabChanged,
+  favoriteTagToggled,
+  profileVisibilityToggled,
+} from '../../features/profile/model'
+import './styles.css'
 
 const availableTags = [
   'Завтрак',
@@ -15,54 +24,32 @@ const availableTags = [
   'Без лактозы',
 ]
 
-const moderationStatuses: ModerationStatusItem[] = [
-  {
-    id: 's1',
-    type: 'План питания',
-    title: 'Фит-неделя для поддержания формы',
-    status: 'На ревью',
-    updatedAt: '03.04.2026',
-  },
-  {
-    id: 's2',
-    type: 'Отзыв',
-    title: 'Комментарий к плану "День для мягкого дефицита"',
-    status: 'Одобрено',
-    updatedAt: '02.04.2026',
-  },
-  {
-    id: 's3',
-    type: 'Рецепт',
-    title: 'Протеиновый боул на завтрак',
-    status: 'Отклонено (нужны правки)',
-    updatedAt: '01.04.2026',
-  },
-]
-
 export function ProfilePage() {
-  const [favoriteTab, setFavoriteTab] = useState<FavoritesTab>('mealPlans')
-  const [favoriteTags, setFavoriteTags] = useState<string[]>([
-    'Завтрак',
-    'Без глютена',
-    'Высокобелковое',
-  ])
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [profileVisibility, setProfileVisibility] = useState(false)
-
-  const favoriteMealPlans = useMemo(() => mealPlans.slice(0, 2), [])
-  const favoriteRecipes = useMemo(() => recipes.slice(0, 2), [])
-  const recentModerationStatuses = useMemo(
-    () => [...getModerationStatuses(), ...moderationStatuses],
-    [],
-  )
-
-  const toggleTag = (tag: string) => {
-    setFavoriteTags((currentTags) =>
-      currentTags.includes(tag)
-        ? currentTags.filter((currentTag) => currentTag !== tag)
-        : [...currentTags, tag],
-    )
-  }
+  const {
+    favoriteTab,
+    favoriteTags,
+    emailNotifications,
+    profileVisibility,
+    favoriteMealPlans,
+    favoriteRecipes,
+    moderationStatuses,
+    setFavoriteTab,
+    toggleTag,
+    toggleEmailNotifications,
+    toggleProfileVisibility,
+  } = useUnit({
+    favoriteTab: $favoriteTab,
+    favoriteTags: $favoriteTags,
+    emailNotifications: $emailNotifications,
+    profileVisibility: $profileVisibility,
+    favoriteMealPlans: $favoriteMealPlans,
+    favoriteRecipes: $favoriteRecipes,
+    moderationStatuses: $moderationStatuses,
+    setFavoriteTab: favoriteTabChanged,
+    toggleTag: favoriteTagToggled,
+    toggleEmailNotifications: emailNotificationsToggled,
+    toggleProfileVisibility: profileVisibilityToggled,
+  })
 
   return (
     <section className="content-stack">
@@ -156,7 +143,7 @@ export function ProfilePage() {
       <article className="glass-card">
         <h2>Статусы модерации</h2>
         <div className="status-list">
-          {recentModerationStatuses.map((statusItem) => (
+          {moderationStatuses.map((statusItem) => (
             <div key={statusItem.id} className="status-row">
               <p>
                 <strong>{statusItem.type}:</strong> {statusItem.title}
@@ -178,7 +165,7 @@ export function ProfilePage() {
             <input
               type="checkbox"
               checked={emailNotifications}
-              onChange={() => setEmailNotifications((state) => !state)}
+              onChange={() => toggleEmailNotifications()}
             />
           </label>
           <label className="settings-row">
@@ -186,7 +173,7 @@ export function ProfilePage() {
             <input
               type="checkbox"
               checked={profileVisibility}
-              onChange={() => setProfileVisibility((state) => !state)}
+              onChange={() => toggleProfileVisibility()}
             />
           </label>
         </div>

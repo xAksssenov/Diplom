@@ -1,0 +1,9 @@
+.filters-panel {
+  align-self: start;
+}
+
+.recipe-card__photo {
+  height: 170px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}

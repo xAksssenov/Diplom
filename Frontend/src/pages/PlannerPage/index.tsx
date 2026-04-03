@@ -1,10 +1,24 @@
 import { useMemo, useState } from 'react'
-import { recipes } from '../data/mockData'
-import { appendModerationStatus } from '../lib/moderationStorage'
-
-type PlannerPageProps = {
-  onNavigate: (path: string) => void
-}
+import { useUnit } from 'effector-react'
+import { useNavigate } from 'react-router-dom'
+import { recipes } from '../../data/mockData'
+import {
+  $daysCount,
+  $plannerError,
+  $plannerSubmitMessage,
+  $slotsMap,
+  $snacksCount,
+  daysCountChanged,
+  plannerErrorSet,
+  plannerMessagesReset,
+  plannerSubmitMessageSet,
+  recipeAssignedToSlot,
+  slotCleared,
+  snacksCountChanged,
+  slotsSwapped,
+} from '../../features/planner/model'
+import { appendModerationStatus } from '../../lib/moderationStorage'
+import './styles.css'
 
 type MealSlotType = 'breakfast' | 'lunch' | 'dinner' | `snack-${number}`
 
@@ -29,13 +43,39 @@ function getTodayDate() {
   return `${day}.${month}.${year}`
 }
 
-export function PlannerPage({ onNavigate }: PlannerPageProps) {
-  const [daysCount, setDaysCount] = useState(3)
-  const [snacksCount, setSnacksCount] = useState(1)
+export function PlannerPage() {
+  const navigate = useNavigate()
   const [dragFrom, setDragFrom] = useState<string | null>(null)
-  const [slotsMap, setSlotsMap] = useState<Record<string, string>>({})
-  const [submitMessage, setSubmitMessage] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+
+  const {
+    daysCount,
+    snacksCount,
+    slotsMap,
+    errorMessage,
+    submitMessage,
+    setDays,
+    setSnacks,
+    assignRecipe,
+    swapSlots,
+    clearSlot,
+    setError,
+    setSubmitMessage,
+    resetMessages,
+  } = useUnit({
+    daysCount: $daysCount,
+    snacksCount: $snacksCount,
+    slotsMap: $slotsMap,
+    errorMessage: $plannerError,
+    submitMessage: $plannerSubmitMessage,
+    setDays: daysCountChanged,
+    setSnacks: snacksCountChanged,
+    assignRecipe: recipeAssignedToSlot,
+    swapSlots: slotsSwapped,
+    clearSlot: slotCleared,
+    setError: plannerErrorSet,
+    setSubmitMessage: plannerSubmitMessageSet,
+    resetMessages: plannerMessagesReset,
+  })
 
   const slotTypes = useMemo(() => {
     const snackTypes = Array.from(
@@ -52,33 +92,13 @@ export function PlannerPage({ onNavigate }: PlannerPageProps) {
 
   const onDropToSlot = (slotKey: string, payload: string) => {
     if (payload.startsWith('recipe:')) {
-      const recipeId = payload.replace('recipe:', '')
-      setSlotsMap((current) => ({ ...current, [slotKey]: recipeId }))
+      assignRecipe({ slotKey, recipeId: payload.replace('recipe:', '') })
       return
     }
 
     if (payload.startsWith('slot:')) {
-      const sourceSlot = payload.replace('slot:', '')
-      setSlotsMap((current) => {
-        const sourceRecipe = current[sourceSlot]
-        if (!sourceRecipe) {
-          return current
-        }
-        return {
-          ...current,
-          [sourceSlot]: current[slotKey] ?? '',
-          [slotKey]: sourceRecipe,
-        }
-      })
+      swapSlots({ sourceSlot: payload.replace('slot:', ''), targetSlot: slotKey })
     }
-  }
-
-  const removeSlot = (slotKey: string) => {
-    setSlotsMap((current) => {
-      const next = { ...current }
-      delete next[slotKey]
-      return next
-    })
   }
 
   const submitPlan = () => {
@@ -88,7 +108,7 @@ export function PlannerPage({ onNavigate }: PlannerPageProps) {
     const missingRequired = requiredSlots.some((slotKey) => !slotsMap[slotKey])
 
     if (missingRequired) {
-      setErrorMessage('Заполните обязательно завтрак, обед и ужин для каждого дня.')
+      setError('Заполните обязательно завтрак, обед и ужин для каждого дня.')
       setSubmitMessage('')
       return
     }
@@ -106,10 +126,8 @@ export function PlannerPage({ onNavigate }: PlannerPageProps) {
       updatedAt: getTodayDate(),
     })
 
-    setErrorMessage('')
-    setSubmitMessage(
-      'План отправлен на модерацию. Статус доступен в личном кабинете.',
-    )
+    resetMessages()
+    setSubmitMessage('План отправлен на модерацию. Статус доступен в личном кабинете.')
   }
 
   return (
@@ -133,7 +151,7 @@ export function PlannerPage({ onNavigate }: PlannerPageProps) {
               value={daysCount}
               onChange={(event) => {
                 const value = Number(event.target.value)
-                setDaysCount(Number.isNaN(value) ? 1 : Math.min(14, Math.max(1, value)))
+                setDays(Number.isNaN(value) ? 1 : Math.min(14, Math.max(1, value)))
               }}
             />
           </label>
@@ -146,7 +164,7 @@ export function PlannerPage({ onNavigate }: PlannerPageProps) {
               value={snacksCount}
               onChange={(event) => {
                 const value = Number(event.target.value)
-                setSnacksCount(Number.isNaN(value) ? 0 : Math.min(4, Math.max(0, value)))
+                setSnacks(Number.isNaN(value) ? 0 : Math.min(4, Math.max(0, value)))
               }}
             />
           </label>
@@ -156,7 +174,7 @@ export function PlannerPage({ onNavigate }: PlannerPageProps) {
           <button type="button" className="text-link" onClick={submitPlan}>
             Отправить план на модерацию
           </button>
-          <button type="button" className="text-link" onClick={() => onNavigate('/profile')}>
+          <button type="button" className="text-link" onClick={() => navigate('/profile')}>
             Открыть статусы в ЛК
           </button>
 
@@ -214,7 +232,7 @@ export function PlannerPage({ onNavigate }: PlannerPageProps) {
                               <button
                                 type="button"
                                 className="planner-clear-btn"
-                                onClick={() => removeSlot(slotKey)}
+                                onClick={() => clearSlot(slotKey)}
                               >
                                 Очистить
                               </button>

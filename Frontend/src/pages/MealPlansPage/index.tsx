@@ -1,11 +1,9 @@
-import { FilterGroup } from '../components/FilterGroup'
-import { mealPlans } from '../data/mockData'
+import { Link } from 'react-router-dom'
+import { FilterGroup } from '../../components/FilterGroup'
+import { mealPlans } from '../../data/mockData'
+import './styles.css'
 
-type MealPlansPageProps = {
-  onNavigate: (path: string) => void
-}
-
-export function MealPlansPage({ onNavigate }: MealPlansPageProps) {
+export function MealPlansPage() {
   return (
     <section className="split-layout">
       <aside className="glass-card filters-panel">
@@ -40,13 +38,9 @@ export function MealPlansPage({ onNavigate }: MealPlansPageProps) {
                 <span>{plan.reviewsCount} оценок</span>
                 <span>{plan.diet}</span>
               </div>
-              <button
-                type="button"
-                className="text-link"
-                onClick={() => onNavigate(`/meal-plans/${plan.id}`)}
-              >
+              <Link to={`/meal-plans/${plan.id}`} className="text-link">
                 Открыть план
-              </button>
+              </Link>
             </article>
           ))}
         </div>

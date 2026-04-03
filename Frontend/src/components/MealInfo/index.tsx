@@ -1,11 +1,12 @@
-import type { PlanMeal } from '../types/domain'
+import { Link } from 'react-router-dom'
+import type { PlanMeal } from '../../types/domain'
+import './styles.css'
 
 type MealInfoProps = {
   meal: PlanMeal
-  onNavigate: (path: string) => void
 }
 
-export function MealInfo({ meal, onNavigate }: MealInfoProps) {
+export function MealInfo({ meal }: MealInfoProps) {
   return (
     <div className="meal-item">
       <p>
@@ -13,13 +14,9 @@ export function MealInfo({ meal, onNavigate }: MealInfoProps) {
       </p>
       <p>Калорийность: {meal.calories} ккал</p>
       <p>Ингредиенты: {meal.ingredients}</p>
-      <button
-        type="button"
-        className="text-link"
-        onClick={() => onNavigate(`/recipes/${meal.recipeId}`)}
-      >
+      <Link to={`/recipes/${meal.recipeId}`} className="text-link">
         Открыть рецепт блюда
-      </button>
+      </Link>
     </div>
   )
 }

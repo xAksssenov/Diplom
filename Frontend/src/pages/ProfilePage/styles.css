@@ -1,0 +1,87 @@
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #7c4dff, #9f79ff);
+}
+
+.profile-main-info {
+  display: grid;
+  gap: 6px;
+}
+
+.tag-pill--active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.profile-tabs {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.profile-tab {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text-primary);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.profile-tab--active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.compact-card {
+  padding: 14px;
+}
+
+.compact-card h3 {
+  margin: 0 0 6px;
+}
+
+.status-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.status-row {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.settings-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+}

@@ -1,0 +1,129 @@
+.planner-layout {
+  grid-template-columns: 320px 1fr;
+}
+
+.planner-controls {
+  align-self: start;
+  position: sticky;
+  top: 90px;
+}
+
+.planner-label {
+  margin-top: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.planner-label input {
+  width: 100%;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 9px 10px;
+  font: inherit;
+}
+
+.planner-note {
+  margin-top: 12px;
+}
+
+.planner-error {
+  margin-top: 10px;
+  color: #a11235;
+}
+
+.planner-success {
+  margin-top: 10px;
+  color: #1d7a35;
+}
+
+.planner-recipes {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.planner-recipe {
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 10px;
+  cursor: grab;
+  display: grid;
+  gap: 4px;
+}
+
+.planner-calendar {
+  margin-top: 10px;
+  display: grid;
+  gap: 12px;
+}
+
+.planner-day-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 12px;
+}
+
+.planner-day-card h3 {
+  margin: 0 0 8px;
+}
+
+.planner-slot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.planner-slot {
+  border: 1px dashed var(--border-soft);
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 108px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.planner-slot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.planner-clear-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+
+.planner-assigned {
+  margin-top: 8px;
+  border: 1px solid var(--border-soft);
+  background: #ffffff;
+  border-radius: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+  cursor: grab;
+}
+
+.planner-empty {
+  margin-top: 10px;
+  opacity: 0.75;
+}
+
+@media (max-width: 980px) {
+  .planner-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-controls {
+    position: static;
+  }
+}

@@ -38,7 +38,7 @@
 
 ### 1.5 State management и UX
 - [x] Разделить домены и слои по FSD
-- [ ] Реализовать состояния через Effector (auth, filters, entities, moderation statuses, notifications)
+- [x] Реализовать состояния через Effector (auth, filters, entities, moderation statuses, notifications)
 - [x] Использовать ключи текстов (i18n-ready / словари), чтобы не захардкодить большие тексты
 - [ ] Скелетоны/лоадеры/empty states/ошибки
 

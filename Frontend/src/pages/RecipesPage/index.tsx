@@ -1,11 +1,9 @@
-import { FilterGroup } from '../components/FilterGroup'
-import { recipes } from '../data/mockData'
+import { Link } from 'react-router-dom'
+import { FilterGroup } from '../../components/FilterGroup'
+import { recipes } from '../../data/mockData'
+import './styles.css'
 
-type RecipesPageProps = {
-  onNavigate: (path: string) => void
-}
-
-export function RecipesPage({ onNavigate }: RecipesPageProps) {
+export function RecipesPage() {
   return (
     <section className="split-layout">
       <aside className="glass-card filters-panel">
@@ -42,13 +40,9 @@ export function RecipesPage({ onNavigate }: RecipesPageProps) {
                   </span>
                 ))}
               </div>
-              <button
-                type="button"
-                className="text-link"
-                onClick={() => onNavigate(`/recipes/${recipe.id}`)}
-              >
+              <Link to={`/recipes/${recipe.id}`} className="text-link">
                 Открыть рецепт
-              </button>
+              </Link>
             </article>
           ))}
         </div>
