@@ -8,6 +8,7 @@ export function normalizePath(pathname: string): string {
     '/recipes',
     '/meal-plans',
     '/reviews',
+    '/planner',
     '/profile',
     '/settings',
   ]
@@ -47,6 +48,7 @@ export function getBreadcrumbSegments(currentPath: string) {
     recipes: 'Рецепты',
     'meal-plans': 'Планы питания',
     reviews: 'Оценки и отзывы',
+    planner: 'Конструктор',
     profile: 'Профиль',
     settings: 'Настройки',
   }

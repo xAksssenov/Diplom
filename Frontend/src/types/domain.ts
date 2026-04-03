@@ -3,6 +3,7 @@ export type MainRoute =
   | '/recipes'
   | '/meal-plans'
   | '/reviews'
+  | '/planner'
   | '/profile'
   | '/settings'
 
@@ -60,4 +61,12 @@ export type PlanReview = {
   planTitle: string
   rating: number
   comment: string
+}
+
+export type ModerationStatusItem = {
+  id: string
+  type: 'План питания' | 'Рецепт' | 'Отзыв'
+  title: string
+  status: 'На ревью' | 'Одобрено' | 'Отклонено (нужны правки)'
+  updatedAt: string
 }

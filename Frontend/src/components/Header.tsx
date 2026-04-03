@@ -49,6 +49,13 @@ export function Header({ currentPath, onNavigate }: HeaderProps) {
       <div className="header__right">
         <button
           type="button"
+          className={`header-cta ${currentPath === '/planner' ? 'header-cta--active' : ''}`}
+          onClick={() => onNavigate('/planner')}
+        >
+          Конструктор
+        </button>
+        <button
+          type="button"
           className={`nav-link ${currentPath === '/profile' ? 'nav-link--active' : ''}`}
           onClick={() => onNavigate('/profile')}
         >

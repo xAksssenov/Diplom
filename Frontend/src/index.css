@@ -98,6 +98,20 @@ a {
   color: #ffffff;
 }
 
+.header-cta {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.header-cta--active,
+.header-cta:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
 .header__search {
   flex: 1;
   max-width: 360px;
@@ -350,6 +364,214 @@ p {
   background: rgba(255, 255, 255, 0.65);
 }
 
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #7c4dff, #9f79ff);
+}
+
+.profile-main-info {
+  display: grid;
+  gap: 6px;
+}
+
+.tag-pill--active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.profile-tabs {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.profile-tab {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text-primary);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.profile-tab--active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.compact-card {
+  padding: 14px;
+}
+
+.compact-card h3 {
+  margin: 0 0 6px;
+}
+
+.status-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.status-row {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.settings-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.planner-layout {
+  grid-template-columns: 320px 1fr;
+}
+
+.planner-controls {
+  align-self: start;
+  position: sticky;
+  top: 90px;
+}
+
+.planner-label {
+  margin-top: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.planner-label input {
+  width: 100%;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 9px 10px;
+  font: inherit;
+}
+
+.planner-note {
+  margin-top: 12px;
+}
+
+.planner-error {
+  margin-top: 10px;
+  color: #a11235;
+}
+
+.planner-success {
+  margin-top: 10px;
+  color: #1d7a35;
+}
+
+.planner-recipes {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.planner-recipe {
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 10px;
+  cursor: grab;
+  display: grid;
+  gap: 4px;
+}
+
+.planner-calendar {
+  margin-top: 10px;
+  display: grid;
+  gap: 12px;
+}
+
+.planner-day-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 12px;
+}
+
+.planner-day-card h3 {
+  margin: 0 0 8px;
+}
+
+.planner-slot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.planner-slot {
+  border: 1px dashed var(--border-soft);
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 108px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.planner-slot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.planner-clear-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+
+.planner-assigned {
+  margin-top: 8px;
+  border: 1px solid var(--border-soft);
+  background: #ffffff;
+  border-radius: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+  cursor: grab;
+}
+
+.planner-empty {
+  margin-top: 10px;
+  opacity: 0.75;
+}
+
 .footer {
   margin-top: auto;
   border-radius: 16px;
@@ -395,6 +617,14 @@ p {
 
   .split-layout {
     grid-template-columns: 1fr;
+  }
+
+  .planner-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-controls {
+    position: static;
   }
 
   .details-top {

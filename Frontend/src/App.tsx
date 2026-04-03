@@ -7,6 +7,7 @@ import { mealPlans, recipes } from './data/mockData'
 import { AboutPage } from './pages/AboutPage'
 import { MealPlanDetailPage } from './pages/MealPlanDetailPage'
 import { MealPlansPage } from './pages/MealPlansPage'
+import { PlannerPage } from './pages/PlannerPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipesPage } from './pages/RecipesPage'
@@ -73,6 +74,8 @@ function renderPage(currentPath: string, onNavigate: (path: string) => void) {
       return <MealPlansPage onNavigate={onNavigate} />
     case '/reviews':
       return <ReviewsPage onNavigate={onNavigate} />
+    case '/planner':
+      return <PlannerPage onNavigate={onNavigate} />
     case '/profile':
       return <ProfilePage />
     case '/settings':
