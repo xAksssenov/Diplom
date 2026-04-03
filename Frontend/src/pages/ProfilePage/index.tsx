@@ -11,6 +11,8 @@ import {
   Title,
 } from '@mantine/core'
 import { useUnit } from 'effector-react'
+import { Navigate } from 'react-router-dom'
+import { $authStatus, $authUser } from '../../features/auth/model'
 import {
   $emailNotifications,
   $favoriteMealPlans,
@@ -37,6 +39,8 @@ const availableTags = [
 
 export function ProfilePage() {
   const {
+    authStatus,
+    authUser,
     favoriteTab,
     favoriteTags,
     emailNotifications,
@@ -49,6 +53,8 @@ export function ProfilePage() {
     toggleEmailNotifications,
     toggleProfileVisibility,
   } = useUnit({
+    authStatus: $authStatus,
+    authUser: $authUser,
     favoriteTab: $favoriteTab,
     favoriteTags: $favoriteTags,
     emailNotifications: $emailNotifications,
@@ -62,6 +68,10 @@ export function ProfilePage() {
     toggleProfileVisibility: profileVisibilityToggled,
   })
 
+  if (authStatus !== 'auth') {
+    return <Navigate to="/auth" replace />
+  }
+
   return (
     <Stack gap="md">
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
@@ -71,7 +81,8 @@ export function ProfilePage() {
           </Avatar>
           <Stack gap={4}>
             <Title order={1}>Алексей К.</Title>
-            <Text>Email: ak@example.com</Text>
+            <Text>Email: {authUser?.email ?? 'unknown@example.com'}</Text>
+            <Text>Пользователь: {authUser?.name ?? 'Пользователь'}</Text>
             <Text>Цель: Поддержание веса</Text>
             <Text>Рост/вес: 181 см / 78 кг</Text>
           </Stack>

@@ -1,6 +1,7 @@
 export function getBreadcrumbSegments(currentPath: string) {
   const cleanedPath = currentPath.replace(/\/+$/, '') || '/'
   const staticLabels: Record<string, string> = {
+    auth: 'Авторизация',
     recipes: 'Рецепты',
     'meal-plans': 'Планы питания',
     reviews: 'Оценки и отзывы',

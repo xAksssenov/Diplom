@@ -1,5 +1,6 @@
 export type MainRoute =
   | '/'
+  | '/auth'
   | '/recipes'
   | '/meal-plans'
   | '/reviews'

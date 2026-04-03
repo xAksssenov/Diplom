@@ -1,10 +1,14 @@
 import { Container, Stack } from '@mantine/core'
+import { useUnit } from 'effector-react'
+import { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { Breadcrumbs } from './components/Breadcrumbs'
 import { FallbackCard } from './components/FallbackCard'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
+import { checkSessionRequested } from './features/auth/model'
 import { AboutPage } from './pages/AboutPage'
+import { AuthPage } from './pages/AuthPage'
 import { MealPlanDetailPage } from './pages/MealPlanDetailPage'
 import { MealPlansPage } from './pages/MealPlansPage'
 import { PlannerPage } from './pages/PlannerPage'
@@ -15,6 +19,12 @@ import { ReviewsPage } from './pages/ReviewsPage'
 import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
+  const checkSession = useUnit(checkSessionRequested)
+
+  useEffect(() => {
+    checkSession()
+  }, [checkSession])
+
   return (
     <Container size="xl" py="md">
       <Stack gap="md" mih="100vh">
@@ -23,6 +33,7 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<AboutPage />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
             <Route path="/meal-plans" element={<MealPlansPage />} />

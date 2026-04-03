@@ -3,6 +3,22 @@ import type { MealPlan, PlanDay, PlanMeal, PlanReview, Recipe } from '../../type
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:8000/api'
 
+function getCookie(name: string) {
+  const cookieString = `; ${document.cookie}`
+  const parts = cookieString.split(`; ${name}=`)
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() ?? ''
+  }
+  return ''
+}
+
+async function ensureCsrfCookie() {
+  if (getCookie('csrftoken')) {
+    return
+  }
+  await fetch(`${API_BASE_URL}/health/`, { credentials: 'include' })
+}
+
 type BackendRecipeIngredient = {
   ingredient_name: string
   quantity: string
@@ -62,11 +78,14 @@ async function apiGet<T>(path: string): Promise<T> {
 }
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  await ensureCsrfCookie()
+  const csrfToken = getCookie('csrftoken')
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
     },
     body: JSON.stringify(body),
   })

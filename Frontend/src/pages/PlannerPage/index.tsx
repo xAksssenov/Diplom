@@ -13,6 +13,7 @@ import {
 import { useUnit } from 'effector-react'
 import { useNavigate } from 'react-router-dom'
 import { fetchRecipes, submitPlannerToBackend } from '../../shared/api/foodApi'
+import { $authStatus } from '../../features/auth/model'
 import {
   $daysCount,
   $plannerError,
@@ -91,6 +92,7 @@ export function PlannerPage() {
     setSubmitMessage: plannerSubmitMessageSet,
     resetMessages: plannerMessagesReset,
   })
+  const authStatus = useUnit($authStatus)
 
   const slotTypes = useMemo(() => {
     const snackTypes = Array.from(
@@ -143,6 +145,13 @@ export function PlannerPage() {
   }
 
   const submitPlan = async () => {
+    if (authStatus !== 'auth') {
+      resetMessages()
+      setError('Для отправки плана на модерацию войдите в аккаунт.')
+      navigate('/auth')
+      return
+    }
+
     const requiredSlots = dayIndexes.flatMap((dayIndex) =>
       ['breakfast', 'lunch', 'dinner'].map((slot) => `${dayIndex}:${slot}`),
     )

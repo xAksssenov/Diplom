@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 
+@ensure_csrf_cookie
 def health_check(_request):
     return JsonResponse({"status": "ok"})
 

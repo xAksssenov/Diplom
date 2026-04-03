@@ -1,5 +1,7 @@
 import { Box, Button, Group, Paper, TextInput, Title } from '@mantine/core'
+import { useUnit } from 'effector-react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { $authStatus, $authUser, logoutRequested } from '../../features/auth/model'
 import { textKeys } from '../../shared/config/texts'
 import type { MainRoute } from '../../types/domain'
 
@@ -13,6 +15,11 @@ const mainNavItems: { path: MainRoute; label: string }[] = [
 export function Header() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { authStatus, authUser, logout } = useUnit({
+    authStatus: $authStatus,
+    authUser: $authUser,
+    logout: logoutRequested,
+  })
 
   return (
     <Paper
@@ -67,9 +74,27 @@ export function Header() {
           >
             Конструктор
           </Button>
-          <Button component={NavLink} to="/profile" variant="subtle" c="white">
-            {textKeys.nav.profile}
-          </Button>
+          {authStatus === 'auth' ? (
+            <>
+              <Button component={NavLink} to="/profile" variant="subtle" c="white">
+                {authUser?.name ?? textKeys.nav.profile}
+              </Button>
+              <Button
+                variant="outline"
+                color="gray"
+                onClick={() => {
+                  logout()
+                  navigate('/auth')
+                }}
+              >
+                Выйти
+              </Button>
+            </>
+          ) : (
+            <Button component={NavLink} to="/auth" variant="subtle" c="white">
+              Войти
+            </Button>
+          )}
           <Button component={NavLink} to="/settings" variant="subtle" c="white">
             {textKeys.nav.settings}
           </Button>
