@@ -8,6 +8,7 @@ import {
   MultiSelect,
   SimpleGrid,
   Stack,
+  Select,
   Switch,
   Tabs,
   TextInput,
@@ -32,6 +33,7 @@ import {
   fetchModerationStatuses,
 } from '../../shared/api/foodApi'
 import { pushApiError, pushSuccess } from '../../shared/model/notifications'
+import { PageEmpty } from '../../shared/ui/PageStates'
 import type { MealPlan, ModerationStatusItem, Recipe } from '../../types/domain'
 
 const availableTags = [
@@ -67,6 +69,7 @@ export function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState(authUser?.avatar_url ?? '')
   const [healthGoals, setHealthGoals] = useState(authUser?.health_goals ?? '')
   const [favoriteTags, setFavoriteTags] = useState<string[]>(authUser?.favorite_tags ?? [])
+  const [preferredDiet, setPreferredDiet] = useState(authUser?.preferred_diet ?? '')
   const [healthFeatures, setHealthFeatures] = useState<string[]>(authUser?.health_features ?? [])
   const [emailNotifications, setEmailNotifications] = useState(
     authUser?.email_notifications ?? true,
@@ -82,6 +85,7 @@ export function ProfilePage() {
     setAvatarUrl(authUser?.avatar_url ?? '')
     setHealthGoals(authUser?.health_goals ?? '')
     setFavoriteTags(authUser?.favorite_tags ?? [])
+    setPreferredDiet(authUser?.preferred_diet ?? '')
     setHealthFeatures(authUser?.health_features ?? [])
     setEmailNotifications(authUser?.email_notifications ?? true)
     setProfileVisibility(authUser?.profile_visibility ?? false)
@@ -187,6 +191,20 @@ export function ProfilePage() {
             onChange={setHealthFeatures}
             placeholder="Выберите особенности"
           />
+          <Select
+            label="Предпочитаемая диета"
+            placeholder="Можно не выбирать"
+            value={preferredDiet || null}
+            clearable
+            onChange={(value) => setPreferredDiet(value ?? '')}
+            data={[
+              'Сбалансированное',
+              'Высокобелковое',
+              'Без глютена',
+              'Без лактозы',
+              'Вегетарианское',
+            ]}
+          />
           {!healthFeatures.length ? (
             <Text size="sm" c="dimmed">
               Особенности здоровья пока не выбраны.
@@ -233,9 +251,10 @@ export function ProfilePage() {
                 ))}
               </SimpleGrid>
               {!myMealPlans.length ? (
-                <Text size="sm" c="dimmed">
-                  У вас пока нет созданных планов.
-                </Text>
+                <PageEmpty
+                  title="У вас пока нет созданных планов"
+                  description="Создайте первый план в конструкторе, и он появится в этом разделе."
+                />
               ) : null}
             </Tabs.Panel>
             <Tabs.Panel value="recipes" pt="sm">
@@ -251,9 +270,10 @@ export function ProfilePage() {
                 ))}
               </SimpleGrid>
               {!myRecipes.length ? (
-                <Text size="sm" c="dimmed">
-                  У вас пока нет созданных рецептов.
-                </Text>
+                <PageEmpty
+                  title="У вас пока нет созданных рецептов"
+                  description="После создания рецептов они будут отображаться в этом разделе."
+                />
               ) : null}
             </Tabs.Panel>
           </Tabs>
@@ -293,9 +313,10 @@ export function ProfilePage() {
                 ))}
               </SimpleGrid>
               {!favoriteMealPlans.length ? (
-                <Text size="sm" c="dimmed">
-                  В избранном пока нет планов питания.
-                </Text>
+                <PageEmpty
+                  title="В избранном пока нет планов"
+                  description="Добавляйте понравившиеся планы в избранное с детальной страницы."
+                />
               ) : null}
             </Tabs.Panel>
 
@@ -319,9 +340,10 @@ export function ProfilePage() {
                 ))}
               </SimpleGrid>
               {!favoriteRecipes.length ? (
-                <Text size="sm" c="dimmed">
-                  В избранном пока нет рецептов.
-                </Text>
+                <PageEmpty
+                  title="В избранном пока нет рецептов"
+                  description="Добавляйте рецепты в избранное, чтобы быстро к ним возвращаться."
+                />
               ) : null}
             </Tabs.Panel>
           </Tabs>
@@ -358,9 +380,10 @@ export function ProfilePage() {
             </Card>
           ))}
           {!moderationStatuses.length ? (
-            <Text size="sm" c="dimmed">
-              Пока нет событий модерации.
-            </Text>
+            <PageEmpty
+              title="Пока нет событий модерации"
+              description="После отправки рецептов и планов статусы модерации появятся здесь."
+            />
           ) : null}
         </Stack>
       </Card>
@@ -391,6 +414,7 @@ export function ProfilePage() {
                   name,
                   avatar_url: avatarUrl,
                   health_goals: healthGoals,
+                  preferred_diet: preferredDiet,
                   health_features: healthFeatures,
                   favorite_tags: favoriteTags,
                   email_notifications: emailNotifications,

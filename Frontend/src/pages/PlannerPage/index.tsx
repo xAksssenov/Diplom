@@ -14,7 +14,7 @@ import {
 } from '@mantine/core'
 import { useUnit } from 'effector-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchRecipes, submitPlannerToBackend } from '../../shared/api/foodApi'
+import { fetchRecipesPage, submitPlannerToBackend } from '../../shared/api/foodApi'
 import { $authStatus } from '../../features/auth/model'
 import {
   $daysCount,
@@ -65,6 +65,8 @@ export function PlannerPage() {
   const [dragFrom, setDragFrom] = useState<string | null>(null)
   const [activeDropSlot, setActiveDropSlot] = useState<string | null>(null)
   const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [recipesNextOffset, setRecipesNextOffset] = useState<number | null>(0)
+  const [recipesLoadingMore, setRecipesLoadingMore] = useState(false)
   const [recipesStatus, setRecipesStatus] = useState<'loading' | 'ready' | 'error'>('loading')
 
   const {
@@ -116,9 +118,10 @@ export function PlannerPage() {
       return
     }
 
-    fetchRecipes()
+    fetchRecipesPage({ limit: 36, offset: 0 })
       .then((data) => {
-        setRecipes(data)
+        setRecipes(data.items)
+        setRecipesNextOffset(data.nextOffset)
         setRecipesStatus('ready')
       })
       .catch((error) => {
@@ -296,6 +299,29 @@ export function PlannerPage() {
                   </button>
                 ))}
               </div>
+              {recipesNextOffset !== null ? (
+                <Button
+                  mt={10}
+                  variant="light"
+                  color="grape"
+                  fullWidth
+                  loading={recipesLoadingMore}
+                  onClick={async () => {
+                    setRecipesLoadingMore(true)
+                    try {
+                      const next = await fetchRecipesPage({ limit: 36, offset: recipesNextOffset })
+                      setRecipes((prev) => [...prev, ...next.items])
+                      setRecipesNextOffset(next.nextOffset)
+                    } catch (error) {
+                      pushApiError(error, 'Не удалось подгрузить рецепты.')
+                    } finally {
+                      setRecipesLoadingMore(false)
+                    }
+                  }}
+                >
+                  Подгрузить еще рецепты
+                </Button>
+              ) : null}
             </ScrollArea>
             {errorMessage ? (
               <Alert mt={10} color="red" title="Проверьте заполнение плана">

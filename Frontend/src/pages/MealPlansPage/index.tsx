@@ -81,6 +81,13 @@ export function MealPlansPage() {
       return byType && byGoal && byDiet && byCalories && byRating
     })
   }, [caloriesRange, mealPlans, minRating, selectedDiets, selectedGoals, selectedPlanTypes])
+  const hasActiveFilters =
+    selectedPlanTypes.length > 0 ||
+    selectedGoals.length > 0 ||
+    selectedDiets.length > 0 ||
+    caloriesRange[0] !== 1200 ||
+    caloriesRange[1] !== 3200 ||
+    minRating !== '0'
 
   useEffect(() => {
     if (profilePresetApplied || !mealPlans.length) return
@@ -98,10 +105,35 @@ export function MealPlansPage() {
     const goals = Array.from(new Set(mealPlans.map((plan) => plan.goal))).filter((goal) =>
       prefs.some((pref) => goal.toLowerCase().includes(pref) || pref.includes(goal.toLowerCase())),
     )
-    setSelectedDiets(diets)
+    const preferredDiet = authUser?.preferred_diet
+    const dietsWithPreferred = preferredDiet
+      ? Array.from(new Set([...diets, preferredDiet].filter(Boolean)))
+      : diets
+    setSelectedDiets(dietsWithPreferred)
     setSelectedGoals(goals)
     setProfilePresetApplied(true)
-  }, [authUser?.favorite_tags, authUser?.health_features, mealPlans, profilePresetApplied])
+  }, [authUser?.favorite_tags, authUser?.health_features, authUser?.preferred_diet, mealPlans, profilePresetApplied])
+
+  useEffect(() => {
+    if (status !== 'ready') return
+    if (!hasActiveFilters) return
+    if (filteredPlans.length > 0) return
+    if (nextOffset === null || loadingMore) return
+
+    setLoadingMore(true)
+    fetchMealPlansPage({ limit: 24, offset: nextOffset })
+      .then((nextPage) => {
+        setMealPlans((prev) => [...prev, ...nextPage.items])
+        setTotal(nextPage.total)
+        setNextOffset(nextPage.nextOffset)
+      })
+      .catch((error) => {
+        pushApiError(error, 'Не удалось подгрузить планы.')
+      })
+      .finally(() => {
+        setLoadingMore(false)
+      })
+  }, [filteredPlans.length, hasActiveFilters, loadingMore, nextOffset, status])
 
   if (status === 'loading') {
     return <PageLoader title="Загружаем планы питания..." />
@@ -202,7 +234,7 @@ export function MealPlansPage() {
               <Title order={1}>Планы питания</Title>
               <Text>Подбор планов с детальной разбивкой по дням и приемам пищи.</Text>
               <Text size="sm" c="dimmed">
-                Показано: {mealPlans.length} из {total}
+                Найдено по фильтрам: {filteredPlans.length} (загружено {mealPlans.length} из {total})
               </Text>
             </Stack>
           </Card>

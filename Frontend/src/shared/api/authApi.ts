@@ -14,6 +14,7 @@ export type AuthUser = {
   name: string
   avatar_url: string
   health_goals: string
+  preferred_diet: string
   health_features: string[]
   favorite_tags: string[]
   email_notifications: boolean
@@ -27,6 +28,7 @@ export type RegisterPayload = {
   password: string
   avatar_url?: string
   health_goals?: string
+  preferred_diet?: string
   health_features?: string[]
   favorite_tags?: string[]
   email_notifications?: boolean
@@ -44,6 +46,7 @@ export type UpdateMePayload = Partial<
     | 'name'
     | 'avatar_url'
     | 'health_goals'
+    | 'preferred_diet'
     | 'health_features'
     | 'favorite_tags'
     | 'email_notifications'

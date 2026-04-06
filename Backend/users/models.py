@@ -65,6 +65,7 @@ class User(AbstractUser):
     )
     avatar_url = models.URLField(blank=True)
     health_goals = models.TextField(blank=True)
+    preferred_diet = models.CharField(max_length=64, blank=True)
     health_features = models.JSONField(default=list, blank=True)
     favorite_tags = models.JSONField(default=list, blank=True)
     email_notifications = models.BooleanField(default=True)

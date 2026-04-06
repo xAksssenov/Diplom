@@ -1,0 +1,8 @@
+.app-breadcrumb-link,
+.app-breadcrumb-link:link,
+.app-breadcrumb-link:visited,
+.app-breadcrumb-link:hover,
+.app-breadcrumb-link:active {
+  color: #7c3aed !important;
+  text-decoration: none !important;
+}

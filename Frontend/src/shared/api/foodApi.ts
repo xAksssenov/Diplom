@@ -231,6 +231,18 @@ function resolvePlanType(value: BackendMealPlan['plan_type']): MealPlan['planTyp
   return 'На день'
 }
 
+function resolvePlanGoal(value: BackendMealPlan['plan_type']) {
+  if (value === 'fitness') return 'Набор массы'
+  if (value === 'therapeutic') return 'Поддержание здоровья'
+  return 'Поддержание веса'
+}
+
+function resolvePlanDiet(value: BackendMealPlan['plan_type']) {
+  if (value === 'fitness') return 'Высокобелковое'
+  if (value === 'therapeutic') return 'Без глютена'
+  return 'Сбалансированное'
+}
+
 function toMealsByDay(
   items: BackendMealPlanItem[],
   recipesById: Record<number, Recipe>,
@@ -284,8 +296,8 @@ function toUiMealPlan(
     authorId: plan.user,
     status: plan.status,
     planType: resolvePlanType(plan.plan_type),
-    goal: plan.plan_type === 'fitness' ? 'Поддержание веса' : 'Индивидуальная цель',
-    diet: 'Сбалансированное',
+    goal: resolvePlanGoal(plan.plan_type),
+    diet: resolvePlanDiet(plan.plan_type),
     calories: parseNumber(plan.total_calories),
     protein: 0,
     fat: 0,
@@ -345,6 +357,30 @@ async function fetchTagsById() {
 
 export async function fetchReviewsRaw() {
   return apiGet<BackendReview[]>('/interactions/reviews/')
+}
+
+export async function fetchReviewsPage(params: {
+  limit: number
+  offset: number
+  targetType?: 'recipe' | 'meal_plan'
+  targetId?: string
+}): Promise<PaginatedResult<BackendReview>> {
+  const query = new URLSearchParams({
+    limit: String(params.limit),
+    offset: String(params.offset),
+  })
+  if (params.targetType) {
+    query.set('target_type', params.targetType)
+  }
+  if (params.targetId) {
+    query.set('target_id', params.targetId)
+  }
+  const response = await apiGet<BackendPaginatedResponse<BackendReview>>(`/interactions/reviews/?${query}`)
+  return {
+    items: response.results,
+    total: response.count,
+    nextOffset: response.next_offset,
+  }
 }
 
 export async function fetchRecipesPage(params: {
@@ -415,8 +451,8 @@ function toUiMealPlanListItem(
     authorId: plan.user,
     status: plan.status,
     planType: resolvePlanType(plan.plan_type),
-    goal: plan.plan_type === 'fitness' ? 'Поддержание веса' : 'Индивидуальная цель',
-    diet: 'Сбалансированное',
+    goal: resolvePlanGoal(plan.plan_type),
+    diet: resolvePlanDiet(plan.plan_type),
     calories: parseNumber(plan.total_calories),
     protein: 0,
     fat: 0,
@@ -476,6 +512,31 @@ export async function fetchPlanReviews() {
         comment: review.comment || 'Без комментария',
       }),
     )
+}
+
+export async function fetchPlanReviewsPage(params: {
+  limit: number
+  offset: number
+}): Promise<PaginatedResult<PlanReview>> {
+  const paged = await fetchReviewsPage({
+    limit: params.limit,
+    offset: params.offset,
+    targetType: 'meal_plan',
+  })
+  return {
+    items: paged.items.map(
+      (review): PlanReview => ({
+        id: String(review.id),
+        author: `Пользователь #${review.user}`,
+        planId: String(review.target_id),
+        planTitle: `План #${review.target_id}`,
+        rating: review.rating,
+        comment: review.comment || 'Без комментария',
+      }),
+    ),
+    total: paged.total,
+    nextOffset: paged.nextOffset,
+  }
 }
 
 export function fetchMyRecipes(userId: number) {
@@ -626,19 +687,17 @@ export async function fetchModerationStatuses() {
 }
 
 export async function fetchTargetReviews(targetType: 'recipe' | 'meal_plan', targetId: string) {
-  const reviews = await fetchReviewsRaw()
-  return reviews
-    .filter((review) => review.target_type === targetType && String(review.target_id) === targetId)
-    .map(
-      (review): TargetReview => ({
-        id: String(review.id),
-        userId: review.user,
-        targetType: review.target_type,
-        targetId: String(review.target_id),
-        rating: review.rating,
-        comment: review.comment || '',
-      }),
-    )
+  const reviewsPage = await fetchReviewsPage({ limit: 200, offset: 0, targetType, targetId })
+  return reviewsPage.items.map(
+    (review): TargetReview => ({
+      id: String(review.id),
+      userId: review.user,
+      targetType: review.target_type,
+      targetId: String(review.target_id),
+      rating: review.rating,
+      comment: review.comment || '',
+    }),
+  )
 }
 
 export async function upsertReview(payload: {

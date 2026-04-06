@@ -23,9 +23,45 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        target_type = self.request.query_params.get("target_type")
+        target_id = self.request.query_params.get("target_id")
+        if target_type in {Review.TargetType.RECIPE, Review.TargetType.MEAL_PLAN}:
+            queryset = queryset.filter(target_type=target_type)
+        if target_id:
+            try:
+                queryset = queryset.filter(target_id=int(target_id))
+            except (TypeError, ValueError):
+                pass
         if self.request.user.is_authenticated:
             return queryset
         return queryset.filter(is_approved=True, is_deleted=False)
+
+    def list(self, request, *args, **kwargs):
+        limit_raw = request.query_params.get("limit")
+        if limit_raw is None:
+            return super().list(request, *args, **kwargs)
+
+        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            limit = max(1, min(200, int(limit_raw)))
+        except (TypeError, ValueError):
+            limit = 30
+        try:
+            offset = max(0, int(request.query_params.get("offset", 0)))
+        except (TypeError, ValueError):
+            offset = 0
+
+        total = queryset.count()
+        items = queryset[offset : offset + limit]
+        serializer = self.get_serializer(items, many=True)
+        next_offset = offset + limit if offset + limit < total else None
+        return Response(
+            {
+                "count": total,
+                "next_offset": next_offset,
+                "results": serializer.data,
+            }
+        )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

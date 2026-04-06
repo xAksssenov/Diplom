@@ -74,6 +74,13 @@ export function RecipesPage() {
       return byTags && byCalories && byTime && byRating
     })
   }, [minRating, recipes, selectedCaloriesRange, selectedTags, selectedTimeRange])
+  const hasActiveFilters =
+    selectedTags.length > 0 ||
+    selectedCaloriesRange[0] !== 100 ||
+    selectedCaloriesRange[1] !== 1200 ||
+    selectedTimeRange[0] !== 5 ||
+    selectedTimeRange[1] !== 120 ||
+    minRating !== '0'
 
   useEffect(() => {
     if (profilePresetApplied || !allTags.length) return
@@ -90,6 +97,27 @@ export function RecipesPage() {
     setSelectedTags(presetTags)
     setProfilePresetApplied(true)
   }, [allTags, authUser?.favorite_tags, authUser?.health_features, profilePresetApplied])
+
+  useEffect(() => {
+    if (status !== 'ready') return
+    if (!hasActiveFilters) return
+    if (filteredRecipes.length > 0) return
+    if (nextOffset === null || loadingMore) return
+
+    setLoadingMore(true)
+    fetchRecipesPage({ limit: 24, offset: nextOffset })
+      .then((nextPage) => {
+        setRecipes((prev) => [...prev, ...nextPage.items])
+        setTotal(nextPage.total)
+        setNextOffset(nextPage.nextOffset)
+      })
+      .catch((error) => {
+        pushApiError(error, 'Не удалось подгрузить рецепты.')
+      })
+      .finally(() => {
+        setLoadingMore(false)
+      })
+  }, [filteredRecipes.length, hasActiveFilters, loadingMore, nextOffset, status])
 
   if (status === 'loading') {
     return <PageLoader title="Загружаем рецепты..." />
@@ -178,7 +206,7 @@ export function RecipesPage() {
             <Title order={1}>Рецепты</Title>
             <Text>Коллекция рецептов с фото, тегами и базовой пищевой ценностью.</Text>
             <Text size="sm" c="dimmed">
-              Показано: {recipes.length} из {total}
+              Найдено по фильтрам: {filteredRecipes.length} (загружено {recipes.length} из {total})
             </Text>
           </Stack>
         </Card>

@@ -1,7 +1,7 @@
 import { Badge, Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchPlanReviews } from '../../shared/api/foodApi'
+import { fetchPlanReviewsPage } from '../../shared/api/foodApi'
 import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { PlanReview } from '../../types/domain'
@@ -9,6 +9,9 @@ import type { PlanReview } from '../../types/domain'
 export function ReviewsPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [planReviews, setPlanReviews] = useState<PlanReview[]>([])
+  const [nextOffset, setNextOffset] = useState<number | null>(0)
+  const [total, setTotal] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
     if (status !== 'loading') {
@@ -16,9 +19,11 @@ export function ReviewsPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      fetchPlanReviews()
+      fetchPlanReviewsPage({ limit: 24, offset: 0 })
         .then((data) => {
-          setPlanReviews(data)
+          setPlanReviews(data.items)
+          setTotal(data.total)
+          setNextOffset(data.nextOffset)
           setStatus('ready')
         })
         .catch((error) => {
@@ -58,6 +63,9 @@ export function ReviewsPage() {
         <Stack gap="xs">
           <Title order={1}>Оценки и отзывы</Title>
           <Text>Отзывы на планы питания с быстрым переходом к деталям.</Text>
+          <Text size="sm" c="dimmed">
+            Показано: {planReviews.length} из {total}
+          </Text>
         </Stack>
       </Card>
       <SimpleGrid cols={{ base: 1, md: 2, xl: 3 }} spacing="md">
@@ -87,6 +95,28 @@ export function ReviewsPage() {
           </Card>
         ))}
       </SimpleGrid>
+      {nextOffset !== null ? (
+        <Button
+          variant="light"
+          color="grape"
+          loading={loadingMore}
+          onClick={async () => {
+            setLoadingMore(true)
+            try {
+              const next = await fetchPlanReviewsPage({ limit: 24, offset: nextOffset })
+              setPlanReviews((prev) => [...prev, ...next.items])
+              setTotal(next.total)
+              setNextOffset(next.nextOffset)
+            } catch (error) {
+              pushApiError(error, 'Не удалось подгрузить отзывы.')
+            } finally {
+              setLoadingMore(false)
+            }
+          }}
+        >
+          Показать еще
+        </Button>
+      ) : null}
     </Stack>
   )
 }
