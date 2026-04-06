@@ -1,9 +1,10 @@
-from django.db.models import Q
+from django.db.models import Avg, Q
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from interactions.models import Review
 from notifications.models import Notification
 from users.permissions import IsModeratorOrAdminRole
 
@@ -24,9 +25,19 @@ class MealPlanViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.filter(is_deleted=False)
+
+        user_id_raw = self.request.query_params.get("user_id")
+        if user_id_raw:
+            try:
+                queryset = queryset.filter(user_id=int(user_id_raw))
+            except (TypeError, ValueError):
+                pass
+
         if not self.request.user.is_authenticated:
-            return queryset.filter(status=MealPlan.Status.APPROVED, is_deleted=False)
-        if self.request.query_params.get("personalized") == "1":
+            queryset = queryset.filter(status=MealPlan.Status.APPROVED)
+
+        if self.request.query_params.get("personalized") == "1" and self.request.user.is_authenticated:
             preference_query = Q()
             favorite_tags = getattr(self.request.user, "favorite_tags", []) or []
             health_features = getattr(self.request.user, "health_features", []) or []
@@ -38,7 +49,42 @@ class MealPlanViewSet(viewsets.ModelViewSet):
                 preference_query |= Q(items__recipe__description__icontains=value)
             if preference_query:
                 queryset = queryset.filter(preference_query).distinct()
-        return queryset
+
+        plan_types_raw = (self.request.query_params.get("plan_types") or "").strip()
+        if plan_types_raw:
+            plan_types = [value.strip() for value in plan_types_raw.split(",") if value.strip()]
+            queryset = queryset.filter(plan_type__in=plan_types)
+
+        try:
+            min_calories = self.request.query_params.get("calories_min")
+            if min_calories not in (None, ""):
+                queryset = queryset.filter(total_calories__gte=float(min_calories))
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            max_calories = self.request.query_params.get("calories_max")
+            if max_calories not in (None, ""):
+                queryset = queryset.filter(total_calories__lte=float(max_calories))
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            min_rating_raw = self.request.query_params.get("min_rating")
+            if min_rating_raw not in (None, ""):
+                min_rating = float(min_rating_raw)
+                rated_plan_ids = (
+                    Review.objects.filter(target_type=Review.TargetType.MEAL_PLAN, is_deleted=False)
+                    .values("target_id")
+                    .annotate(avg_rating=Avg("rating"))
+                    .filter(avg_rating__gte=min_rating)
+                    .values_list("target_id", flat=True)
+                )
+                queryset = queryset.filter(id__in=rated_plan_ids)
+        except (TypeError, ValueError):
+            pass
+
+        return queryset.distinct()
 
     def list(self, request, *args, **kwargs):
         limit_raw = request.query_params.get("limit")

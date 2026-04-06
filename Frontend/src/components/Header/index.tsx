@@ -96,12 +96,12 @@ export function Header() {
             variant="subtle"
             c="white"
             onClick={() => navigate('/')}
-            className="header-anim-btn"
+            className="header-anim-btn header-logo-btn"
             styles={{
               root: {
                 color: 'white',
                 '&:hover': {
-                  background: 'rgba(167, 139, 250, 0.32)',
+                  background: 'rgba(255, 255, 255, 0.18)',
                   transform: 'translateY(-1px)',
                 },
                 transition: 'transform .16s ease, background .16s ease',

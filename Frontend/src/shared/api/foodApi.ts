@@ -383,14 +383,54 @@ export async function fetchReviewsPage(params: {
   }
 }
 
+export type RecipeListFilters = {
+  tags?: string[]
+  caloriesMin?: number
+  caloriesMax?: number
+  timeMin?: number
+  timeMax?: number
+  minRating?: number
+  personalized?: boolean
+  userId?: number
+}
+
 export async function fetchRecipesPage(params: {
   limit: number
   offset: number
+  filters?: RecipeListFilters
 }): Promise<PaginatedResult<Recipe>> {
+  const query = new URLSearchParams({
+    limit: String(params.limit),
+    offset: String(params.offset),
+  })
+  const filters = params.filters
+  if (filters?.tags?.length) {
+    query.set('tags', filters.tags.join(','))
+  }
+  if (typeof filters?.caloriesMin === 'number') {
+    query.set('calories_min', String(filters.caloriesMin))
+  }
+  if (typeof filters?.caloriesMax === 'number') {
+    query.set('calories_max', String(filters.caloriesMax))
+  }
+  if (typeof filters?.timeMin === 'number') {
+    query.set('time_min', String(filters.timeMin))
+  }
+  if (typeof filters?.timeMax === 'number') {
+    query.set('time_max', String(filters.timeMax))
+  }
+  if (typeof filters?.minRating === 'number' && filters.minRating > 0) {
+    query.set('min_rating', String(filters.minRating))
+  }
+  if (filters?.personalized) {
+    query.set('personalized', '1')
+  }
+  if (typeof filters?.userId === 'number') {
+    query.set('user_id', String(filters.userId))
+  }
+
   const [recipesResponse, reviews, tagsById] = await Promise.all([
-    apiGet<BackendPaginatedResponse<BackendRecipe>>(
-      `/recipes/?limit=${params.limit}&offset=${params.offset}`,
-    ),
+    apiGet<BackendPaginatedResponse<BackendRecipe>>(`/recipes/?${query.toString()}`),
     fetchReviewsRaw(),
     fetchTagsById(),
   ])
@@ -467,11 +507,40 @@ function toUiMealPlanListItem(
 export async function fetchMealPlansPage(params: {
   limit: number
   offset: number
+  filters?: {
+    planTypes?: Array<'personal' | 'fitness' | 'therapeutic'>
+    caloriesMin?: number
+    caloriesMax?: number
+    minRating?: number
+    personalized?: boolean
+    userId?: number
+  }
 }): Promise<PaginatedResult<MealPlan>> {
+  const query = new URLSearchParams({
+    limit: String(params.limit),
+    offset: String(params.offset),
+  })
+  if (params.filters?.planTypes?.length) {
+    query.set('plan_types', params.filters.planTypes.join(','))
+  }
+  if (typeof params.filters?.caloriesMin === 'number') {
+    query.set('calories_min', String(params.filters.caloriesMin))
+  }
+  if (typeof params.filters?.caloriesMax === 'number') {
+    query.set('calories_max', String(params.filters.caloriesMax))
+  }
+  if (typeof params.filters?.minRating === 'number' && params.filters.minRating > 0) {
+    query.set('min_rating', String(params.filters.minRating))
+  }
+  if (params.filters?.personalized) {
+    query.set('personalized', '1')
+  }
+  if (typeof params.filters?.userId === 'number') {
+    query.set('user_id', String(params.filters.userId))
+  }
+
   const [plansResponse, reviews] = await Promise.all([
-    apiGet<BackendPaginatedResponse<BackendMealPlan>>(
-      `/meal-plans/?limit=${params.limit}&offset=${params.offset}`,
-    ),
+    apiGet<BackendPaginatedResponse<BackendMealPlan>>(`/meal-plans/?${query.toString()}`),
     fetchReviewsRaw(),
   ])
   const { ratingMap, countMap } = buildRatingMap(reviews, 'meal_plan')
@@ -480,6 +549,11 @@ export async function fetchMealPlansPage(params: {
     total: plansResponse.count,
     nextOffset: plansResponse.next_offset,
   }
+}
+
+export async function fetchRecipeTagNames() {
+  const tags = await apiGet<BackendTag[]>('/recipes/tags/')
+  return tags.map((tag) => tag.name)
 }
 
 export async function fetchMealPlanById(id: string) {

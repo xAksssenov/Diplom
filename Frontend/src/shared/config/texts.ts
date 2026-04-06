@@ -1,5 +1,5 @@
 export const textKeys = {
-  appName: 'foodplanner',
+  appName: 'FoodPlanner',
   nav: {
     about: 'О нас',
     recipes: 'Рецепты',

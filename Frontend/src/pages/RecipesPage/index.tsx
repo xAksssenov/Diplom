@@ -18,7 +18,7 @@ import { useUnit } from 'effector-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { $authUser } from '../../features/auth/model'
-import { fetchRecipesPage } from '../../shared/api/foodApi'
+import { fetchRecipeTagNames, fetchRecipesPage, type RecipeListFilters } from '../../shared/api/foodApi'
 import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { Recipe } from '../../types/domain'
@@ -26,64 +26,28 @@ import type { Recipe } from '../../types/domain'
 export function RecipesPage() {
   const authUser = useUnit($authUser)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [reloadToken, setReloadToken] = useState(0)
   const [recipes, setRecipes] = useState<Recipe[]>([])
-  const [nextOffset, setNextOffset] = useState<number | null>(0)
   const [total, setTotal] = useState(0)
+  const [nextOffset, setNextOffset] = useState<number | null>(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const [profilePresetApplied, setProfilePresetApplied] = useState(false)
+  const [availableTags, setAvailableTags] = useState<string[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [selectedCaloriesRange, setSelectedCaloriesRange] = useState<[number, number]>([100, 1200])
   const [selectedTimeRange, setSelectedTimeRange] = useState<[number, number]>([5, 120])
   const [minRating, setMinRating] = useState<string>('0')
 
   useEffect(() => {
-    if (status !== 'loading') {
-      return
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      fetchRecipesPage({ limit: 24, offset: 0 })
-        .then((data) => {
-          setRecipes(data.items)
-          setTotal(data.total)
-          setNextOffset(data.nextOffset)
-          setStatus('ready')
-        })
-        .catch((error) => {
-          setStatus('error')
-          pushApiError(error, 'Не удалось загрузить рецепты.')
-        })
-    }, 500)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [status])
-
-  const allTags = useMemo(
-    () => Array.from(new Set(recipes.flatMap((recipe) => recipe.tags))),
-    [recipes],
-  )
-  const filteredRecipes = useMemo(() => {
-    const min = Number(minRating || '0')
-    return recipes.filter((recipe) => {
-      const recipeTime = Number(recipe.cookingTime.replace(/[^\d]/g, '') || '0')
-      const byTags = !selectedTags.length || selectedTags.every((tag) => recipe.tags.includes(tag))
-      const byCalories =
-        recipe.calories >= selectedCaloriesRange[0] && recipe.calories <= selectedCaloriesRange[1]
-      const byTime = recipeTime >= selectedTimeRange[0] && recipeTime <= selectedTimeRange[1]
-      const byRating = recipe.rating >= min
-      return byTags && byCalories && byTime && byRating
-    })
-  }, [minRating, recipes, selectedCaloriesRange, selectedTags, selectedTimeRange])
-  const hasActiveFilters =
-    selectedTags.length > 0 ||
-    selectedCaloriesRange[0] !== 100 ||
-    selectedCaloriesRange[1] !== 1200 ||
-    selectedTimeRange[0] !== 5 ||
-    selectedTimeRange[1] !== 120 ||
-    minRating !== '0'
+    fetchRecipeTagNames()
+      .then((tags) => setAvailableTags(tags))
+      .catch((error) => {
+        pushApiError(error, 'Не удалось загрузить теги.')
+      })
+  }, [])
 
   useEffect(() => {
-    if (profilePresetApplied || !allTags.length) return
+    if (profilePresetApplied || !availableTags.length) return
     const prefs = [...(authUser?.favorite_tags ?? []), ...(authUser?.health_features ?? [])].map((item) =>
       item.toLowerCase(),
     )
@@ -91,33 +55,48 @@ export function RecipesPage() {
       setProfilePresetApplied(true)
       return
     }
-    const presetTags = allTags.filter((tag) =>
+    const presetTags = availableTags.filter((tag) =>
       prefs.some((pref) => tag.toLowerCase().includes(pref) || pref.includes(tag.toLowerCase())),
     )
     setSelectedTags(presetTags)
     setProfilePresetApplied(true)
-  }, [allTags, authUser?.favorite_tags, authUser?.health_features, profilePresetApplied])
+  }, [authUser?.favorite_tags, authUser?.health_features, availableTags, profilePresetApplied])
+
+  const recipeFilters = useMemo<RecipeListFilters>(
+    () => ({
+      tags: selectedTags,
+      caloriesMin: selectedCaloriesRange[0],
+      caloriesMax: selectedCaloriesRange[1],
+      timeMin: selectedTimeRange[0],
+      timeMax: selectedTimeRange[1],
+      minRating: Number(minRating || '0') || 0,
+    }),
+    [minRating, selectedCaloriesRange, selectedTags, selectedTimeRange],
+  )
 
   useEffect(() => {
-    if (status !== 'ready') return
-    if (!hasActiveFilters) return
-    if (filteredRecipes.length > 0) return
-    if (nextOffset === null || loadingMore) return
-
-    setLoadingMore(true)
-    fetchRecipesPage({ limit: 24, offset: nextOffset })
-      .then((nextPage) => {
-        setRecipes((prev) => [...prev, ...nextPage.items])
-        setTotal(nextPage.total)
-        setNextOffset(nextPage.nextOffset)
-      })
-      .catch((error) => {
-        pushApiError(error, 'Не удалось подгрузить рецепты.')
-      })
-      .finally(() => {
-        setLoadingMore(false)
-      })
-  }, [filteredRecipes.length, hasActiveFilters, loadingMore, nextOffset, status])
+    let cancelled = false
+    setStatus('loading')
+    const timeoutId = window.setTimeout(() => {
+      fetchRecipesPage({ limit: 9, offset: 0, filters: recipeFilters })
+        .then((data) => {
+          if (cancelled) return
+          setRecipes(data.items)
+          setTotal(data.total)
+          setNextOffset(data.nextOffset)
+          setStatus('ready')
+        })
+        .catch((error) => {
+          if (cancelled) return
+          setStatus('error')
+          pushApiError(error, 'Не удалось загрузить рецепты.')
+        })
+    }, 250)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [recipeFilters, reloadToken])
 
   if (status === 'loading') {
     return <PageLoader title="Загружаем рецепты..." />
@@ -127,12 +106,20 @@ export function RecipesPage() {
     return (
       <PageError
         message="Проверьте подключение и попробуйте еще раз."
-        onRetry={() => setStatus('loading')}
+        onRetry={() => setReloadToken((value) => value + 1)}
       />
     )
   }
 
-  if (!recipes.length) {
+  const hasActiveFilters =
+    selectedTags.length > 0 ||
+    selectedCaloriesRange[0] !== 100 ||
+    selectedCaloriesRange[1] !== 1200 ||
+    selectedTimeRange[0] !== 5 ||
+    selectedTimeRange[1] !== 120 ||
+    minRating !== '0'
+
+  if (!recipes.length && !hasActiveFilters) {
     return (
       <PageEmpty
         title="Рецептов пока нет"
@@ -151,7 +138,7 @@ export function RecipesPage() {
               <Text fw={600}>Теги</Text>
               <Chip.Group multiple value={selectedTags} onChange={setSelectedTags}>
                 <Group gap="xs">
-                  {allTags.map((tag) => (
+                  {availableTags.map((tag) => (
                     <Chip key={tag} value={tag} color="grape" variant="light">
                       {tag}
                     </Chip>
@@ -206,13 +193,13 @@ export function RecipesPage() {
             <Title order={1}>Рецепты</Title>
             <Text>Коллекция рецептов с фото, тегами и базовой пищевой ценностью.</Text>
             <Text size="sm" c="dimmed">
-              Найдено по фильтрам: {filteredRecipes.length} (загружено {recipes.length} из {total})
+              Найдено по фильтрам: {total}
             </Text>
           </Stack>
         </Card>
 
         <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
-          {filteredRecipes.map((recipe) => (
+          {recipes.map((recipe) => (
             <Card
               withBorder
               radius="md"
@@ -269,13 +256,13 @@ export function RecipesPage() {
             </Card>
           ))}
         </SimpleGrid>
-        {!filteredRecipes.length ? (
+        {!recipes.length ? (
           <PageEmpty
             title="Нет рецептов по выбранным фильтрам"
             description="Измените диапазоны или снимите часть тегов."
           />
         ) : null}
-        {nextOffset !== null ? (
+        {nextOffset !== null && recipes.length > 0 ? (
           <Button
             variant="light"
             color="grape"
@@ -283,7 +270,11 @@ export function RecipesPage() {
             onClick={async () => {
               setLoadingMore(true)
               try {
-                const nextPage = await fetchRecipesPage({ limit: 24, offset: nextOffset })
+                const nextPage = await fetchRecipesPage({
+                  limit: 9,
+                  offset: nextOffset,
+                  filters: recipeFilters,
+                })
                 setRecipes((prev) => [...prev, ...nextPage.items])
                 setTotal(nextPage.total)
                 setNextOffset(nextPage.nextOffset)

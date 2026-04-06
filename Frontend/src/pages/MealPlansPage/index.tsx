@@ -22,12 +22,31 @@ import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { MealPlan } from '../../types/domain'
 
+type PlanTypeApi = 'personal' | 'fitness' | 'therapeutic'
+
+const planTypeMeta: Array<{ api: PlanTypeApi; label: string; goal: string; diet: string }> = [
+  { api: 'personal', label: 'На день', goal: 'Поддержание веса', diet: 'Сбалансированное' },
+  { api: 'fitness', label: 'На неделю', goal: 'Набор массы', diet: 'Высокобелковое' },
+  { api: 'therapeutic', label: 'На месяц', goal: 'Поддержание здоровья', diet: 'Без глютена' },
+]
+
+function intersectPlanTypes(...sets: Array<Set<PlanTypeApi> | null>): PlanTypeApi[] {
+  const activeSets = sets.filter(Boolean) as Set<PlanTypeApi>[]
+  if (!activeSets.length) {
+    return planTypeMeta.map((item) => item.api)
+  }
+  return planTypeMeta
+    .map((item) => item.api)
+    .filter((type) => activeSets.every((set) => set.has(type)))
+}
+
 export function MealPlansPage() {
   const authUser = useUnit($authUser)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [reloadToken, setReloadToken] = useState(0)
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
-  const [nextOffset, setNextOffset] = useState<number | null>(0)
   const [total, setTotal] = useState(0)
+  const [nextOffset, setNextOffset] = useState<number | null>(0)
   const [loadingMore, setLoadingMore] = useState(false)
   const [profilePresetApplied, setProfilePresetApplied] = useState(false)
   const [selectedPlanTypes, setSelectedPlanTypes] = useState<string[]>([])
@@ -36,104 +55,95 @@ export function MealPlansPage() {
   const [caloriesRange, setCaloriesRange] = useState<[number, number]>([1200, 3200])
   const [minRating, setMinRating] = useState<string>('0')
 
-  useEffect(() => {
-    if (status !== 'loading') {
-      return
-    }
+  const availablePlanTypes = useMemo(() => planTypeMeta.map((item) => item.label), [])
+  const availableGoals = useMemo(() => planTypeMeta.map((item) => item.goal), [])
+  const availableDiets = useMemo(() => planTypeMeta.map((item) => item.diet), [])
 
+  useEffect(() => {
+    if (profilePresetApplied) return
+    const prefs = [...(authUser?.favorite_tags ?? []), ...(authUser?.health_features ?? [])].map((item) =>
+      item.toLowerCase(),
+    )
+    const diets = availableDiets.filter((diet) =>
+      prefs.some((pref) => diet.toLowerCase().includes(pref) || pref.includes(diet.toLowerCase())),
+    )
+    const goals = availableGoals.filter((goal) =>
+      prefs.some((pref) => goal.toLowerCase().includes(pref) || pref.includes(goal.toLowerCase())),
+    )
+    const preferredDiet = authUser?.preferred_diet
+    const dietsWithPreferred =
+      preferredDiet && availableDiets.includes(preferredDiet)
+        ? Array.from(new Set([...diets, preferredDiet]))
+        : diets
+    setSelectedDiets(dietsWithPreferred)
+    setSelectedGoals(goals)
+    setProfilePresetApplied(true)
+  }, [
+    authUser?.favorite_tags,
+    authUser?.health_features,
+    authUser?.preferred_diet,
+    availableDiets,
+    availableGoals,
+    profilePresetApplied,
+  ])
+
+  const selectedByTypeSet = useMemo(() => {
+    if (!selectedPlanTypes.length) return null
+    return new Set(
+      planTypeMeta.filter((item) => selectedPlanTypes.includes(item.label)).map((item) => item.api),
+    )
+  }, [selectedPlanTypes])
+  const selectedByGoalSet = useMemo(() => {
+    if (!selectedGoals.length) return null
+    return new Set(
+      planTypeMeta.filter((item) => selectedGoals.includes(item.goal)).map((item) => item.api),
+    )
+  }, [selectedGoals])
+  const selectedByDietSet = useMemo(() => {
+    if (!selectedDiets.length) return null
+    return new Set(
+      planTypeMeta.filter((item) => selectedDiets.includes(item.diet)).map((item) => item.api),
+    )
+  }, [selectedDiets])
+
+  const resolvedPlanTypes = useMemo(
+    () => intersectPlanTypes(selectedByTypeSet, selectedByGoalSet, selectedByDietSet),
+    [selectedByDietSet, selectedByGoalSet, selectedByTypeSet],
+  )
+  const apiFilters = useMemo(() => {
+    const min = Number(minRating || '0')
+    const hasPlanTypeFilter = resolvedPlanTypes.length > 0 && resolvedPlanTypes.length < planTypeMeta.length
+    return {
+      planTypes: hasPlanTypeFilter ? resolvedPlanTypes : undefined,
+      caloriesMin: caloriesRange[0],
+      caloriesMax: caloriesRange[1],
+      minRating: Number.isNaN(min) ? 0 : min,
+    }
+  }, [caloriesRange, minRating, resolvedPlanTypes])
+
+  useEffect(() => {
+    let cancelled = false
+    setStatus('loading')
     const timeoutId = window.setTimeout(() => {
-      fetchMealPlansPage({ limit: 24, offset: 0 })
+      fetchMealPlansPage({ limit: 9, offset: 0, filters: apiFilters })
         .then((data) => {
+          if (cancelled) return
           setMealPlans(data.items)
           setTotal(data.total)
           setNextOffset(data.nextOffset)
           setStatus('ready')
         })
         .catch((error) => {
+          if (cancelled) return
           setStatus('error')
           pushApiError(error, 'Не удалось получить планы питания.')
         })
-    }, 550)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [status])
-
-  const availablePlanTypes = useMemo(
-    () => Array.from(new Set(mealPlans.map((plan) => plan.planType))),
-    [mealPlans],
-  )
-  const availableGoals = useMemo(
-    () => Array.from(new Set(mealPlans.map((plan) => plan.goal))),
-    [mealPlans],
-  )
-  const availableDiets = useMemo(
-    () => Array.from(new Set(mealPlans.map((plan) => plan.diet))),
-    [mealPlans],
-  )
-  const filteredPlans = useMemo(() => {
-    const min = Number(minRating || '0')
-    return mealPlans.filter((plan) => {
-      const byType = !selectedPlanTypes.length || selectedPlanTypes.includes(plan.planType)
-      const byGoal = !selectedGoals.length || selectedGoals.includes(plan.goal)
-      const byDiet = !selectedDiets.length || selectedDiets.includes(plan.diet)
-      const byCalories = plan.calories >= caloriesRange[0] && plan.calories <= caloriesRange[1]
-      const byRating = plan.rating >= min
-      return byType && byGoal && byDiet && byCalories && byRating
-    })
-  }, [caloriesRange, mealPlans, minRating, selectedDiets, selectedGoals, selectedPlanTypes])
-  const hasActiveFilters =
-    selectedPlanTypes.length > 0 ||
-    selectedGoals.length > 0 ||
-    selectedDiets.length > 0 ||
-    caloriesRange[0] !== 1200 ||
-    caloriesRange[1] !== 3200 ||
-    minRating !== '0'
-
-  useEffect(() => {
-    if (profilePresetApplied || !mealPlans.length) return
-    const prefs = [...(authUser?.favorite_tags ?? []), ...(authUser?.health_features ?? [])].map((item) =>
-      item.toLowerCase(),
-    )
-    if (!prefs.length) {
-      setProfilePresetApplied(true)
-      return
+    }, 250)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
     }
-
-    const diets = Array.from(new Set(mealPlans.map((plan) => plan.diet))).filter((diet) =>
-      prefs.some((pref) => diet.toLowerCase().includes(pref) || pref.includes(diet.toLowerCase())),
-    )
-    const goals = Array.from(new Set(mealPlans.map((plan) => plan.goal))).filter((goal) =>
-      prefs.some((pref) => goal.toLowerCase().includes(pref) || pref.includes(goal.toLowerCase())),
-    )
-    const preferredDiet = authUser?.preferred_diet
-    const dietsWithPreferred = preferredDiet
-      ? Array.from(new Set([...diets, preferredDiet].filter(Boolean)))
-      : diets
-    setSelectedDiets(dietsWithPreferred)
-    setSelectedGoals(goals)
-    setProfilePresetApplied(true)
-  }, [authUser?.favorite_tags, authUser?.health_features, authUser?.preferred_diet, mealPlans, profilePresetApplied])
-
-  useEffect(() => {
-    if (status !== 'ready') return
-    if (!hasActiveFilters) return
-    if (filteredPlans.length > 0) return
-    if (nextOffset === null || loadingMore) return
-
-    setLoadingMore(true)
-    fetchMealPlansPage({ limit: 24, offset: nextOffset })
-      .then((nextPage) => {
-        setMealPlans((prev) => [...prev, ...nextPage.items])
-        setTotal(nextPage.total)
-        setNextOffset(nextPage.nextOffset)
-      })
-      .catch((error) => {
-        pushApiError(error, 'Не удалось подгрузить планы.')
-      })
-      .finally(() => {
-        setLoadingMore(false)
-      })
-  }, [filteredPlans.length, hasActiveFilters, loadingMore, nextOffset, status])
+  }, [apiFilters, reloadToken])
 
   if (status === 'loading') {
     return <PageLoader title="Загружаем планы питания..." />
@@ -143,12 +153,20 @@ export function MealPlansPage() {
     return (
       <PageError
         message="Не удалось получить планы питания."
-        onRetry={() => setStatus('loading')}
+        onRetry={() => setReloadToken((value) => value + 1)}
       />
     )
   }
 
-  if (!mealPlans.length) {
+  const hasActiveFilters =
+    selectedPlanTypes.length > 0 ||
+    selectedGoals.length > 0 ||
+    selectedDiets.length > 0 ||
+    caloriesRange[0] !== 1200 ||
+    caloriesRange[1] !== 3200 ||
+    minRating !== '0'
+
+  if (!mealPlans.length && !hasActiveFilters) {
     return (
       <PageEmpty
         title="Планов пока нет"
@@ -234,13 +252,13 @@ export function MealPlansPage() {
               <Title order={1}>Планы питания</Title>
               <Text>Подбор планов с детальной разбивкой по дням и приемам пищи.</Text>
               <Text size="sm" c="dimmed">
-                Найдено по фильтрам: {filteredPlans.length} (загружено {mealPlans.length} из {total})
+                Найдено по фильтрам: {total}
               </Text>
             </Stack>
           </Card>
 
           <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
-            {filteredPlans.map((plan) => (
+            {mealPlans.map((plan) => (
               <Card
                 withBorder
                 radius="md"
@@ -311,13 +329,13 @@ export function MealPlansPage() {
               </Card>
             ))}
           </SimpleGrid>
-          {!filteredPlans.length ? (
+          {!mealPlans.length ? (
             <PageEmpty
               title="Нет планов по выбранным фильтрам"
               description="Измените параметры фильтрации или очистите часть критериев."
             />
           ) : null}
-          {nextOffset !== null ? (
+          {nextOffset !== null && mealPlans.length > 0 ? (
             <Button
               variant="light"
               color="grape"
@@ -325,7 +343,11 @@ export function MealPlansPage() {
               onClick={async () => {
                 setLoadingMore(true)
                 try {
-                  const nextPage = await fetchMealPlansPage({ limit: 24, offset: nextOffset })
+                  const nextPage = await fetchMealPlansPage({
+                    limit: 9,
+                    offset: nextOffset,
+                    filters: apiFilters,
+                  })
                   setMealPlans((prev) => [...prev, ...nextPage.items])
                   setTotal(nextPage.total)
                   setNextOffset(nextPage.nextOffset)

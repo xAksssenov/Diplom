@@ -12,7 +12,11 @@ export function Breadcrumbs() {
 
   return (
     <Paper withBorder radius="md" p="sm" style={{ background: 'var(--bg-surface)' }}>
-      <MantineBreadcrumbs separator="/" separatorMargin="xs">
+      <MantineBreadcrumbs
+        separator="/"
+        separatorMargin="xs"
+        styles={{ separator: { color: '#7c3aed' } }}
+      >
         <Link to="/" className="app-breadcrumb-link">
           Главная
         </Link>

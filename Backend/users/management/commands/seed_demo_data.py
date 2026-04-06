@@ -14,7 +14,7 @@ from users.models import Role, User
 
 
 class Command(BaseCommand):
-    help = "Populate database with demo data for local testing."
+    help = "Populate database with realistic showcase data for local testing."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -78,8 +78,8 @@ class Command(BaseCommand):
             bulk_favorites=max(0, options["bulk_favorites"]),
         )
 
-        self.stdout.write(self.style.SUCCESS("Demo data seeded successfully."))
-        self.stdout.write("Demo credentials:")
+        self.stdout.write(self.style.SUCCESS("Showcase data seeded successfully."))
+        self.stdout.write("Credentials:")
         self.stdout.write("  admin@foodplanner.local / Password123!")
         self.stdout.write("  moderator@foodplanner.local / Password123!")
         self.stdout.write("  alice@foodplanner.local / Password123!")
@@ -96,9 +96,25 @@ class Command(BaseCommand):
         User.objects.filter(email__in=demo_domains).delete()
         User.objects.filter(email__startswith="bulk", email__endswith="@foodplanner.local").delete()
         Tag.objects.filter(name__startswith="demo-").delete()
+        Tag.objects.filter(
+            name__in=[
+                "Быстро",
+                "Высокобелковое",
+                "Низкоуглеводное",
+                "Без глютена",
+                "Без лактозы",
+                "Завтрак",
+                "Вегетарианское",
+                "Сытное",
+            ]
+        ).delete()
         Category.objects.filter(name__startswith="Demo ").delete()
+        Category.objects.filter(name__in=["Завтраки", "Обеды", "Ужины"]).delete()
         Ingredient.objects.filter(name__startswith="Demo ").delete()
-        Notification.objects.filter(message__icontains="[DEMO]").delete()
+        Ingredient.objects.filter(
+            name__in=["Овсяные хлопья", "Яйцо", "Куриная грудка", "Гречка", "Помидор"]
+        ).delete()
+        Notification.objects.filter(user__email__endswith="@foodplanner.local").delete()
 
     def _seed_roles(self):
         role_user, _ = Role.objects.get_or_create(name=Role.RoleNames.USER)
@@ -110,7 +126,7 @@ class Command(BaseCommand):
         admin, _ = User.objects.update_or_create(
             email="admin@foodplanner.local",
             defaults={
-                "name": "Demo Admin",
+                "name": "Павел Воронов",
                 "role": roles["admin"],
                 "is_staff": True,
                 "is_superuser": True,
@@ -123,7 +139,7 @@ class Command(BaseCommand):
         moderator, _ = User.objects.update_or_create(
             email="moderator@foodplanner.local",
             defaults={
-                "name": "Demo Moderator",
+                "name": "Марина Крылова",
                 "role": roles["moderator"],
                 "is_staff": True,
                 "is_superuser": False,
@@ -136,7 +152,7 @@ class Command(BaseCommand):
         alice, _ = User.objects.update_or_create(
             email="alice@foodplanner.local",
             defaults={
-                "name": "Alice Green",
+                "name": "Алиса Грин",
                 "role": roles["user"],
                 "is_staff": False,
                 "is_superuser": False,
@@ -149,7 +165,7 @@ class Command(BaseCommand):
         bob, _ = User.objects.update_or_create(
             email="bob@foodplanner.local",
             defaults={
-                "name": "Bob Stone",
+                "name": "Борис Стоун",
                 "role": roles["user"],
                 "is_staff": False,
                 "is_superuser": False,
@@ -163,20 +179,20 @@ class Command(BaseCommand):
 
     def _seed_taxonomy(self):
         breakfast, _ = Category.objects.update_or_create(
-            name="Demo Завтраки",
+            name="Завтраки",
             defaults={"description": "Быстрые варианты для утра."},
         )
         lunch, _ = Category.objects.update_or_create(
-            name="Demo Обеды",
+            name="Обеды",
             defaults={"description": "Сбалансированные блюда на день."},
         )
         dinner, _ = Category.objects.update_or_create(
-            name="Demo Ужины",
+            name="Ужины",
             defaults={"description": "Легкие блюда на вечер."},
         )
 
         oats, _ = Ingredient.objects.update_or_create(
-            name="Demo Овсяные хлопья",
+            name="Овсяные хлопья",
             defaults={
                 "calories_per_100g": Decimal("367.00"),
                 "protein_per_100g": Decimal("13.00"),
@@ -186,7 +202,7 @@ class Command(BaseCommand):
             },
         )
         egg, _ = Ingredient.objects.update_or_create(
-            name="Demo Яйцо",
+            name="Яйцо",
             defaults={
                 "calories_per_100g": Decimal("157.00"),
                 "protein_per_100g": Decimal("13.00"),
@@ -196,7 +212,7 @@ class Command(BaseCommand):
             },
         )
         chicken, _ = Ingredient.objects.update_or_create(
-            name="Demo Куриная грудка",
+            name="Куриная грудка",
             defaults={
                 "calories_per_100g": Decimal("165.00"),
                 "protein_per_100g": Decimal("31.00"),
@@ -206,7 +222,7 @@ class Command(BaseCommand):
             },
         )
         buckwheat, _ = Ingredient.objects.update_or_create(
-            name="Demo Гречка",
+            name="Гречка",
             defaults={
                 "calories_per_100g": Decimal("343.00"),
                 "protein_per_100g": Decimal("13.00"),
@@ -216,7 +232,7 @@ class Command(BaseCommand):
             },
         )
         tomato, _ = Ingredient.objects.update_or_create(
-            name="Demo Помидор",
+            name="Помидор",
             defaults={
                 "calories_per_100g": Decimal("18.00"),
                 "protein_per_100g": Decimal("0.90"),
@@ -226,15 +242,15 @@ class Command(BaseCommand):
             },
         )
 
-        quick, _ = Tag.objects.get_or_create(name="demo-quick")
-        high_protein, _ = Tag.objects.get_or_create(name="demo-high-protein")
-        low_carb, _ = Tag.objects.get_or_create(name="demo-low-carb")
+        quick, _ = Tag.objects.get_or_create(name="Быстро")
+        high_protein, _ = Tag.objects.get_or_create(name="Высокобелковое")
+        low_carb, _ = Tag.objects.get_or_create(name="Низкоуглеводное")
         gluten_free, _ = Tag.objects.get_or_create(name="Без глютена")
         lactose_free, _ = Tag.objects.get_or_create(name="Без лактозы")
         breakfast_tag, _ = Tag.objects.get_or_create(name="Завтрак")
-        fast_tag, _ = Tag.objects.get_or_create(name="Быстро")
+        fast_tag, _ = Tag.objects.get_or_create(name="Сытное")
         vegan_tag, _ = Tag.objects.get_or_create(name="Вегетарианское")
-        high_protein_ru, _ = Tag.objects.get_or_create(name="Высокобелковое")
+        high_protein_ru, _ = Tag.objects.get_or_create(name="Белковый акцент")
 
         return {
             "categories": {
@@ -264,7 +280,7 @@ class Command(BaseCommand):
 
     def _seed_recipes(self, users, taxonomy):
         recipe1, _ = Recipe.objects.update_or_create(
-            title="Demo Протеиновая овсянка",
+            title="Протеиновая овсянка с яйцом",
             author=users["alice"],
             defaults={
                 "category": taxonomy["categories"]["breakfast"],
@@ -293,7 +309,7 @@ class Command(BaseCommand):
         )
 
         recipe2, _ = Recipe.objects.update_or_create(
-            title="Demo Курица с гречкой",
+            title="Куриная грудка с гречкой и томатами",
             author=users["bob"],
             defaults={
                 "category": taxonomy["categories"]["lunch"],
@@ -327,7 +343,7 @@ class Command(BaseCommand):
         )
 
         recipe3, _ = Recipe.objects.update_or_create(
-            title="Demo Омлет без лишних углеводов",
+            title="Омлет с томатами",
             author=users["alice"],
             defaults={
                 "category": taxonomy["categories"]["dinner"],
@@ -515,25 +531,25 @@ class Command(BaseCommand):
         Notification.objects.update_or_create(
             user=users["alice"],
             event_type=Notification.EventType.RECIPE_MODERATION,
-            message=f"[DEMO] Recipe #{recipes['omelet'].id} is pending moderation.",
+            message=f"Рецепт «{recipes['omelet'].title}» ожидает модерации.",
             defaults={"is_read": False},
         )
         Notification.objects.update_or_create(
             user=users["bob"],
             event_type=Notification.EventType.PLAN_MODERATION,
-            message=f"[DEMO] Meal plan #{plans['bob_plan'].id} status: pending.",
+            message=f"План питания №{plans['bob_plan'].id} находится на модерации.",
             defaults={"is_read": False},
         )
         Notification.objects.update_or_create(
             user=users["moderator"],
             event_type=Notification.EventType.NEW_COMPLAINT,
-            message="[DEMO] New complaint requires review.",
+            message="Поступила новая жалоба, требуется проверка.",
             defaults={"is_read": False},
         )
         Notification.objects.update_or_create(
             user=users["alice"],
             event_type=Notification.EventType.COMPLAINT_RESPONSE,
-            message="[DEMO] You received a response for your complaint.",
+            message="По вашей жалобе опубликован ответ модератора.",
             defaults={"is_read": True},
         )
 
@@ -586,6 +602,41 @@ class Command(BaseCommand):
             self._seed_bulk_notifications(users, recipes, plans)
 
     def _seed_bulk_users(self, roles, count: int):
+        first_names = [
+            "Алексей",
+            "Мария",
+            "Ирина",
+            "Дмитрий",
+            "Екатерина",
+            "Сергей",
+            "Анна",
+            "Ольга",
+            "Никита",
+            "Татьяна",
+            "Артем",
+            "Ксения",
+        ]
+        last_names = [
+            "Соколова",
+            "Иванов",
+            "Петрова",
+            "Кузнецов",
+            "Морозова",
+            "Лебедев",
+            "Попова",
+            "Васильев",
+            "Смирнова",
+            "Орлов",
+            "Виноградова",
+            "Крылов",
+        ]
+        health_goals_pool = [
+            "Сбалансировать рацион и снизить количество сахара.",
+            "Поддерживать вес и улучшить качество питания.",
+            "Увеличить долю белка и овощей в ежедневном меню.",
+            "Составить удобное меню на рабочую неделю.",
+            "Контролировать калорийность без строгих ограничений.",
+        ]
         health_features_pool = [
             "Непереносимость лактозы",
             "Чувствительность к глютену",
@@ -603,15 +654,17 @@ class Command(BaseCommand):
         ]
         users = []
         for idx in range(1, count + 1):
+            first_name = first_names[(idx - 1) % len(first_names)]
+            last_name = last_names[((idx - 1) // len(first_names)) % len(last_names)]
             user, _ = User.objects.update_or_create(
                 email=f"bulk{idx}@foodplanner.local",
                 defaults={
-                    "name": f"Bulk User {idx}",
+                    "name": f"{first_name} {last_name}",
                     "role": roles["user"],
                     "is_staff": False,
                     "is_superuser": False,
-                    "health_goals": f"Тестовая цель пользователя #{idx}",
-                    "avatar_url": f"https://picsum.photos/seed/bulk-user-{idx}/200/200",
+                    "health_goals": health_goals_pool[(idx - 1) % len(health_goals_pool)],
+                    "avatar_url": f"https://picsum.photos/seed/profile-{idx}/200/200",
                     "health_features": random.sample(health_features_pool, k=random.randint(0, 2)),
                     "favorite_tags": random.sample(favorite_tags_pool, k=random.randint(1, 3)),
                     "email_notifications": bool(idx % 2),
@@ -627,15 +680,63 @@ class Command(BaseCommand):
         categories = list(taxonomy["categories"].values())
         ingredients = list(taxonomy["ingredients"].values())
         tags = list(taxonomy["tags"].values())
+        title_prefixes = [
+            "Теплый салат",
+            "Запеченная курица",
+            "Овощное рагу",
+            "Сытный боул",
+            "Домашний суп",
+            "Легкий ужин",
+            "Белковый завтрак",
+            "Паста из цельнозерновой муки",
+            "Рис с овощами",
+            "Запеканка",
+            "Омлет",
+            "Гречка с овощами",
+            "Куриные котлеты",
+            "Филе на гриле",
+            "Киноа-боул",
+            "Смузи-боул",
+        ]
+        title_suffixes = [
+            "с зеленью",
+            "в средиземноморском стиле",
+            "с йогуртовым соусом",
+            "с печеными овощами",
+            "с пряными травами",
+            "с лимонной заправкой",
+            "по-домашнему",
+            "с легкой остротой",
+            "с кунжутом",
+            "с томатами",
+            "с брокколи",
+            "с грибами",
+            "с ореховыми нотами",
+            "с цитрусовым акцентом",
+            "с нежной текстурой",
+            "для активного дня",
+            "для легкого ужина",
+            "для сбалансированного меню",
+        ]
+        descriptions = [
+            "Сбалансированное блюдо с акцентом на вкус и простую подачу.",
+            "Рецепт для ежедневного меню: быстро готовится и хорошо насыщает.",
+            "Универсальный вариант для обеда или ужина с понятными ингредиентами.",
+            "Легкое блюдо на каждый день с гармоничным сочетанием БЖУ.",
+        ]
         recipes = []
         for idx in range(1, count + 1):
             author = users[(idx - 1) % len(users)]
+            title = (
+                f"{title_prefixes[(idx - 1) % len(title_prefixes)]} "
+                f"{title_suffixes[((idx - 1) // len(title_prefixes)) % len(title_suffixes)]}"
+            )
             recipe, _ = Recipe.objects.update_or_create(
-                title=f"Demo Bulk Recipe {idx}",
+                title=title,
                 author=author,
                 defaults={
                     "category": categories[idx % len(categories)],
-                    "description": f"Тестовый рецепт #{idx} для массовой проверки UI и API.",
+                    "description": descriptions[(idx - 1) % len(descriptions)],
                     "cooking_time": 10 + (idx % 45),
                     "difficulty": [
                         Recipe.Difficulty.EASY,
@@ -643,9 +744,9 @@ class Command(BaseCommand):
                         Recipe.Difficulty.HARD,
                     ][idx % 3],
                     "instructions": (
-                        f"Шаг 1: подготовить ингредиенты для рецепта #{idx}.\n"
-                        "Шаг 2: приготовить на среднем огне.\n"
-                        "Шаг 3: подать блюдо."
+                        "Шаг 1: подготовить и нарезать ингредиенты.\n"
+                        "Шаг 2: приготовить на среднем огне до готовности.\n"
+                        "Шаг 3: добавить специи по вкусу и подать."
                     ),
                     "nutrition_calories": Decimal(str(220 + idx % 500)),
                     "nutrition_protein": Decimal(str(12 + idx % 45)),
@@ -727,6 +828,15 @@ class Command(BaseCommand):
         return plans
 
     def _seed_bulk_reviews(self, users, recipes, plans, count: int):
+        review_comments = [
+            "Отличный рецепт, добавил его в регулярное меню.",
+            "Понравилась подача и баланс вкуса, буду готовить снова.",
+            "Хороший вариант на каждый день, готовится без сложностей.",
+            "Вкусно и сытно, особенно понравилось сочетание ингредиентов.",
+            "Рецепт рабочий, в следующий раз добавлю больше специй.",
+            "План питания удобный, все блюда логично распределены по дням.",
+            "Отличная основа для недели, легко подстроить под себя.",
+        ]
         for idx in range(1, count + 1):
             user = users[(idx - 1) % len(users)]
             target_type = Review.TargetType.RECIPE if idx % 2 else Review.TargetType.MEAL_PLAN
@@ -737,7 +847,7 @@ class Command(BaseCommand):
                 target_id=target.id,
                 defaults={
                     "rating": 1 + (idx % 5),
-                    "comment": f"[DEMO BULK] Тестовый отзыв #{idx}",
+                    "comment": review_comments[(idx - 1) % len(review_comments)],
                     "is_approved": bool(idx % 3),
                     "is_deleted": False,
                 },
@@ -763,12 +873,12 @@ class Command(BaseCommand):
             Notification.objects.update_or_create(
                 user=user,
                 event_type=Notification.EventType.PLAN_MODERATION,
-                message=f"[DEMO BULK] Meal plan #{plan.id} moderation status: {plan.status}.",
+                message=f"Статус вашего плана №{plan.id}: {plan.status}.",
                 defaults={"is_read": bool(idx % 2)},
             )
             Notification.objects.update_or_create(
                 user=user,
                 event_type=Notification.EventType.RECIPE_MODERATION,
-                message=f"[DEMO BULK] Recipe #{recipe.id} moderation update.",
+                message=f"По рецепту «{recipe.title}» обновлен статус модерации.",
                 defaults={"is_read": bool((idx + 1) % 2)},
             )

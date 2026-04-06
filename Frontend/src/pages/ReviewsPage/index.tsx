@@ -19,7 +19,7 @@ export function ReviewsPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      fetchPlanReviewsPage({ limit: 24, offset: 0 })
+      fetchPlanReviewsPage({ limit: 9, offset: 0 })
         .then((data) => {
           setPlanReviews(data.items)
           setTotal(data.total)

@@ -12,7 +12,7 @@ export const plannerSubmitMessageSet = createEvent<string>()
 export const plannerMessagesReset = createEvent()
 
 export const $daysCount = createStore(3).on(daysCountChanged, (_, value) => value)
-export const $snacksCount = createStore(1).on(snacksCountChanged, (_, value) => value)
+export const $snacksCount = createStore(0).on(snacksCountChanged, (_, value) => value)
 
 export const $slotsMap = createStore<SlotsMap>({})
   .on(recipeAssignedToSlot, (slots, payload) => ({

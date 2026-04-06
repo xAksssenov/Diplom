@@ -1,9 +1,10 @@
-from django.db.models import Q
+from django.db.models import Avg, Q
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from interactions.models import Review
 from notifications.models import Notification
 from users.permissions import IsAdminRole, IsModeratorOrAdminRole
 
@@ -54,6 +55,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.filter(is_deleted=False)
+
+        user_id_raw = self.request.query_params.get("user_id")
+        if user_id_raw:
+            try:
+                queryset = queryset.filter(author_id=int(user_id_raw))
+            except (TypeError, ValueError):
+                pass
+
         if self.request.user.is_authenticated:
             if self.request.query_params.get("personalized") == "1":
                 preference_query = Q()
@@ -67,8 +77,59 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     preference_query |= Q(description__icontains=value)
                 if preference_query:
                     queryset = queryset.filter(preference_query).distinct()
-            return queryset
-        return queryset.filter(status=Recipe.ModerationStatus.APPROVED, is_deleted=False)
+        else:
+            queryset = queryset.filter(status=Recipe.ModerationStatus.APPROVED)
+
+        tags_raw = (self.request.query_params.get("tags") or "").strip()
+        if tags_raw:
+            tags = [value.strip() for value in tags_raw.split(",") if value.strip()]
+            for tag_name in tags:
+                queryset = queryset.filter(tags__name__iexact=tag_name)
+
+        try:
+            min_calories = self.request.query_params.get("calories_min")
+            if min_calories not in (None, ""):
+                queryset = queryset.filter(nutrition_calories__gte=float(min_calories))
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            max_calories = self.request.query_params.get("calories_max")
+            if max_calories not in (None, ""):
+                queryset = queryset.filter(nutrition_calories__lte=float(max_calories))
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            min_time = self.request.query_params.get("time_min")
+            if min_time not in (None, ""):
+                queryset = queryset.filter(cooking_time__gte=int(min_time))
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            max_time = self.request.query_params.get("time_max")
+            if max_time not in (None, ""):
+                queryset = queryset.filter(cooking_time__lte=int(max_time))
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            min_rating_raw = self.request.query_params.get("min_rating")
+            if min_rating_raw not in (None, ""):
+                min_rating = float(min_rating_raw)
+                rated_recipe_ids = (
+                    Review.objects.filter(target_type=Review.TargetType.RECIPE, is_deleted=False)
+                    .values("target_id")
+                    .annotate(avg_rating=Avg("rating"))
+                    .filter(avg_rating__gte=min_rating)
+                    .values_list("target_id", flat=True)
+                )
+                queryset = queryset.filter(id__in=rated_recipe_ids)
+        except (TypeError, ValueError):
+            pass
+
+        return queryset.distinct()
 
     def list(self, request, *args, **kwargs):
         limit_raw = request.query_params.get("limit")
