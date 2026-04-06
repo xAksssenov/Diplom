@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -54,8 +55,47 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.request.user.is_authenticated:
+            if self.request.query_params.get("personalized") == "1":
+                preference_query = Q()
+                favorite_tags = getattr(self.request.user, "favorite_tags", []) or []
+                health_features = getattr(self.request.user, "health_features", []) or []
+                for value in [*favorite_tags, *health_features]:
+                    if not value:
+                        continue
+                    preference_query |= Q(tags__name__icontains=value)
+                    preference_query |= Q(title__icontains=value)
+                    preference_query |= Q(description__icontains=value)
+                if preference_query:
+                    queryset = queryset.filter(preference_query).distinct()
             return queryset
         return queryset.filter(status=Recipe.ModerationStatus.APPROVED, is_deleted=False)
+
+    def list(self, request, *args, **kwargs):
+        limit_raw = request.query_params.get("limit")
+        if limit_raw is None:
+            return super().list(request, *args, **kwargs)
+
+        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            limit = max(1, min(100, int(limit_raw)))
+        except (TypeError, ValueError):
+            limit = 24
+        try:
+            offset = max(0, int(request.query_params.get("offset", 0)))
+        except (TypeError, ValueError):
+            offset = 0
+
+        total = queryset.count()
+        items = queryset[offset : offset + limit]
+        serializer = self.get_serializer(items, many=True)
+        next_offset = offset + limit if offset + limit < total else None
+        return Response(
+            {
+                "count": total,
+                "next_offset": next_offset,
+                "results": serializer.data,
+            }
+        )
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, status=Recipe.ModerationStatus.PENDING)

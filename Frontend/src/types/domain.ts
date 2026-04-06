@@ -10,6 +10,8 @@ export type MainRoute =
 export type Recipe = {
   id: string
   title: string
+  author: string
+  authorId: number
   subtitle: string
   cookingTime: string
   rating: number
@@ -41,6 +43,9 @@ export type PlanDay = {
 export type MealPlan = {
   id: string
   title: string
+  author: string
+  authorId: number
+  status: 'draft' | 'pending' | 'approved' | 'rejected'
   planType: 'На день' | 'На неделю' | 'На месяц'
   goal: string
   diet: string

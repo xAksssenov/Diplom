@@ -4,6 +4,8 @@ export const recipes: Recipe[] = [
   {
     id: 'protein-breakfast-bowl',
     title: 'Протеиновый боул на завтрак',
+    author: 'FoodPlanner Demo',
+    authorId: 1,
     subtitle: 'Быстрый завтрак с овсянкой, ягодами и йогуртом',
     cookingTime: '15 мин',
     rating: 4.8,
@@ -26,6 +28,8 @@ export const recipes: Recipe[] = [
   {
     id: 'vegan-lentil-curry',
     title: 'Веган карри с чечевицей',
+    author: 'FoodPlanner Demo',
+    authorId: 1,
     subtitle: 'Насыщенный обед с растительным белком',
     cookingTime: '35 мин',
     rating: 4.7,
@@ -48,6 +52,8 @@ export const recipes: Recipe[] = [
   {
     id: 'salmon-green-dinner',
     title: 'Лосось с зеленью и киноа',
+    author: 'FoodPlanner Demo',
+    authorId: 1,
     subtitle: 'Легкий ужин с омега-3 и сложными углеводами',
     cookingTime: '25 мин',
     rating: 4.9,
@@ -73,6 +79,9 @@ export const mealPlans: MealPlan[] = [
   {
     id: 'fit-week',
     title: 'Фит-неделя для поддержания формы',
+    author: 'FoodPlanner Demo',
+    authorId: 1,
+    status: 'approved',
     planType: 'На неделю',
     goal: 'Поддержание веса',
     diet: 'Сбалансированное',
@@ -152,6 +161,9 @@ export const mealPlans: MealPlan[] = [
   {
     id: 'lean-cut-day',
     title: 'День для мягкого дефицита калорий',
+    author: 'FoodPlanner Demo',
+    authorId: 1,
+    status: 'approved',
     planType: 'На день',
     goal: 'Похудение',
     diet: 'Без лактозы',

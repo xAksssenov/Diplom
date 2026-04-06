@@ -12,14 +12,14 @@ export function Breadcrumbs() {
   return (
     <Paper withBorder radius="md" p="sm" style={{ background: 'var(--bg-surface)' }}>
       <MantineBreadcrumbs separator="/" separatorMargin="xs">
-        <Link to="/" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
+        <Link to="/" style={{ color: '#7c3aed', textDecoration: 'none' }}>
           Главная
         </Link>
         {segments.map((segment) => (
           <Link
             key={segment.path}
             to={segment.path}
-            style={{ color: 'var(--text-primary)', textDecoration: 'none' }}
+            style={{ color: '#7c3aed', textDecoration: 'none' }}
           >
             {segment.label}
           </Link>

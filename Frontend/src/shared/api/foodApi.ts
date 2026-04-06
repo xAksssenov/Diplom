@@ -36,6 +36,8 @@ type BackendRecipeIngredient = {
 type BackendRecipe = {
   id: number
   title: string
+  author: number
+  author_name: string
   description: string
   cooking_time: number
   instructions: string
@@ -55,6 +57,8 @@ type BackendMealPlanItem = {
 
 type BackendMealPlan = {
   id: number
+  user: number
+  user_name: string
   plan_type: 'personal' | 'fitness' | 'therapeutic'
   start_date: string
   end_date: string
@@ -71,6 +75,11 @@ type BackendReview = {
   rating: number
   comment: string
   is_approved: boolean
+}
+
+type BackendTag = {
+  id: number
+  name: string
 }
 
 async function apiGet<T>(path: string): Promise<T> {
@@ -155,7 +164,11 @@ function paletteById(id: number): string[] {
   return palettes[id % palettes.length]
 }
 
-function toUiRecipe(recipe: BackendRecipe, ratingMap: Record<number, number>): Recipe {
+function toUiRecipe(
+  recipe: BackendRecipe,
+  ratingMap: Record<number, number>,
+  tagsById: Record<number, string>,
+): Recipe {
   const steps = recipe.instructions
     ? recipe.instructions
         .split(/\n+/)
@@ -171,14 +184,13 @@ function toUiRecipe(recipe: BackendRecipe, ratingMap: Record<number, number>): R
   return {
     id: String(recipe.id),
     title: recipe.title,
+    author: recipe.author_name || `Пользователь #${recipe.author}`,
+    authorId: recipe.author,
     subtitle: recipe.description || 'Описание рецепта',
     cookingTime: `${parseNumber(recipe.cooking_time)} мин`,
     rating: ratingMap[recipe.id] ?? 0,
     calories: parseNumber(recipe.nutrition_calories),
-    tags:
-      recipe.tags?.length > 0
-        ? recipe.tags.map((tagId) => `Тег #${tagId}`)
-        : ['Без тега'],
+    tags: recipe.tags?.length > 0 ? recipe.tags.map((tagId) => tagsById[tagId] ?? `Тег #${tagId}`) : ['Без тега'],
     images: paletteById(recipe.id),
     nutrition: {
       protein: parseNumber(recipe.nutrition_protein),
@@ -268,6 +280,9 @@ function toUiMealPlan(
   return {
     id: String(plan.id),
     title: `План #${plan.id}`,
+    author: plan.user_name || `Пользователь #${plan.user}`,
+    authorId: plan.user,
+    status: plan.status,
     planType: resolvePlanType(plan.plan_type),
     goal: plan.plan_type === 'fitness' ? 'Поддержание веса' : 'Индивидуальная цель',
     diet: 'Сбалансированное',
@@ -282,37 +297,153 @@ function toUiMealPlan(
   }
 }
 
+type PersonalizationOptions = {
+  userId?: number
+  favoriteTags?: string[]
+  healthFeatures?: string[]
+  useProfilePreferences?: boolean
+}
+
+function normalizeKeyword(value: string) {
+  return value.trim().toLowerCase()
+}
+
+function applyRecipePersonalization(recipes: Recipe[], options?: PersonalizationOptions) {
+  if (!options?.useProfilePreferences) return recipes
+  const tags = (options.favoriteTags ?? []).map(normalizeKeyword).filter(Boolean)
+  const features = (options.healthFeatures ?? []).map(normalizeKeyword).filter(Boolean)
+  if (!tags.length && !features.length) return recipes
+
+  return recipes.filter((recipe) => {
+    const recipeTags = recipe.tags.map(normalizeKeyword)
+    const recipeText = `${recipe.title} ${recipe.subtitle} ${recipe.tags.join(' ')}`.toLowerCase()
+    const matchesTag = !tags.length || tags.some((tag) => recipeTags.some((value) => value.includes(tag)))
+    const matchesFeature =
+      !features.length || features.some((feature) => recipeText.includes(feature) || recipeTags.some((value) => value.includes(feature)))
+    return matchesTag || matchesFeature
+  })
+}
+
+function applyPlanPersonalization(plans: MealPlan[], options?: PersonalizationOptions) {
+  if (!options?.useProfilePreferences) return plans
+  const tags = (options.favoriteTags ?? []).map(normalizeKeyword).filter(Boolean)
+  const features = (options.healthFeatures ?? []).map(normalizeKeyword).filter(Boolean)
+  if (!tags.length && !features.length) return plans
+
+  return plans.filter((plan) => {
+    const text = `${plan.goal} ${plan.diet} ${plan.title} ${plan.description}`.toLowerCase()
+    const matchesTag = !tags.length || tags.some((tag) => text.includes(tag))
+    const matchesFeature = !features.length || features.some((feature) => text.includes(feature))
+    return matchesTag || matchesFeature
+  })
+}
+
+async function fetchTagsById() {
+  const tags = await apiGet<BackendTag[]>('/recipes/tags/')
+  return Object.fromEntries(tags.map((tag) => [tag.id, tag.name]))
+}
+
 export async function fetchReviewsRaw() {
   return apiGet<BackendReview[]>('/interactions/reviews/')
 }
 
-export async function fetchRecipes() {
-  const [recipesResponse, reviews] = await Promise.all([
-    apiGet<BackendRecipe[]>('/recipes/'),
+export async function fetchRecipesPage(params: {
+  limit: number
+  offset: number
+}): Promise<PaginatedResult<Recipe>> {
+  const [recipesResponse, reviews, tagsById] = await Promise.all([
+    apiGet<BackendPaginatedResponse<BackendRecipe>>(
+      `/recipes/?limit=${params.limit}&offset=${params.offset}`,
+    ),
     fetchReviewsRaw(),
+    fetchTagsById(),
   ])
   const { ratingMap } = buildRatingMap(reviews, 'recipe')
-  return recipesResponse.map((item) => toUiRecipe(item, ratingMap))
+  return {
+    items: recipesResponse.results.map((item) => toUiRecipe(item, ratingMap, tagsById)),
+    total: recipesResponse.count,
+    nextOffset: recipesResponse.next_offset,
+  }
+}
+
+export async function fetchRecipes(options?: PersonalizationOptions) {
+  const recipesPath = options?.useProfilePreferences ? '/recipes/?personalized=1' : '/recipes/'
+  const [recipesResponse, reviews, tagsById] = await Promise.all([
+    apiGet<BackendRecipe[]>(recipesPath),
+    fetchReviewsRaw(),
+    fetchTagsById(),
+  ])
+  const { ratingMap } = buildRatingMap(reviews, 'recipe')
+  const mapped = recipesResponse.map((item) => toUiRecipe(item, ratingMap, tagsById))
+  const own = options?.userId ? mapped.filter((item) => item.authorId === options.userId) : mapped
+  return applyRecipePersonalization(own, options)
 }
 
 export async function fetchRecipeById(id: string) {
-  const [recipe, reviews] = await Promise.all([
+  const [recipe, reviews, tagsById] = await Promise.all([
     apiGet<BackendRecipe>(`/recipes/${id}/`),
     fetchReviewsRaw(),
+    fetchTagsById(),
   ])
   const { ratingMap } = buildRatingMap(reviews, 'recipe')
-  return toUiRecipe(recipe, ratingMap)
+  return toUiRecipe(recipe, ratingMap, tagsById)
 }
 
-export async function fetchMealPlans() {
+export async function fetchMealPlans(options?: PersonalizationOptions) {
+  const plansPath = options?.useProfilePreferences ? '/meal-plans/?personalized=1' : '/meal-plans/'
   const [plans, recipesList, reviews] = await Promise.all([
-    apiGet<BackendMealPlan[]>('/meal-plans/'),
+    apiGet<BackendMealPlan[]>(plansPath),
     fetchRecipes(),
     fetchReviewsRaw(),
   ])
   const recipesById = Object.fromEntries(recipesList.map((recipe) => [Number(recipe.id), recipe]))
   const { ratingMap, countMap } = buildRatingMap(reviews, 'meal_plan')
-  return plans.map((plan) => toUiMealPlan(plan, recipesById, ratingMap, countMap))
+  const mapped = plans.map((plan) => toUiMealPlan(plan, recipesById, ratingMap, countMap))
+  const own = options?.userId ? mapped.filter((item) => item.authorId === options.userId) : mapped
+  return applyPlanPersonalization(own, options)
+}
+
+function toUiMealPlanListItem(
+  plan: BackendMealPlan,
+  ratingMap: Record<number, number>,
+  countMap: Record<number, number>,
+): MealPlan {
+  return {
+    id: String(plan.id),
+    title: `План #${plan.id}`,
+    author: plan.user_name || `Пользователь #${plan.user}`,
+    authorId: plan.user,
+    status: plan.status,
+    planType: resolvePlanType(plan.plan_type),
+    goal: plan.plan_type === 'fitness' ? 'Поддержание веса' : 'Индивидуальная цель',
+    diet: 'Сбалансированное',
+    calories: parseNumber(plan.total_calories),
+    protein: 0,
+    fat: 0,
+    carbs: 0,
+    rating: ratingMap[plan.id] ?? 0,
+    reviewsCount: countMap[plan.id] ?? 0,
+    description: `Период: ${plan.start_date} - ${plan.end_date}`,
+    days: [],
+  }
+}
+
+export async function fetchMealPlansPage(params: {
+  limit: number
+  offset: number
+}): Promise<PaginatedResult<MealPlan>> {
+  const [plansResponse, reviews] = await Promise.all([
+    apiGet<BackendPaginatedResponse<BackendMealPlan>>(
+      `/meal-plans/?limit=${params.limit}&offset=${params.offset}`,
+    ),
+    fetchReviewsRaw(),
+  ])
+  const { ratingMap, countMap } = buildRatingMap(reviews, 'meal_plan')
+  return {
+    items: plansResponse.results.map((plan) => toUiMealPlanListItem(plan, ratingMap, countMap)),
+    total: plansResponse.count,
+    nextOffset: plansResponse.next_offset,
+  }
 }
 
 export async function fetchMealPlanById(id: string) {
@@ -345,6 +476,14 @@ export async function fetchPlanReviews() {
         comment: review.comment || 'Без комментария',
       }),
     )
+}
+
+export function fetchMyRecipes(userId: number) {
+  return fetchRecipes({ userId })
+}
+
+export function fetchMyMealPlans(userId: number) {
+  return fetchMealPlans({ userId })
 }
 
 type SubmitPlannerPayload = {
@@ -404,6 +543,18 @@ type BackendNotification = {
   event_type: string
   is_read: boolean
   created_at: string
+}
+
+type BackendPaginatedResponse<T> = {
+  count: number
+  next_offset: number | null
+  results: T[]
+}
+
+export type PaginatedResult<T> = {
+  items: T[]
+  total: number
+  nextOffset: number | null
 }
 
 export async function fetchUserFavorites() {

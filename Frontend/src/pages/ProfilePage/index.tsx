@@ -18,6 +18,7 @@ import {
 import { useUnit } from 'effector-react'
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
+import { getModerationStatuses as getLocalModerationStatuses } from '../../lib/moderationStorage'
 import {
   $authStatus,
   $authUser,
@@ -26,6 +27,8 @@ import {
 import {
   fetchFavoriteMealPlans,
   fetchFavoriteRecipes,
+  fetchMyMealPlans,
+  fetchMyRecipes,
   fetchModerationStatuses,
 } from '../../shared/api/foodApi'
 import { pushApiError, pushSuccess } from '../../shared/model/notifications'
@@ -54,8 +57,11 @@ export function ProfilePage() {
     profileUpdatePending: updateProfileFx.pending,
   })
   const [favoriteTab, setFavoriteTab] = useState<'mealPlans' | 'recipes'>('mealPlans')
+  const [ownTab, setOwnTab] = useState<'mealPlans' | 'recipes'>('mealPlans')
   const [favoriteMealPlans, setFavoriteMealPlans] = useState<MealPlan[]>([])
   const [favoriteRecipes, setFavoriteRecipes] = useState<Recipe[]>([])
+  const [myMealPlans, setMyMealPlans] = useState<MealPlan[]>([])
+  const [myRecipes, setMyRecipes] = useState<Recipe[]>([])
   const [moderationStatuses, setModerationStatuses] = useState<ModerationStatusItem[]>([])
   const [name, setName] = useState(authUser?.name ?? '')
   const [avatarUrl, setAvatarUrl] = useState(authUser?.avatar_url ?? '')
@@ -82,18 +88,47 @@ export function ProfilePage() {
   }, [authUser])
 
   useEffect(() => {
-    if (authStatus !== 'auth') return
-    Promise.all([fetchFavoriteMealPlans(), fetchFavoriteRecipes(), fetchModerationStatuses()])
-      .then(([plans, recipes, statuses]) => {
+    if (authStatus !== 'auth' || !authUser?.id) return
+    Promise.all([
+      fetchFavoriteMealPlans(),
+      fetchFavoriteRecipes(),
+      fetchMyMealPlans(authUser.id),
+      fetchMyRecipes(authUser.id),
+      fetchModerationStatuses(),
+    ])
+      .then(([plans, recipes, ownPlans, ownRecipes, statuses]) => {
         setFavoriteMealPlans(plans)
         setFavoriteRecipes(recipes)
-        setModerationStatuses(statuses)
+        setMyMealPlans(ownPlans)
+        setMyRecipes(ownRecipes)
+
+        const fromPlans: ModerationStatusItem[] = ownPlans
+          .filter((plan) => plan.status !== 'draft')
+          .map((plan) => ({
+            id: `plan-${plan.id}`,
+            type: 'План питания',
+            title: plan.title,
+            status:
+              plan.status === 'approved'
+                ? 'Одобрено'
+                : plan.status === 'rejected'
+                  ? 'Отклонено (нужны правки)'
+                  : 'На ревью',
+            updatedAt: new Date().toLocaleDateString('ru-RU'),
+          }))
+
+        const localStatuses = getLocalModerationStatuses()
+        const merged = [...statuses, ...fromPlans, ...localStatuses]
+        const unique = merged.filter(
+          (item, index, array) => array.findIndex((candidate) => candidate.id === item.id) === index,
+        )
+        setModerationStatuses(unique)
       })
       .catch((error) => {
         setErrorMessage('Не удалось загрузить избранное и статусы модерации.')
         pushApiError(error, 'Ошибка загрузки профиля.')
       })
-  }, [authStatus])
+  }, [authStatus, authUser?.id])
 
   if (authStatus !== 'auth') {
     return <Navigate to="/auth" replace />
@@ -118,7 +153,7 @@ export function ProfilePage() {
           </Text>
         ) : (
           <Text mt={8} size="sm" c="dimmed">
-            Zero-state: фото не задано, добавьте URL ниже
+            Фото профиля пока не задано. Добавьте URL ниже.
           </Text>
         )}
       </Card>
@@ -154,7 +189,7 @@ export function ProfilePage() {
           />
           {!healthFeatures.length ? (
             <Text size="sm" c="dimmed">
-              Zero-state: особенности не выбраны.
+              Особенности здоровья пока не выбраны.
             </Text>
           ) : null}
         </Stack>
@@ -171,9 +206,57 @@ export function ProfilePage() {
           />
           {!favoriteTags.length ? (
             <Text size="sm" c="dimmed">
-              Zero-state: любимые теги не выбраны.
+              Любимые теги пока не выбраны.
             </Text>
           ) : null}
+        </Stack>
+      </Card>
+
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Ваши материалы</Title>
+          <Tabs value={ownTab} onChange={(value) => setOwnTab((value ?? 'mealPlans') as 'mealPlans' | 'recipes')}>
+            <Tabs.List>
+              <Tabs.Tab value="mealPlans">Ваши планы питания</Tabs.Tab>
+              <Tabs.Tab value="recipes">Ваши рецепты</Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="mealPlans" pt="sm">
+              <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
+                {myMealPlans.map((plan) => (
+                  <Card key={plan.id} withBorder radius="md" p="sm">
+                    <Stack gap={6}>
+                      <Title order={5}>{plan.title}</Title>
+                      <Text size="sm">Автор: {plan.author}</Text>
+                      <Text size="sm">{plan.planType}</Text>
+                    </Stack>
+                  </Card>
+                ))}
+              </SimpleGrid>
+              {!myMealPlans.length ? (
+                <Text size="sm" c="dimmed">
+                  У вас пока нет созданных планов.
+                </Text>
+              ) : null}
+            </Tabs.Panel>
+            <Tabs.Panel value="recipes" pt="sm">
+              <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
+                {myRecipes.map((recipe) => (
+                  <Card key={recipe.id} withBorder radius="md" p="sm">
+                    <Stack gap={6}>
+                      <Title order={5}>{recipe.title}</Title>
+                      <Text size="sm">Автор: {recipe.author}</Text>
+                      <Text size="sm">{recipe.subtitle}</Text>
+                    </Stack>
+                  </Card>
+                ))}
+              </SimpleGrid>
+              {!myRecipes.length ? (
+                <Text size="sm" c="dimmed">
+                  У вас пока нет созданных рецептов.
+                </Text>
+              ) : null}
+            </Tabs.Panel>
+          </Tabs>
         </Stack>
       </Card>
 
@@ -195,6 +278,7 @@ export function ProfilePage() {
                   <Card key={plan.id} withBorder radius="md" p="sm">
                     <Stack gap={6}>
                       <Title order={5}>{plan.title}</Title>
+                      <Text size="sm">Автор: {plan.author}</Text>
                       <Text size="sm">{plan.planType}</Text>
                       <Group gap="xs">
                         <Badge variant="light" color="grape">
@@ -210,7 +294,7 @@ export function ProfilePage() {
               </SimpleGrid>
               {!favoriteMealPlans.length ? (
                 <Text size="sm" c="dimmed">
-                  Zero-state: в избранном нет планов питания.
+                  В избранном пока нет планов питания.
                 </Text>
               ) : null}
             </Tabs.Panel>
@@ -236,7 +320,7 @@ export function ProfilePage() {
               </SimpleGrid>
               {!favoriteRecipes.length ? (
                 <Text size="sm" c="dimmed">
-                  Zero-state: в избранном нет рецептов.
+                  В избранном пока нет рецептов.
                 </Text>
               ) : null}
             </Tabs.Panel>
@@ -275,7 +359,7 @@ export function ProfilePage() {
           ))}
           {!moderationStatuses.length ? (
             <Text size="sm" c="dimmed">
-              Zero-state: пока нет событий модерации.
+              Пока нет событий модерации.
             </Text>
           ) : null}
         </Stack>

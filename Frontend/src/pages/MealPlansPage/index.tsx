@@ -13,16 +13,23 @@ import {
   Text,
   Title,
 } from '@mantine/core'
+import { useUnit } from 'effector-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchMealPlans } from '../../shared/api/foodApi'
+import { $authUser } from '../../features/auth/model'
+import { fetchMealPlansPage } from '../../shared/api/foodApi'
 import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { MealPlan } from '../../types/domain'
 
 export function MealPlansPage() {
+  const authUser = useUnit($authUser)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
+  const [nextOffset, setNextOffset] = useState<number | null>(0)
+  const [total, setTotal] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [profilePresetApplied, setProfilePresetApplied] = useState(false)
   const [selectedPlanTypes, setSelectedPlanTypes] = useState<string[]>([])
   const [selectedGoals, setSelectedGoals] = useState<string[]>([])
   const [selectedDiets, setSelectedDiets] = useState<string[]>([])
@@ -35,9 +42,11 @@ export function MealPlansPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      fetchMealPlans()
+      fetchMealPlansPage({ limit: 24, offset: 0 })
         .then((data) => {
-          setMealPlans(data)
+          setMealPlans(data.items)
+          setTotal(data.total)
+          setNextOffset(data.nextOffset)
           setStatus('ready')
         })
         .catch((error) => {
@@ -48,19 +57,6 @@ export function MealPlansPage() {
 
     return () => window.clearTimeout(timeoutId)
   }, [status])
-
-  if (status === 'loading') {
-    return <PageLoader title="Загружаем планы питания..." />
-  }
-
-  if (status === 'error') {
-    return (
-      <PageError
-        message="Не удалось получить планы питания."
-        onRetry={() => setStatus('loading')}
-      />
-    )
-  }
 
   const availablePlanTypes = useMemo(
     () => Array.from(new Set(mealPlans.map((plan) => plan.planType))),
@@ -85,6 +81,40 @@ export function MealPlansPage() {
       return byType && byGoal && byDiet && byCalories && byRating
     })
   }, [caloriesRange, mealPlans, minRating, selectedDiets, selectedGoals, selectedPlanTypes])
+
+  useEffect(() => {
+    if (profilePresetApplied || !mealPlans.length) return
+    const prefs = [...(authUser?.favorite_tags ?? []), ...(authUser?.health_features ?? [])].map((item) =>
+      item.toLowerCase(),
+    )
+    if (!prefs.length) {
+      setProfilePresetApplied(true)
+      return
+    }
+
+    const diets = Array.from(new Set(mealPlans.map((plan) => plan.diet))).filter((diet) =>
+      prefs.some((pref) => diet.toLowerCase().includes(pref) || pref.includes(diet.toLowerCase())),
+    )
+    const goals = Array.from(new Set(mealPlans.map((plan) => plan.goal))).filter((goal) =>
+      prefs.some((pref) => goal.toLowerCase().includes(pref) || pref.includes(goal.toLowerCase())),
+    )
+    setSelectedDiets(diets)
+    setSelectedGoals(goals)
+    setProfilePresetApplied(true)
+  }, [authUser?.favorite_tags, authUser?.health_features, mealPlans, profilePresetApplied])
+
+  if (status === 'loading') {
+    return <PageLoader title="Загружаем планы питания..." />
+  }
+
+  if (status === 'error') {
+    return (
+      <PageError
+        message="Не удалось получить планы питания."
+        onRetry={() => setStatus('loading')}
+      />
+    )
+  }
 
   if (!mealPlans.length) {
     return (
@@ -166,90 +196,118 @@ export function MealPlansPage() {
       </Grid.Col>
 
       <Grid.Col span={{ base: 12, md: 8, lg: 9 }}>
-      <Stack gap="md">
-        <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
-          <Stack gap="xs">
-            <Title order={1}>Планы питания</Title>
-            <Text>Подбор планов с детальной разбивкой по дням и приемам пищи.</Text>
-          </Stack>
-        </Card>
+        <Stack gap="md">
+          <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
+            <Stack gap="xs">
+              <Title order={1}>Планы питания</Title>
+              <Text>Подбор планов с детальной разбивкой по дням и приемам пищи.</Text>
+              <Text size="sm" c="dimmed">
+                Показано: {mealPlans.length} из {total}
+              </Text>
+            </Stack>
+          </Card>
 
-        <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
-          {filteredPlans.map((plan) => (
-            <Card
-              withBorder
-              radius="md"
-              padding="lg"
-              key={plan.id}
-              style={{ background: 'var(--bg-surface)', minHeight: 300, display: 'flex' }}
-            >
-              <Stack gap="xs" style={{ flex: 1 }}>
-                <Title order={3}>{plan.title}</Title>
-                <Text>{plan.description}</Text>
-                <Group gap="xs">
-                  <Badge variant="light" color="grape">
-                    {plan.planType}
-                  </Badge>
-                  <Badge
-                    variant={selectedGoals.includes(plan.goal) ? 'filled' : 'light'}
+          <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
+            {filteredPlans.map((plan) => (
+              <Card
+                withBorder
+                radius="md"
+                padding="lg"
+                key={plan.id}
+                style={{ background: 'var(--bg-surface)', minHeight: 300, display: 'flex' }}
+              >
+                <Stack gap="xs" style={{ flex: 1 }}>
+                  <Title order={3}>{plan.title}</Title>
+                  <Text>{plan.description}</Text>
+                  <Text size="sm" c="dimmed">
+                    Автор: {plan.author}
+                  </Text>
+                  <Group gap="xs">
+                    <Badge variant="light" color="grape">
+                      {plan.planType}
+                    </Badge>
+                    <Badge
+                      variant={selectedGoals.includes(plan.goal) ? 'filled' : 'light'}
+                      color="grape"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() =>
+                        setSelectedGoals((prev) =>
+                          prev.includes(plan.goal)
+                            ? prev.filter((item) => item !== plan.goal)
+                            : [...prev, plan.goal],
+                        )
+                      }
+                    >
+                      {plan.goal}
+                    </Badge>
+                    <Badge variant="light" color="grape">
+                      {plan.calories} ккал
+                    </Badge>
+                  </Group>
+                  <Group gap="xs">
+                    <Badge variant="dot" color="violet">
+                      ★ {plan.rating}
+                    </Badge>
+                    <Badge variant="dot" color="violet">
+                      {plan.reviewsCount} оценок
+                    </Badge>
+                    <Badge
+                      variant={selectedDiets.includes(plan.diet) ? 'filled' : 'dot'}
+                      color="violet"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() =>
+                        setSelectedDiets((prev) =>
+                          prev.includes(plan.diet)
+                            ? prev.filter((item) => item !== plan.diet)
+                            : [...prev, plan.diet],
+                        )
+                      }
+                    >
+                      {plan.diet}
+                    </Badge>
+                  </Group>
+                  <Button
+                    component={Link}
+                    to={`/meal-plans/${plan.id}`}
                     color="grape"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() =>
-                      setSelectedGoals((prev) =>
-                        prev.includes(plan.goal)
-                          ? prev.filter((item) => item !== plan.goal)
-                          : [...prev, plan.goal],
-                      )
-                    }
+                    mt="auto"
+                    fullWidth
                   >
-                    {plan.goal}
-                  </Badge>
-                  <Badge variant="light" color="grape">
-                    {plan.calories} ккал
-                  </Badge>
-                </Group>
-                <Group gap="xs">
-                  <Badge variant="dot" color="violet">
-                    ★ {plan.rating}
-                  </Badge>
-                  <Badge variant="dot" color="violet">
-                    {plan.reviewsCount} оценок
-                  </Badge>
-                  <Badge
-                    variant={selectedDiets.includes(plan.diet) ? 'filled' : 'dot'}
-                    color="violet"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() =>
-                      setSelectedDiets((prev) =>
-                        prev.includes(plan.diet)
-                          ? prev.filter((item) => item !== plan.diet)
-                          : [...prev, plan.diet],
-                      )
-                    }
-                  >
-                    {plan.diet}
-                  </Badge>
-                </Group>
-                <Button
-                  component={Link}
-                  to={`/meal-plans/${plan.id}`}
-                  color="grape"
-                  mt="auto"
-                  fullWidth
-                >
-                  Открыть план
-                </Button>
-              </Stack>
-            </Card>
-          ))}
-        </SimpleGrid>
-        {!filteredPlans.length ? (
-          <PageEmpty
-            title="Нет планов по выбранным фильтрам"
-            description="Измените параметры фильтрации или очистите часть критериев."
-          />
-        ) : null}
-      </Stack>
+                    Открыть план
+                  </Button>
+                </Stack>
+              </Card>
+            ))}
+          </SimpleGrid>
+          {!filteredPlans.length ? (
+            <PageEmpty
+              title="Нет планов по выбранным фильтрам"
+              description="Измените параметры фильтрации или очистите часть критериев."
+            />
+          ) : null}
+          {nextOffset !== null ? (
+            <Button
+              variant="light"
+              color="grape"
+              loading={loadingMore}
+              onClick={async () => {
+                setLoadingMore(true)
+                try {
+                  const nextPage = await fetchMealPlansPage({ limit: 24, offset: nextOffset })
+                  setMealPlans((prev) => [...prev, ...nextPage.items])
+                  setTotal(nextPage.total)
+                  setNextOffset(nextPage.nextOffset)
+                } catch (error) {
+                  pushApiError(error, 'Не удалось подгрузить планы.')
+                } finally {
+                  setLoadingMore(false)
+                }
+              }}
+            >
+              Показать еще
+            </Button>
+          ) : null}
+        </Stack>
       </Grid.Col>
     </Grid>
   )

@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from decimal import Decimal
+import random
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -21,6 +22,36 @@ class Command(BaseCommand):
             action="store_true",
             help="Delete previously seeded demo data before creating new data.",
         )
+        parser.add_argument(
+            "--bulk-users",
+            type=int,
+            default=30,
+            help="How many extra demo users to create.",
+        )
+        parser.add_argument(
+            "--bulk-recipes",
+            type=int,
+            default=120,
+            help="How many extra recipes to create.",
+        )
+        parser.add_argument(
+            "--bulk-plans",
+            type=int,
+            default=80,
+            help="How many extra meal plans to create.",
+        )
+        parser.add_argument(
+            "--bulk-reviews",
+            type=int,
+            default=240,
+            help="How many extra reviews to create.",
+        )
+        parser.add_argument(
+            "--bulk-favorites",
+            type=int,
+            default=300,
+            help="How many extra favorites to create.",
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -37,6 +68,15 @@ class Command(BaseCommand):
         self._seed_favorites(users, recipes, plans)
         self._seed_notifications(users, recipes, plans)
         self._seed_moderation(users, recipes, plans)
+        self._seed_bulk_data(
+            roles=roles,
+            taxonomy=taxonomy,
+            bulk_users=max(0, options["bulk_users"]),
+            bulk_recipes=max(0, options["bulk_recipes"]),
+            bulk_plans=max(0, options["bulk_plans"]),
+            bulk_reviews=max(0, options["bulk_reviews"]),
+            bulk_favorites=max(0, options["bulk_favorites"]),
+        )
 
         self.stdout.write(self.style.SUCCESS("Demo data seeded successfully."))
         self.stdout.write("Demo credentials:")
@@ -44,6 +84,7 @@ class Command(BaseCommand):
         self.stdout.write("  moderator@foodplanner.local / Password123!")
         self.stdout.write("  alice@foodplanner.local / Password123!")
         self.stdout.write("  bob@foodplanner.local / Password123!")
+        self.stdout.write("  bulk1@foodplanner.local / Password123!")
 
     def _reset_demo_data(self):
         demo_domains = [
@@ -53,6 +94,7 @@ class Command(BaseCommand):
             "bob@foodplanner.local",
         ]
         User.objects.filter(email__in=demo_domains).delete()
+        User.objects.filter(email__startswith="bulk", email__endswith="@foodplanner.local").delete()
         Tag.objects.filter(name__startswith="demo-").delete()
         Category.objects.filter(name__startswith="Demo ").delete()
         Ingredient.objects.filter(name__startswith="Demo ").delete()
@@ -187,6 +229,12 @@ class Command(BaseCommand):
         quick, _ = Tag.objects.get_or_create(name="demo-quick")
         high_protein, _ = Tag.objects.get_or_create(name="demo-high-protein")
         low_carb, _ = Tag.objects.get_or_create(name="demo-low-carb")
+        gluten_free, _ = Tag.objects.get_or_create(name="Без глютена")
+        lactose_free, _ = Tag.objects.get_or_create(name="Без лактозы")
+        breakfast_tag, _ = Tag.objects.get_or_create(name="Завтрак")
+        fast_tag, _ = Tag.objects.get_or_create(name="Быстро")
+        vegan_tag, _ = Tag.objects.get_or_create(name="Вегетарианское")
+        high_protein_ru, _ = Tag.objects.get_or_create(name="Высокобелковое")
 
         return {
             "categories": {
@@ -205,6 +253,12 @@ class Command(BaseCommand):
                 "quick": quick,
                 "high_protein": high_protein,
                 "low_carb": low_carb,
+                "gluten_free": gluten_free,
+                "lactose_free": lactose_free,
+                "breakfast": breakfast_tag,
+                "fast": fast_tag,
+                "vegan": vegan_tag,
+                "high_protein_ru": high_protein_ru,
             },
         }
 
@@ -506,3 +560,215 @@ class Command(BaseCommand):
                 "author_notified": True,
             },
         )
+
+    def _seed_bulk_data(
+        self,
+        *,
+        roles,
+        taxonomy,
+        bulk_users: int,
+        bulk_recipes: int,
+        bulk_plans: int,
+        bulk_reviews: int,
+        bulk_favorites: int,
+    ):
+        users = self._seed_bulk_users(roles, bulk_users)
+        if not users:
+            return
+
+        recipes = self._seed_bulk_recipes(users, taxonomy, bulk_recipes)
+        if not recipes:
+            return
+        plans = self._seed_bulk_plans(users, recipes, bulk_plans)
+        if plans:
+            self._seed_bulk_reviews(users, recipes, plans, bulk_reviews)
+            self._seed_bulk_favorites(users, recipes, plans, bulk_favorites)
+            self._seed_bulk_notifications(users, recipes, plans)
+
+    def _seed_bulk_users(self, roles, count: int):
+        health_features_pool = [
+            "Непереносимость лактозы",
+            "Чувствительность к глютену",
+            "Снижение соли",
+            "Повышенный белок",
+            "Низкоуглеводный режим",
+        ]
+        favorite_tags_pool = [
+            "Завтрак",
+            "Быстро",
+            "Без глютена",
+            "Вегетарианское",
+            "Высокобелковое",
+            "Без лактозы",
+        ]
+        users = []
+        for idx in range(1, count + 1):
+            user, _ = User.objects.update_or_create(
+                email=f"bulk{idx}@foodplanner.local",
+                defaults={
+                    "name": f"Bulk User {idx}",
+                    "role": roles["user"],
+                    "is_staff": False,
+                    "is_superuser": False,
+                    "health_goals": f"Тестовая цель пользователя #{idx}",
+                    "avatar_url": f"https://picsum.photos/seed/bulk-user-{idx}/200/200",
+                    "health_features": random.sample(health_features_pool, k=random.randint(0, 2)),
+                    "favorite_tags": random.sample(favorite_tags_pool, k=random.randint(1, 3)),
+                    "email_notifications": bool(idx % 2),
+                    "profile_visibility": bool((idx + 1) % 2),
+                },
+            )
+            user.set_password("Password123!")
+            user.save(update_fields=["password"])
+            users.append(user)
+        return users
+
+    def _seed_bulk_recipes(self, users, taxonomy, count: int):
+        categories = list(taxonomy["categories"].values())
+        ingredients = list(taxonomy["ingredients"].values())
+        tags = list(taxonomy["tags"].values())
+        recipes = []
+        for idx in range(1, count + 1):
+            author = users[(idx - 1) % len(users)]
+            recipe, _ = Recipe.objects.update_or_create(
+                title=f"Demo Bulk Recipe {idx}",
+                author=author,
+                defaults={
+                    "category": categories[idx % len(categories)],
+                    "description": f"Тестовый рецепт #{idx} для массовой проверки UI и API.",
+                    "cooking_time": 10 + (idx % 45),
+                    "difficulty": [
+                        Recipe.Difficulty.EASY,
+                        Recipe.Difficulty.MEDIUM,
+                        Recipe.Difficulty.HARD,
+                    ][idx % 3],
+                    "instructions": (
+                        f"Шаг 1: подготовить ингредиенты для рецепта #{idx}.\n"
+                        "Шаг 2: приготовить на среднем огне.\n"
+                        "Шаг 3: подать блюдо."
+                    ),
+                    "nutrition_calories": Decimal(str(220 + idx % 500)),
+                    "nutrition_protein": Decimal(str(12 + idx % 45)),
+                    "nutrition_fat": Decimal(str(6 + idx % 28)),
+                    "nutrition_carbs": Decimal(str(10 + idx % 70)),
+                    "status": random.choice(
+                        [
+                            Recipe.ModerationStatus.APPROVED,
+                            Recipe.ModerationStatus.PENDING,
+                            Recipe.ModerationStatus.REJECTED,
+                        ]
+                    ),
+                    "is_deleted": False,
+                },
+            )
+            recipe.tags.set(random.sample(tags, k=random.randint(1, min(3, len(tags)))))
+            chosen_ingredients = random.sample(ingredients, k=min(len(ingredients), random.randint(2, 4)))
+            for ingredient_idx, ingredient in enumerate(chosen_ingredients, start=1):
+                RecipeIngredient.objects.update_or_create(
+                    recipe=recipe,
+                    ingredient=ingredient,
+                    defaults={
+                        "quantity": Decimal(str(40 + ((idx + ingredient_idx) % 180))),
+                        "unit": ingredient.unit or "g",
+                    },
+                )
+            recipes.append(recipe)
+        return recipes
+
+    def _seed_bulk_plans(self, users, recipes, count: int):
+        plans = []
+        plan_types = [
+            MealPlan.PlanType.PERSONAL,
+            MealPlan.PlanType.FITNESS,
+            MealPlan.PlanType.THERAPEUTIC,
+        ]
+        statuses = [
+            MealPlan.Status.DRAFT,
+            MealPlan.Status.PENDING,
+            MealPlan.Status.APPROVED,
+            MealPlan.Status.REJECTED,
+        ]
+        meal_types = [
+            MealPlanItem.MealType.BREAKFAST,
+            MealPlanItem.MealType.LUNCH,
+            MealPlanItem.MealType.DINNER,
+            MealPlanItem.MealType.SNACK,
+        ]
+        today = date.today()
+
+        for idx in range(1, count + 1):
+            owner = users[(idx - 1) % len(users)]
+            start_at = today + timedelta(days=(idx % 30))
+            duration = 1 + (idx % 7)
+            end_at = start_at + timedelta(days=duration - 1)
+            plan, _ = MealPlan.objects.update_or_create(
+                user=owner,
+                plan_type=plan_types[idx % len(plan_types)],
+                start_date=start_at,
+                end_date=end_at,
+                defaults={
+                    "total_calories": Decimal(str(1500 + (idx % 1200))),
+                    "status": statuses[idx % len(statuses)],
+                    "is_deleted": False,
+                },
+            )
+
+            for day_number in range(1, min(4, duration + 1)):
+                for meal_type in meal_types:
+                    recipe = recipes[(idx + day_number + len(meal_type)) % len(recipes)]
+                    MealPlanItem.objects.update_or_create(
+                        meal_plan=plan,
+                        day_number=day_number,
+                        meal_type=meal_type,
+                        recipe=recipe,
+                        defaults={"servings": Decimal("1.00")},
+                    )
+            plans.append(plan)
+        return plans
+
+    def _seed_bulk_reviews(self, users, recipes, plans, count: int):
+        for idx in range(1, count + 1):
+            user = users[(idx - 1) % len(users)]
+            target_type = Review.TargetType.RECIPE if idx % 2 else Review.TargetType.MEAL_PLAN
+            target = recipes[idx % len(recipes)] if target_type == Review.TargetType.RECIPE else plans[idx % len(plans)]
+            Review.objects.update_or_create(
+                user=user,
+                target_type=target_type,
+                target_id=target.id,
+                defaults={
+                    "rating": 1 + (idx % 5),
+                    "comment": f"[DEMO BULK] Тестовый отзыв #{idx}",
+                    "is_approved": bool(idx % 3),
+                    "is_deleted": False,
+                },
+            )
+
+    def _seed_bulk_favorites(self, users, recipes, plans, count: int):
+        for idx in range(1, count + 1):
+            user = users[(idx - 1) % len(users)]
+            is_recipe = bool(idx % 2)
+            target_type = Favorite.TargetType.RECIPE if is_recipe else Favorite.TargetType.MEAL_PLAN
+            target = recipes[idx % len(recipes)] if is_recipe else plans[idx % len(plans)]
+            Favorite.objects.update_or_create(
+                user=user,
+                target_type=target_type,
+                target_id=target.id,
+                defaults={},
+            )
+
+    def _seed_bulk_notifications(self, users, recipes, plans):
+        for idx, user in enumerate(users[: min(len(users), 100)], start=1):
+            plan = plans[idx % len(plans)]
+            recipe = recipes[idx % len(recipes)]
+            Notification.objects.update_or_create(
+                user=user,
+                event_type=Notification.EventType.PLAN_MODERATION,
+                message=f"[DEMO BULK] Meal plan #{plan.id} moderation status: {plan.status}.",
+                defaults={"is_read": bool(idx % 2)},
+            )
+            Notification.objects.update_or_create(
+                user=user,
+                event_type=Notification.EventType.RECIPE_MODERATION,
+                message=f"[DEMO BULK] Recipe #{recipe.id} moderation update.",
+                defaults={"is_read": bool((idx + 1) % 2)},
+            )

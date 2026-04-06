@@ -14,16 +14,23 @@ import {
   Text,
   Title,
 } from '@mantine/core'
+import { useUnit } from 'effector-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchRecipes } from '../../shared/api/foodApi'
+import { $authUser } from '../../features/auth/model'
+import { fetchRecipesPage } from '../../shared/api/foodApi'
 import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { Recipe } from '../../types/domain'
 
 export function RecipesPage() {
+  const authUser = useUnit($authUser)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [nextOffset, setNextOffset] = useState<number | null>(0)
+  const [total, setTotal] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [profilePresetApplied, setProfilePresetApplied] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [selectedCaloriesRange, setSelectedCaloriesRange] = useState<[number, number]>([100, 1200])
   const [selectedTimeRange, setSelectedTimeRange] = useState<[number, number]>([5, 120])
@@ -35,9 +42,11 @@ export function RecipesPage() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      fetchRecipes()
+      fetchRecipesPage({ limit: 24, offset: 0 })
         .then((data) => {
-          setRecipes(data)
+          setRecipes(data.items)
+          setTotal(data.total)
+          setNextOffset(data.nextOffset)
           setStatus('ready')
         })
         .catch((error) => {
@@ -48,19 +57,6 @@ export function RecipesPage() {
 
     return () => window.clearTimeout(timeoutId)
   }, [status])
-
-  if (status === 'loading') {
-    return <PageLoader title="Загружаем рецепты..." />
-  }
-
-  if (status === 'error') {
-    return (
-      <PageError
-        message="Проверьте подключение и попробуйте еще раз."
-        onRetry={() => setStatus('loading')}
-      />
-    )
-  }
 
   const allTags = useMemo(
     () => Array.from(new Set(recipes.flatMap((recipe) => recipe.tags))),
@@ -78,6 +74,35 @@ export function RecipesPage() {
       return byTags && byCalories && byTime && byRating
     })
   }, [minRating, recipes, selectedCaloriesRange, selectedTags, selectedTimeRange])
+
+  useEffect(() => {
+    if (profilePresetApplied || !allTags.length) return
+    const prefs = [...(authUser?.favorite_tags ?? []), ...(authUser?.health_features ?? [])].map((item) =>
+      item.toLowerCase(),
+    )
+    if (!prefs.length) {
+      setProfilePresetApplied(true)
+      return
+    }
+    const presetTags = allTags.filter((tag) =>
+      prefs.some((pref) => tag.toLowerCase().includes(pref) || pref.includes(tag.toLowerCase())),
+    )
+    setSelectedTags(presetTags)
+    setProfilePresetApplied(true)
+  }, [allTags, authUser?.favorite_tags, authUser?.health_features, profilePresetApplied])
+
+  if (status === 'loading') {
+    return <PageLoader title="Загружаем рецепты..." />
+  }
+
+  if (status === 'error') {
+    return (
+      <PageError
+        message="Проверьте подключение и попробуйте еще раз."
+        onRetry={() => setStatus('loading')}
+      />
+    )
+  }
 
   if (!recipes.length) {
     return (
@@ -152,6 +177,9 @@ export function RecipesPage() {
           <Stack gap="xs">
             <Title order={1}>Рецепты</Title>
             <Text>Коллекция рецептов с фото, тегами и базовой пищевой ценностью.</Text>
+            <Text size="sm" c="dimmed">
+              Показано: {recipes.length} из {total}
+            </Text>
           </Stack>
         </Card>
 
@@ -218,6 +246,28 @@ export function RecipesPage() {
             title="Нет рецептов по выбранным фильтрам"
             description="Измените диапазоны или снимите часть тегов."
           />
+        ) : null}
+        {nextOffset !== null ? (
+          <Button
+            variant="light"
+            color="grape"
+            loading={loadingMore}
+            onClick={async () => {
+              setLoadingMore(true)
+              try {
+                const nextPage = await fetchRecipesPage({ limit: 24, offset: nextOffset })
+                setRecipes((prev) => [...prev, ...nextPage.items])
+                setTotal(nextPage.total)
+                setNextOffset(nextPage.nextOffset)
+              } catch (error) {
+                pushApiError(error, 'Не удалось подгрузить рецепты.')
+              } finally {
+                setLoadingMore(false)
+              }
+            }}
+          >
+            Показать еще
+          </Button>
         ) : null}
       </Stack>
       </Grid.Col>

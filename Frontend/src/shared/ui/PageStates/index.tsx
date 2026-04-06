@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Skeleton, Stack, Text, Title } from '@mantine/core'
+import { Alert, Badge, Button, Card, Group, Skeleton, Stack, Text, ThemeIcon, Title } from '@mantine/core'
 
 type PageLoaderProps = {
   title?: string
@@ -44,10 +44,26 @@ type PageEmptyProps = {
 
 export function PageEmpty({ title, description }: PageEmptyProps) {
   return (
-    <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
-      <Stack gap="xs">
-        <Title order={3}>{title}</Title>
+    <Card
+      withBorder
+      radius="md"
+      p="lg"
+      style={{
+        background:
+          'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(167,139,250,0.16) 100%)',
+      }}
+    >
+      <Stack gap="sm">
+        <Group gap="sm" align="center">
+          <ThemeIcon radius="xl" color="grape" size={30}>
+            i
+          </ThemeIcon>
+          <Title order={3}>{title}</Title>
+        </Group>
         <Text c="dimmed">{description}</Text>
+        <Badge variant="light" color="grape" w="fit-content">
+          Пока здесь пусто
+        </Badge>
       </Stack>
     </Card>
   )

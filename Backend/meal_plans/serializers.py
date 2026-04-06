@@ -11,12 +11,14 @@ class MealPlanItemSerializer(serializers.ModelSerializer):
 
 class MealPlanSerializer(serializers.ModelSerializer):
     items = MealPlanItemSerializer(many=True, required=False)
+    user_name = serializers.CharField(source="user.name", read_only=True)
 
     class Meta:
         model = MealPlan
         fields = (
             "id",
             "user",
+            "user_name",
             "plan_type",
             "start_date",
             "end_date",
