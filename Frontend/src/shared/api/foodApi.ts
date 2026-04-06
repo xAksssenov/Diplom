@@ -104,6 +104,42 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
   return (await response.json()) as T
 }
 
+async function apiPatch<T>(path: string, body: unknown): Promise<T> {
+  await ensureCsrfCookie()
+  const csrfToken = getCookie('csrftoken')
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`)
+  }
+
+  return (await response.json()) as T
+}
+
+async function apiDelete(path: string): Promise<void> {
+  await ensureCsrfCookie()
+  const csrfToken = getCookie('csrftoken')
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'X-CSRFToken': csrfToken,
+    },
+  })
+
+  if (!response.ok && response.status !== 204) {
+    throw new Error(`API request failed: ${response.status}`)
+  }
+}
+
 function parseNumber(value: string | number | null | undefined) {
   const numeric = Number(value ?? 0)
   return Number.isFinite(numeric) ? numeric : 0
@@ -352,6 +388,15 @@ type BackendFavorite = {
   target_id: number
 }
 
+export type TargetReview = {
+  id: string
+  userId: number
+  targetType: 'recipe' | 'meal_plan'
+  targetId: string
+  rating: number
+  comment: string
+}
+
 type BackendNotification = {
   id: number
   message: string
@@ -362,6 +407,22 @@ type BackendNotification = {
 
 export async function fetchUserFavorites() {
   return apiGet<BackendFavorite[]>('/interactions/favorites/')
+}
+
+export async function addFavorite(targetType: 'recipe' | 'meal_plan', targetId: string) {
+  return apiPost<BackendFavorite>('/interactions/favorites/', {
+    target_type: targetType,
+    target_id: Number(targetId),
+  })
+}
+
+export async function removeFavorite(targetType: 'recipe' | 'meal_plan', targetId: string) {
+  const favorites = await fetchUserFavorites()
+  const existing = favorites.find(
+    (item) => item.target_type === targetType && String(item.target_id) === targetId,
+  )
+  if (!existing) return
+  await apiDelete(`/interactions/favorites/${existing.id}/`)
 }
 
 export async function fetchFavoriteRecipes() {
@@ -410,4 +471,48 @@ function mapNotificationToStatus(item: BackendNotification): ModerationStatusIte
 export async function fetchModerationStatuses() {
   const notifications = await apiGet<BackendNotification[]>('/notifications/')
   return notifications.map(mapNotificationToStatus)
+}
+
+export async function fetchTargetReviews(targetType: 'recipe' | 'meal_plan', targetId: string) {
+  const reviews = await fetchReviewsRaw()
+  return reviews
+    .filter((review) => review.target_type === targetType && String(review.target_id) === targetId)
+    .map(
+      (review): TargetReview => ({
+        id: String(review.id),
+        userId: review.user,
+        targetType: review.target_type,
+        targetId: String(review.target_id),
+        rating: review.rating,
+        comment: review.comment || '',
+      }),
+    )
+}
+
+export async function upsertReview(payload: {
+  targetType: 'recipe' | 'meal_plan'
+  targetId: string
+  userId: number
+  rating: number
+  comment: string
+}) {
+  const reviews = await fetchReviewsRaw()
+  const existing = reviews.find(
+    (item) =>
+      item.user === payload.userId &&
+      item.target_type === payload.targetType &&
+      String(item.target_id) === payload.targetId,
+  )
+  if (existing) {
+    return apiPatch(`/interactions/reviews/${existing.id}/`, {
+      rating: payload.rating,
+      comment: payload.comment,
+    })
+  }
+  return apiPost('/interactions/reviews/', {
+    target_type: payload.targetType,
+    target_id: Number(payload.targetId),
+    rating: payload.rating,
+    comment: payload.comment,
+  })
 }

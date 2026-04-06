@@ -1,33 +1,57 @@
 import {
   Accordion,
+  Alert,
   Badge,
   Button,
   Card,
   Group,
+  Rating,
   SimpleGrid,
   Stack,
   Text,
+  Textarea,
   Title,
 } from '@mantine/core'
 import { useEffect, useMemo, useState } from 'react'
+import { useUnit } from 'effector-react'
 import { useParams } from 'react-router-dom'
 import { FallbackCard } from '../../components/FallbackCard'
+import { $authStatus, $authUser } from '../../features/auth/model'
 import { MealInfo } from '../../components/MealInfo'
-import { fetchMealPlanById, fetchPlanReviews } from '../../shared/api/foodApi'
+import {
+  addFavorite,
+  fetchMealPlanById,
+  fetchTargetReviews,
+  fetchUserFavorites,
+  removeFavorite,
+  type TargetReview,
+  upsertReview,
+} from '../../shared/api/foodApi'
 import { PageError, PageLoader } from '../../shared/ui/PageStates'
-import type { MealPlan, PlanReview } from '../../types/domain'
+import type { MealPlan } from '../../types/domain'
 
 export function MealPlanDetailPage() {
   const { planId } = useParams<{ planId: string }>()
   const [plan, setPlan] = useState<MealPlan | null>(null)
-  const [reviews, setReviews] = useState<PlanReview[]>([])
+  const [reviews, setReviews] = useState<TargetReview[]>([])
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [reloadToken, setReloadToken] = useState(0)
+  const [favorite, setFavorite] = useState(false)
+  const [reviewRating, setReviewRating] = useState(0)
+  const [reviewComment, setReviewComment] = useState('')
+  const [pendingFavorite, setPendingFavorite] = useState(false)
+  const [pendingReview, setPendingReview] = useState(false)
+  const [actionMessage, setActionMessage] = useState('')
+  const [actionError, setActionError] = useState('')
+  const { authStatus, authUser } = useUnit({
+    authStatus: $authStatus,
+    authUser: $authUser,
+  })
 
   useEffect(() => {
     if (!planId) return
 
-    Promise.all([fetchMealPlanById(planId), fetchPlanReviews()])
+    Promise.all([fetchMealPlanById(planId), fetchTargetReviews('meal_plan', planId)])
       .then(([planData, reviewsData]) => {
         setPlan(planData)
         setReviews(reviewsData)
@@ -36,10 +60,33 @@ export function MealPlanDetailPage() {
       .catch(() => setStatus('error'))
   }, [planId, reloadToken])
 
+  useEffect(() => {
+    if (!planId || authStatus !== 'auth') return
+    fetchUserFavorites()
+      .then((items) => {
+        setFavorite(
+          items.some(
+            (item) => item.target_type === 'meal_plan' && String(item.target_id) === String(planId),
+          ),
+        )
+      })
+      .catch(() => {
+        // no-op
+      })
+  }, [authStatus, planId])
+
   const filteredReviews = useMemo(
-    () => reviews.filter((review) => review.planId === (planId ?? '')),
+    () => reviews.filter((review) => review.targetId === (planId ?? '')),
     [reviews, planId],
   )
+
+  useEffect(() => {
+    if (!authUser || !filteredReviews.length) return
+    const own = filteredReviews.find((review) => review.userId === authUser.id)
+    if (!own) return
+    setReviewRating(own.rating)
+    setReviewComment(own.comment)
+  }, [authUser, filteredReviews])
 
   if (!planId) {
     return <PageError message="Некорректный id плана." onRetry={() => {}} />
@@ -65,6 +112,14 @@ export function MealPlanDetailPage() {
     return <FallbackCard message="План питания не найден." />
   }
 
+  const averageRating = filteredReviews.length
+    ? Number(
+        (filteredReviews.reduce((sum, review) => sum + review.rating, 0) / filteredReviews.length).toFixed(
+          1,
+        ),
+      )
+    : plan.rating
+
   return (
     <Stack gap="md">
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
@@ -86,14 +141,43 @@ export function MealPlanDetailPage() {
             </Badge>
           </Group>
           <Group gap="xs">
-            <Button color="grape">Оценить план</Button>
             <Button color="grape" variant="light">
-              Комментарий
+              Средний рейтинг: {averageRating}
             </Button>
-            <Button color="grape" variant="outline">
-              В избранное
+            <Button
+              color="grape"
+              variant="outline"
+              loading={pendingFavorite}
+              onClick={async () => {
+                if (authStatus !== 'auth') {
+                  setActionError('Авторизуйтесь, чтобы добавить план в избранное.')
+                  return
+                }
+                setActionError('')
+                setActionMessage('')
+                setPendingFavorite(true)
+                try {
+                  if (favorite) {
+                    await removeFavorite('meal_plan', plan.id)
+                    setFavorite(false)
+                    setActionMessage('План удален из избранного.')
+                  } else {
+                    await addFavorite('meal_plan', plan.id)
+                    setFavorite(true)
+                    setActionMessage('План добавлен в избранное.')
+                  }
+                } catch {
+                  setActionError('Не удалось обновить избранное.')
+                } finally {
+                  setPendingFavorite(false)
+                }
+              }}
+            >
+              {favorite ? 'Убрать из избранного' : 'В избранное'}
             </Button>
           </Group>
+          {actionMessage ? <Alert color="green">{actionMessage}</Alert> : null}
+          {actionError ? <Alert color="red">{actionError}</Alert> : null}
         </Stack>
       </Card>
 
@@ -144,12 +228,55 @@ export function MealPlanDetailPage() {
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">
           <Title order={3}>Отзывы и оценки по плану</Title>
+          <Rating value={reviewRating} onChange={setReviewRating} color="grape" />
+          <Textarea
+            placeholder="Оставьте комментарий к плану питания"
+            value={reviewComment}
+            onChange={(event) => setReviewComment(event.currentTarget.value)}
+            minRows={2}
+          />
+          <Button
+            color="grape"
+            variant="light"
+            w="fit-content"
+            loading={pendingReview}
+            onClick={async () => {
+              if (authStatus !== 'auth' || !authUser) {
+                setActionError('Авторизуйтесь, чтобы оставлять отзывы.')
+                return
+              }
+              if (!reviewRating) {
+                setActionError('Поставьте оценку от 1 до 5.')
+                return
+              }
+              setActionError('')
+              setPendingReview(true)
+              try {
+                await upsertReview({
+                  targetType: 'meal_plan',
+                  targetId: plan.id,
+                  userId: authUser.id,
+                  rating: reviewRating,
+                  comment: reviewComment,
+                })
+                const updated = await fetchTargetReviews('meal_plan', plan.id)
+                setReviews(updated)
+                setActionMessage('Отзыв сохранен.')
+              } catch {
+                setActionError('Не удалось сохранить отзыв.')
+              } finally {
+                setPendingReview(false)
+              }
+            }}
+          >
+            Сохранить отзыв
+          </Button>
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
             {filteredReviews.map((review) => (
                 <Card key={review.id} withBorder radius="md" p="sm">
                   <Stack gap={6}>
                     <Text size="sm">
-                      <strong>{review.author}:</strong> {review.comment}
+                      <strong>Пользователь #{review.userId}:</strong> {review.comment || 'Без комментария'}
                     </Text>
                     <Badge color="violet" variant="light" w="fit-content">
                       ★ {review.rating}
@@ -158,6 +285,11 @@ export function MealPlanDetailPage() {
                 </Card>
               ))}
           </SimpleGrid>
+          {!filteredReviews.length ? (
+            <Text size="sm" c="dimmed">
+              Пока нет отзывов для этого плана.
+            </Text>
+          ) : null}
         </Stack>
       </Card>
     </Stack>

@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  Badge,
   Alert,
   Button,
   Card,
+  Divider,
   Grid,
   NumberInput,
-  SimpleGrid,
+  ScrollArea,
   Stack,
   Text,
   Title,
@@ -60,6 +62,7 @@ function getTodayDate() {
 export function PlannerPage() {
   const navigate = useNavigate()
   const [dragFrom, setDragFrom] = useState<string | null>(null)
+  const [activeDropSlot, setActiveDropSlot] = useState<string | null>(null)
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [recipesStatus, setRecipesStatus] = useState<'loading' | 'ready' | 'error'>('loading')
 
@@ -134,6 +137,7 @@ export function PlannerPage() {
   }
 
   const onDropToSlot = (slotKey: string, payload: string) => {
+    setActiveDropSlot(null)
     if (payload.startsWith('recipe:')) {
       assignRecipe({ slotKey, recipeId: payload.replace('recipe:', '') })
       return
@@ -142,6 +146,16 @@ export function PlannerPage() {
     if (payload.startsWith('slot:')) {
       swapSlots({ sourceSlot: payload.replace('slot:', ''), targetSlot: slotKey })
     }
+  }
+
+  const clearDay = (dayIndex: number) => {
+    slotTypes.forEach((slotType) => {
+      clearSlot(`${dayIndex}:${slotType}`)
+    })
+  }
+
+  const clearAll = () => {
+    dayIndexes.forEach((dayIndex) => clearDay(dayIndex))
   }
 
   const submitPlan = async () => {
@@ -208,145 +222,176 @@ export function PlannerPage() {
       <Grid gap="md" align="start">
         <Grid.Col span={{ base: 12, lg: 4 }}>
           <Card withBorder radius="md" p="lg" className="planner-controls">
-          <Title order={3}>Параметры плана</Title>
-          <Stack mt={10}>
-            <NumberInput
-              label="Количество дней"
-              min={1}
-              max={14}
-              value={daysCount}
-              onChange={(value: number | string) => {
-                const next = typeof value === 'number' ? value : Number(value)
-                setDays(Number.isNaN(next) ? 1 : Math.min(14, Math.max(1, next)))
-              }}
-            />
-            <NumberInput
-              label="Перекусов в день"
-              min={0}
-              max={4}
-              value={snacksCount}
-              onChange={(value: number | string) => {
-                const next = typeof value === 'number' ? value : Number(value)
-                setSnacks(Number.isNaN(next) ? 0 : Math.min(4, Math.max(0, next)))
-              }}
-            />
-          </Stack>
+            <Title order={3}>Параметры плана</Title>
+            <Stack mt={10}>
+              <NumberInput
+                label="Количество дней"
+                min={1}
+                max={14}
+                value={daysCount}
+                onChange={(value: number | string) => {
+                  const next = typeof value === 'number' ? value : Number(value)
+                  setDays(Number.isNaN(next) ? 1 : Math.min(14, Math.max(1, next)))
+                }}
+              />
+              <NumberInput
+                label="Перекусов в день"
+                min={0}
+                max={4}
+                value={snacksCount}
+                onChange={(value: number | string) => {
+                  const next = typeof value === 'number' ? value : Number(value)
+                  setSnacks(Number.isNaN(next) ? 0 : Math.min(4, Math.max(0, next)))
+                }}
+              />
+            </Stack>
 
-          <Text className="planner-note">Обязательные приемы пищи: завтрак, обед, ужин.</Text>
+            <Text className="planner-note">Обязательные приемы пищи: завтрак, обед, ужин.</Text>
 
-          <Button mt={8} color="grape" onClick={submitPlan}>
-            Отправить план на модерацию
-          </Button>
-          <Button
-            mt={8}
-            variant="light"
-            color="grape"
-            onClick={() => navigate('/profile')}
-          >
-            Открыть статусы в ЛК
-          </Button>
+            <Button mt={8} color="grape" onClick={submitPlan}>
+              Отправить план на модерацию
+            </Button>
+            <Button mt={8} variant="light" color="grape" onClick={() => navigate('/profile')}>
+              Открыть статусы в ЛК
+            </Button>
+            <Button mt={8} variant="subtle" color="red" onClick={clearAll}>
+              Очистить весь план
+            </Button>
 
+            <Divider my="sm" />
+            <Title order={4}>Каталог рецептов</Title>
+            <Text size="sm" c="dimmed">
+              Перетащите рецепт в слот календаря справа.
+            </Text>
+            <ScrollArea h={360} mt={8}>
+              <div className="planner-recipes">
+                {recipes.map((recipe) => (
+                  <button
+                    key={recipe.id}
+                    className="planner-recipe"
+                    type="button"
+                    draggable
+                    onDragStart={(event) => {
+                      event.dataTransfer.setData('text/plain', `recipe:${recipe.id}`)
+                    }}
+                  >
+                    <strong>{recipe.title}</strong>
+                    <span>{recipe.cookingTime}</span>
+                    <span>{recipe.calories} ккал</span>
+                    <div className="planner-recipe-tags">
+                      {recipe.tags.slice(0, 2).map((tag) => (
+                        <Badge key={tag} variant="light" size="xs" color="grape">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
             {errorMessage ? (
-            <Alert mt={10} color="red" title="Проверьте заполнение плана">
-              {errorMessage}
-            </Alert>
-          ) : null}
-          {submitMessage ? (
-            <Alert mt={10} color="green" title="Отправка выполнена">
-              {submitMessage}
-            </Alert>
-          ) : null}
+              <Alert mt={10} color="red" title="Проверьте заполнение плана">
+                {errorMessage}
+              </Alert>
+            ) : null}
+            {submitMessage ? (
+              <Alert mt={10} color="green" title="Отправка выполнена">
+                {submitMessage}
+              </Alert>
+            ) : null}
           </Card>
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, lg: 8 }}>
-        <Stack gap="md">
+          <Stack gap="md">
           <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
-            <Title order={3}>Каталог рецептов</Title>
-            <div className="planner-recipes">
-              {recipes.map((recipe) => (
-                <button
-                  key={recipe.id}
-                  className="planner-recipe"
-                  type="button"
-                  draggable
-                  onDragStart={(event) => {
-                    event.dataTransfer.setData('text/plain', `recipe:${recipe.id}`)
-                  }}
-                >
-                  <strong>{recipe.title}</strong>
-                  <span>{recipe.cookingTime}</span>
-                  <span>{recipe.calories} ккал</span>
-                </button>
-              ))}
-            </div>
-          </Card>
+            <Title order={3}>Вертикальный календарь плана</Title>
+            <Text size="sm" c="dimmed" mt={4}>
+              Слоты выделяются при перетаскивании, можно очистить каждый слот или целый день.
+            </Text>
+            <ScrollArea h={640} mt={10}>
+              <div className="planner-calendar">
+                {dayIndexes.map((dayIndex) => (
+                  <section key={dayIndex} className="planner-day-card">
+                    <div className="planner-day-head">
+                      <Title order={4}>День {dayIndex}</Title>
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        color="red"
+                        onClick={() => clearDay(dayIndex)}
+                      >
+                        Очистить день
+                      </Button>
+                    </div>
+                    <Stack gap="sm" mt={8}>
+                      {slotTypes.map((slotType) => {
+                        const slotKey = `${dayIndex}:${slotType}`
+                        const recipeId = slotsMap[slotKey]
+                        const recipe = recipes.find((item) => item.id === recipeId)
+                        const isDropActive = activeDropSlot === slotKey
 
-          <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
-            <Title order={3}>Календарь плана</Title>
-            <div className="planner-calendar">
-              {dayIndexes.map((dayIndex) => (
-                <section key={dayIndex} className="planner-day-card">
-                  <Title order={4}>День {dayIndex}</Title>
-                  <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm" mt={8}>
-                    {slotTypes.map((slotType) => {
-                      const slotKey = `${dayIndex}:${slotType}`
-                      const recipeId = slotsMap[slotKey]
-                      const recipe = recipes.find((item) => item.id === recipeId)
-
-                      return (
-                        <div
-                          key={slotKey}
-                          className="planner-slot"
-                          onDragOver={(event) => event.preventDefault()}
-                          onDrop={(event) => {
-                            const payload = event.dataTransfer.getData('text/plain')
-                            onDropToSlot(slotKey, payload)
-                          }}
-                        >
-                          <div className="planner-slot-head">
-                            <span>{getSlotLabel(slotType)}</span>
+                        return (
+                          <div
+                            key={slotKey}
+                            className={`planner-slot ${isDropActive ? 'planner-slot-active' : ''}`}
+                            onDragOver={(event) => {
+                              event.preventDefault()
+                              setActiveDropSlot(slotKey)
+                            }}
+                            onDragLeave={() => setActiveDropSlot((prev) => (prev === slotKey ? null : prev))}
+                            onDrop={(event) => {
+                              const payload = event.dataTransfer.getData('text/plain')
+                              onDropToSlot(slotKey, payload)
+                            }}
+                          >
+                            <div className="planner-slot-head">
+                              <span>{getSlotLabel(slotType)}</span>
+                              {recipe ? (
+                                <button
+                                  type="button"
+                                  className="planner-clear-btn"
+                                  onClick={() => clearSlot(slotKey)}
+                                >
+                                  Очистить
+                                </button>
+                              ) : null}
+                            </div>
                             {recipe ? (
                               <button
                                 type="button"
-                                className="planner-clear-btn"
-                                onClick={() => clearSlot(slotKey)}
+                                className="planner-assigned"
+                                draggable
+                                onDragStart={(event) => {
+                                  const payload = `slot:${slotKey}`
+                                  setDragFrom(payload)
+                                  event.dataTransfer.setData('text/plain', payload)
+                                }}
+                                onDragEnd={() => {
+                                  setDragFrom(null)
+                                  setActiveDropSlot(null)
+                                }}
                               >
-                                Очистить
+                                <strong>{recipe.title}</strong>
+                                <span>
+                                  {recipe.calories} ккал - {recipe.cookingTime}
+                                </span>
                               </button>
-                            ) : null}
+                            ) : (
+                              <p className="planner-empty">
+                                {dragFrom ? 'Отпустите рецепт сюда' : 'Перетащите рецепт'}
+                              </p>
+                            )}
                           </div>
-                          {recipe ? (
-                            <button
-                              type="button"
-                              className="planner-assigned"
-                              draggable
-                              onDragStart={(event) => {
-                                const payload = `slot:${slotKey}`
-                                setDragFrom(payload)
-                                event.dataTransfer.setData('text/plain', payload)
-                              }}
-                              onDragEnd={() => setDragFrom(null)}
-                            >
-                              <strong>{recipe.title}</strong>
-                              <span>
-                                {recipe.calories} ккал - {recipe.cookingTime}
-                              </span>
-                            </button>
-                          ) : (
-                            <p className="planner-empty">
-                              {dragFrom ? 'Отпустите рецепт сюда' : 'Перетащите рецепт'}
-                            </p>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </SimpleGrid>
-                </section>
-              ))}
-            </div>
+                        )
+                      })}
+                    </Stack>
+                  </section>
+                ))}
+              </div>
+            </ScrollArea>
           </Card>
-        </Stack>
+          </Stack>
         </Grid.Col>
       </Grid>
     </Stack>

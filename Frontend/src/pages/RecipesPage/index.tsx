@@ -1,7 +1,21 @@
-import { Badge, Box, Button, Card, Grid, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core'
-import { useEffect, useState } from 'react'
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  Chip,
+  Grid,
+  Group,
+  Paper,
+  RangeSlider,
+  Select,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FilterGroup } from '../../components/FilterGroup'
 import { fetchRecipes } from '../../shared/api/foodApi'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { Recipe } from '../../types/domain'
@@ -9,6 +23,10 @@ import type { Recipe } from '../../types/domain'
 export function RecipesPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedCaloriesRange, setSelectedCaloriesRange] = useState<[number, number]>([100, 1200])
+  const [selectedTimeRange, setSelectedTimeRange] = useState<[number, number]>([5, 120])
+  const [minRating, setMinRating] = useState<string>('0')
 
   useEffect(() => {
     if (status !== 'loading') {
@@ -40,6 +58,23 @@ export function RecipesPage() {
     )
   }
 
+  const allTags = useMemo(
+    () => Array.from(new Set(recipes.flatMap((recipe) => recipe.tags))),
+    [recipes],
+  )
+  const filteredRecipes = useMemo(() => {
+    const min = Number(minRating || '0')
+    return recipes.filter((recipe) => {
+      const recipeTime = Number(recipe.cookingTime.replace(/[^\d]/g, '') || '0')
+      const byTags = !selectedTags.length || selectedTags.every((tag) => recipe.tags.includes(tag))
+      const byCalories =
+        recipe.calories >= selectedCaloriesRange[0] && recipe.calories <= selectedCaloriesRange[1]
+      const byTime = recipeTime >= selectedTimeRange[0] && recipeTime <= selectedTimeRange[1]
+      const byRating = recipe.rating >= min
+      return byTags && byCalories && byTime && byRating
+    })
+  }, [minRating, recipes, selectedCaloriesRange, selectedTags, selectedTimeRange])
+
   if (!recipes.length) {
     return (
       <PageEmpty
@@ -53,13 +88,57 @@ export function RecipesPage() {
     <Grid gap="md" align="start">
       <Grid.Col span={{ base: 12, md: 4, lg: 3 }}>
         <Paper withBorder radius="md" p="md" style={{ background: 'var(--bg-surface)' }}>
-        <Title order={3}>Фильтры рецептов</Title>
-        <FilterGroup title="Тип блюда" values={['Завтрак', 'Обед', 'Ужин', 'Перекус']} />
-        <FilterGroup
-          title="Диета"
-          values={['Веганское', 'Вегетарианское', 'Без глютена', 'Без лактозы']}
-        />
-        <FilterGroup title="Время приготовления" values={['до 15 мин', '15-30 мин', '30-60 мин']} />
+          <Stack gap="md">
+            <Title order={3}>Фильтры рецептов</Title>
+            <Stack gap={6}>
+              <Text fw={600}>Теги</Text>
+              <Chip.Group multiple value={selectedTags} onChange={setSelectedTags}>
+                <Group gap="xs">
+                  {allTags.map((tag) => (
+                    <Chip key={tag} value={tag} color="grape" variant="light">
+                      {tag}
+                    </Chip>
+                  ))}
+                </Group>
+              </Chip.Group>
+            </Stack>
+            <Stack gap={6}>
+              <Text fw={600}>Время приготовления</Text>
+              <RangeSlider
+                min={5}
+                max={180}
+                step={5}
+                value={selectedTimeRange}
+                onChange={(value) => setSelectedTimeRange(value as [number, number])}
+                label={(value) => `${value} мин`}
+                color="grape"
+              />
+            </Stack>
+            <Stack gap={6}>
+              <Text fw={600}>Калорийность</Text>
+              <RangeSlider
+                min={50}
+                max={1500}
+                step={25}
+                value={selectedCaloriesRange}
+                onChange={(value) => setSelectedCaloriesRange(value as [number, number])}
+                label={(value) => `${value} ккал`}
+                color="grape"
+              />
+            </Stack>
+            <Select
+              label="Минимальный рейтинг"
+              value={minRating}
+              onChange={(value) => setMinRating(value ?? '0')}
+              data={[
+                { value: '0', label: 'Любой' },
+                { value: '3', label: 'от 3.0' },
+                { value: '3.5', label: 'от 3.5' },
+                { value: '4', label: 'от 4.0' },
+                { value: '4.5', label: 'от 4.5' },
+              ]}
+            />
+          </Stack>
         </Paper>
       </Grid.Col>
 
@@ -73,20 +152,20 @@ export function RecipesPage() {
         </Card>
 
         <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
-          {recipes.map((recipe) => (
+          {filteredRecipes.map((recipe) => (
             <Card
               withBorder
               radius="md"
               padding="lg"
               key={recipe.id}
-              style={{ background: 'var(--bg-surface)' }}
+              style={{ background: 'var(--bg-surface)', minHeight: 420, display: 'flex' }}
             >
               <Box
                 h={170}
                 mb={12}
                 style={{ borderRadius: 12, background: recipe.images[0] }}
               />
-              <Stack gap="xs">
+              <Stack gap="xs" style={{ flex: 1 }}>
                 <Title order={3}>{recipe.title}</Title>
                 <Text>{recipe.subtitle}</Text>
                 <Group gap="xs">
@@ -102,18 +181,40 @@ export function RecipesPage() {
                 </Group>
                 <Group gap="xs">
                 {recipe.tags.map((tag) => (
-                    <Badge key={tag} variant="dot" color="violet">
+                    <Badge
+                      key={tag}
+                      variant={selectedTags.includes(tag) ? 'filled' : 'dot'}
+                      color="violet"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() =>
+                        setSelectedTags((prev) =>
+                          prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
+                        )
+                      }
+                    >
                     {tag}
                     </Badge>
                 ))}
                 </Group>
-                <Button component={Link} to={`/recipes/${recipe.id}`} color="grape">
+                <Button
+                  component={Link}
+                  to={`/recipes/${recipe.id}`}
+                  color="grape"
+                  mt="auto"
+                  fullWidth
+                >
                   Открыть рецепт
                 </Button>
               </Stack>
             </Card>
           ))}
         </SimpleGrid>
+        {!filteredRecipes.length ? (
+          <PageEmpty
+            title="Нет рецептов по выбранным фильтрам"
+            description="Измените диапазоны или снимите часть тегов."
+          />
+        ) : null}
       </Stack>
       </Grid.Col>
     </Grid>
