@@ -16,7 +16,6 @@ import { ProfilePage } from './pages/ProfilePage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipesPage } from './pages/RecipesPage'
 import { ReviewsPage } from './pages/ReviewsPage'
-import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
   const checkSession = useUnit(checkSessionRequested)
@@ -41,7 +40,6 @@ function App() {
             <Route path="/reviews" element={<ReviewsPage />} />
             <Route path="/planner" element={<PlannerPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<FallbackCard message="Страница не найдена." />} />
           </Routes>
         </main>

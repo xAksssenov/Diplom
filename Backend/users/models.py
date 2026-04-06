@@ -63,7 +63,12 @@ class User(AbstractUser):
         null=True,
         blank=True,
     )
+    avatar_url = models.URLField(blank=True)
     health_goals = models.TextField(blank=True)
+    health_features = models.JSONField(default=list, blank=True)
+    favorite_tags = models.JSONField(default=list, blank=True)
+    email_notifications = models.BooleanField(default=True)
+    profile_visibility = models.BooleanField(default=False)
     registration_date = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

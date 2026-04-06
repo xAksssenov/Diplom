@@ -7,7 +7,6 @@ export function getBreadcrumbSegments(currentPath: string) {
     reviews: 'Оценки и отзывы',
     planner: 'Конструктор',
     profile: 'Профиль',
-    settings: 'Настройки',
   }
 
   if (/^\/recipes\/[a-z0-9-]+$/i.test(cleanedPath)) {

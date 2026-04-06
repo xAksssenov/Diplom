@@ -6,7 +6,6 @@ export type MainRoute =
   | '/reviews'
   | '/planner'
   | '/profile'
-  | '/settings'
 
 export type Recipe = {
   id: string

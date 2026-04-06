@@ -10,7 +10,12 @@ export type AuthUser = {
   id: number
   email: string
   name: string
+  avatar_url: string
   health_goals: string
+  health_features: string[]
+  favorite_tags: string[]
+  email_notifications: boolean
+  profile_visibility: boolean
   role: BackendRole | null
 }
 
@@ -18,13 +23,31 @@ export type RegisterPayload = {
   email: string
   name: string
   password: string
+  avatar_url?: string
   health_goals?: string
+  health_features?: string[]
+  favorite_tags?: string[]
+  email_notifications?: boolean
+  profile_visibility?: boolean
 }
 
 export type LoginPayload = {
   email: string
   password: string
 }
+
+export type UpdateMePayload = Partial<
+  Pick<
+    AuthUser,
+    | 'name'
+    | 'avatar_url'
+    | 'health_goals'
+    | 'health_features'
+    | 'favorite_tags'
+    | 'email_notifications'
+    | 'profile_visibility'
+  >
+>
 
 function getCookie(name: string) {
   const cookieString = `; ${document.cookie}`
@@ -86,4 +109,8 @@ export function register(payload: RegisterPayload) {
 
 export function logout() {
   return apiRequest<void>('/users/logout/', 'POST', {})
+}
+
+export function updateMe(payload: UpdateMePayload) {
+  return apiRequest<AuthUser>('/users/me/', 'PATCH', payload)
 }

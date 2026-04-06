@@ -1,4 +1,11 @@
-import type { MealPlan, PlanDay, PlanMeal, PlanReview, Recipe } from '../../types/domain'
+import type {
+  MealPlan,
+  ModerationStatusItem,
+  PlanDay,
+  PlanMeal,
+  PlanReview,
+  Recipe,
+} from '../../types/domain'
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:8000/api'
@@ -337,4 +344,70 @@ export async function submitPlannerToBackend(payload: SubmitPlannerPayload) {
 
   await apiPost(`/meal-plans/${createdPlan.id}/submit_for_moderation/`, {})
   return createdPlan.id
+}
+
+type BackendFavorite = {
+  id: number
+  target_type: 'recipe' | 'meal_plan'
+  target_id: number
+}
+
+type BackendNotification = {
+  id: number
+  message: string
+  event_type: string
+  is_read: boolean
+  created_at: string
+}
+
+export async function fetchUserFavorites() {
+  return apiGet<BackendFavorite[]>('/interactions/favorites/')
+}
+
+export async function fetchFavoriteRecipes() {
+  const [favorites, recipes] = await Promise.all([fetchUserFavorites(), fetchRecipes()])
+  const ids = new Set(
+    favorites.filter((item) => item.target_type === 'recipe').map((item) => String(item.target_id)),
+  )
+  return recipes.filter((recipe) => ids.has(recipe.id))
+}
+
+export async function fetchFavoriteMealPlans() {
+  const [favorites, plans] = await Promise.all([fetchUserFavorites(), fetchMealPlans()])
+  const ids = new Set(
+    favorites
+      .filter((item) => item.target_type === 'meal_plan')
+      .map((item) => String(item.target_id)),
+  )
+  return plans.filter((plan) => ids.has(plan.id))
+}
+
+function mapNotificationToStatus(item: BackendNotification): ModerationStatusItem {
+  const normalizedMessage = item.message.toLowerCase()
+  const status: ModerationStatusItem['status'] =
+    normalizedMessage.includes('approved') || normalizedMessage.includes('одобрен')
+      ? 'Одобрено'
+      : normalizedMessage.includes('rejected') || normalizedMessage.includes('отклонен')
+        ? 'Отклонено (нужны правки)'
+        : 'На ревью'
+  const type: ModerationStatusItem['type'] =
+    item.event_type.includes('RECIPE') || item.event_type.includes('recipe')
+      ? 'Рецепт'
+      : item.event_type.includes('REVIEW') || item.event_type.includes('review')
+        ? 'Отзыв'
+        : 'План питания'
+
+  const updatedAt = new Date(item.created_at).toLocaleDateString('ru-RU')
+  return {
+    id: String(item.id),
+    type,
+    title: item.message,
+    status,
+    updatedAt,
+  }
+}
+
+export async function fetchModerationStatuses() {
+  const notifications = await apiGet<BackendNotification[]>('/notifications/')
+  return notifications.map(mapNotificationToStatus)
 }

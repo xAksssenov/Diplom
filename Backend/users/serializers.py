@@ -20,6 +20,14 @@ class UserSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    health_features = serializers.ListField(
+        child=serializers.CharField(max_length=64),
+        required=False,
+    )
+    favorite_tags = serializers.ListField(
+        child=serializers.CharField(max_length=64),
+        required=False,
+    )
 
     class Meta:
         model = User
@@ -27,7 +35,12 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "email",
             "name",
+            "avatar_url",
             "health_goals",
+            "health_features",
+            "favorite_tags",
+            "email_notifications",
+            "profile_visibility",
             "role",
             "role_id",
             "registration_date",
@@ -38,10 +51,28 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    health_features = serializers.ListField(
+        child=serializers.CharField(max_length=64),
+        required=False,
+    )
+    favorite_tags = serializers.ListField(
+        child=serializers.CharField(max_length=64),
+        required=False,
+    )
 
     class Meta:
         model = User
-        fields = ("email", "name", "password", "health_goals")
+        fields = (
+            "email",
+            "name",
+            "password",
+            "avatar_url",
+            "health_goals",
+            "health_features",
+            "favorite_tags",
+            "email_notifications",
+            "profile_visibility",
+        )
 
     @transaction.atomic
     def create(self, validated_data):
@@ -50,7 +81,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=validated_data["email"],
             password=validated_data["password"],
             name=validated_data["name"],
+            avatar_url=validated_data.get("avatar_url", ""),
             health_goals=validated_data.get("health_goals", ""),
+            health_features=validated_data.get("health_features", []),
+            favorite_tags=validated_data.get("favorite_tags", []),
+            email_notifications=validated_data.get("email_notifications", True),
+            profile_visibility=validated_data.get("profile_visibility", False),
             role=default_role,
         )
 

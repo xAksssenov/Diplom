@@ -6,7 +6,6 @@ export const textKeys = {
     mealPlans: 'Планы питания',
     reviews: 'Оценки и отзывы',
     profile: 'Профиль',
-    settings: 'Настройки',
   },
   cta: {
     planner: 'Хотите составить свой план питания?',
