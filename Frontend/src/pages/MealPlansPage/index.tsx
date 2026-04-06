@@ -44,6 +44,8 @@ export function MealPlansPage() {
   const authUser = useUnit($authUser)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [reloadToken, setReloadToken] = useState(0)
+  const [hasLoaded, setHasLoaded] = useState(false)
+  const [isFiltering, setIsFiltering] = useState(false)
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
   const [total, setTotal] = useState(0)
   const [nextOffset, setNextOffset] = useState<number | null>(0)
@@ -123,7 +125,11 @@ export function MealPlansPage() {
 
   useEffect(() => {
     let cancelled = false
-    setStatus('loading')
+    if (hasLoaded) {
+      setIsFiltering(true)
+    } else {
+      setStatus('loading')
+    }
     const timeoutId = window.setTimeout(() => {
       fetchMealPlansPage({ limit: 9, offset: 0, filters: apiFilters })
         .then((data) => {
@@ -131,10 +137,17 @@ export function MealPlansPage() {
           setMealPlans(data.items)
           setTotal(data.total)
           setNextOffset(data.nextOffset)
+          setHasLoaded(true)
+          setIsFiltering(false)
           setStatus('ready')
         })
         .catch((error) => {
           if (cancelled) return
+          setIsFiltering(false)
+          if (hasLoaded) {
+            pushApiError(error, 'Не удалось обновить список планов.')
+            return
+          }
           setStatus('error')
           pushApiError(error, 'Не удалось получить планы питания.')
         })
@@ -143,7 +156,7 @@ export function MealPlansPage() {
       cancelled = true
       window.clearTimeout(timeoutId)
     }
-  }, [apiFilters, reloadToken])
+  }, [apiFilters, hasLoaded, reloadToken])
 
   if (status === 'loading') {
     return <PageLoader title="Загружаем планы питания..." />
@@ -257,7 +270,15 @@ export function MealPlansPage() {
             </Stack>
           </Card>
 
-          <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
+          <SimpleGrid
+            cols={{ base: 1, sm: 2, xl: 3 }}
+            spacing="md"
+            style={{
+              opacity: isFiltering ? 0.62 : 1,
+              pointerEvents: isFiltering ? 'none' : 'auto',
+              transition: 'opacity 180ms ease',
+            }}
+          >
             {mealPlans.map((plan) => (
               <Card
                 withBorder

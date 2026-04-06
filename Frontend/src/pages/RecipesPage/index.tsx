@@ -27,6 +27,8 @@ export function RecipesPage() {
   const authUser = useUnit($authUser)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [reloadToken, setReloadToken] = useState(0)
+  const [hasLoaded, setHasLoaded] = useState(false)
+  const [isFiltering, setIsFiltering] = useState(false)
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [total, setTotal] = useState(0)
   const [nextOffset, setNextOffset] = useState<number | null>(0)
@@ -76,7 +78,11 @@ export function RecipesPage() {
 
   useEffect(() => {
     let cancelled = false
-    setStatus('loading')
+    if (hasLoaded) {
+      setIsFiltering(true)
+    } else {
+      setStatus('loading')
+    }
     const timeoutId = window.setTimeout(() => {
       fetchRecipesPage({ limit: 9, offset: 0, filters: recipeFilters })
         .then((data) => {
@@ -84,10 +90,17 @@ export function RecipesPage() {
           setRecipes(data.items)
           setTotal(data.total)
           setNextOffset(data.nextOffset)
+          setHasLoaded(true)
+          setIsFiltering(false)
           setStatus('ready')
         })
         .catch((error) => {
           if (cancelled) return
+          setIsFiltering(false)
+          if (hasLoaded) {
+            pushApiError(error, 'Не удалось обновить список рецептов.')
+            return
+          }
           setStatus('error')
           pushApiError(error, 'Не удалось загрузить рецепты.')
         })
@@ -96,7 +109,7 @@ export function RecipesPage() {
       cancelled = true
       window.clearTimeout(timeoutId)
     }
-  }, [recipeFilters, reloadToken])
+  }, [hasLoaded, recipeFilters, reloadToken])
 
   if (status === 'loading') {
     return <PageLoader title="Загружаем рецепты..." />
@@ -198,7 +211,15 @@ export function RecipesPage() {
           </Stack>
         </Card>
 
-        <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">
+        <SimpleGrid
+          cols={{ base: 1, sm: 2, xl: 3 }}
+          spacing="md"
+          style={{
+            opacity: isFiltering ? 0.62 : 1,
+            pointerEvents: isFiltering ? 'none' : 'auto',
+            transition: 'opacity 180ms ease',
+          }}
+        >
           {recipes.map((recipe) => (
             <Card
               withBorder
