@@ -28,6 +28,7 @@ import {
   fetchFavoriteRecipes,
   fetchModerationStatuses,
 } from '../../shared/api/foodApi'
+import { pushApiError, pushSuccess } from '../../shared/model/notifications'
 import type { MealPlan, ModerationStatusItem, Recipe } from '../../types/domain'
 
 const availableTags = [
@@ -88,8 +89,9 @@ export function ProfilePage() {
         setFavoriteRecipes(recipes)
         setModerationStatuses(statuses)
       })
-      .catch(() => {
+      .catch((error) => {
         setErrorMessage('Не удалось загрузить избранное и статусы модерации.')
+        pushApiError(error, 'Ошибка загрузки профиля.')
       })
   }, [authStatus])
 
@@ -311,9 +313,12 @@ export function ProfilePage() {
                   profile_visibility: profileVisibility,
                 })
                 setSaveMessage('Профиль обновлен.')
-              } catch {
+              } catch (error) {
                 setErrorMessage('Не удалось сохранить профиль.')
+                pushApiError(error, 'Ошибка сохранения профиля.')
+                return
               }
+              pushSuccess('Профиль обновлен.')
             }}
           >
             Сохранить профиль

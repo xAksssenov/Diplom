@@ -32,6 +32,7 @@ import {
   slotsSwapped,
 } from '../../features/planner/model'
 import { appendModerationStatus } from '../../lib/moderationStorage'
+import { pushApiError, pushError, pushSuccess } from '../../shared/model/notifications'
 import { PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { Recipe } from '../../types/domain'
 import './styles.css'
@@ -120,7 +121,10 @@ export function PlannerPage() {
         setRecipes(data)
         setRecipesStatus('ready')
       })
-      .catch(() => setRecipesStatus('error'))
+      .catch((error) => {
+        setRecipesStatus('error')
+        pushApiError(error, 'Не удалось загрузить рецепты для конструктора.')
+      })
   }, [recipesStatus])
 
   if (recipesStatus === 'loading') {
@@ -162,6 +166,7 @@ export function PlannerPage() {
     if (authStatus !== 'auth') {
       resetMessages()
       setError('Для отправки плана на модерацию войдите в аккаунт.')
+      pushError('Для отправки плана на модерацию войдите в аккаунт.')
       navigate('/auth')
       return
     }
@@ -174,6 +179,7 @@ export function PlannerPage() {
     if (missingRequired) {
       setError('Заполните обязательно завтрак, обед и ужин для каждого дня.')
       setSubmitMessage('')
+      pushError('Заполните завтрак, обед и ужин для каждого дня.')
       return
     }
 
@@ -195,7 +201,8 @@ export function PlannerPage() {
       setSubmitMessage(
         `План #${backendPlanId} отправлен на модерацию. Статус доступен в личном кабинете.`,
       )
-    } catch {
+      pushSuccess(`План #${backendPlanId} отправлен на модерацию.`)
+    } catch (error) {
       appendModerationStatus({
         id: `planner-${Date.now()}`,
         type: 'План питания',
@@ -207,6 +214,7 @@ export function PlannerPage() {
       setSubmitMessage(
         'План отправлен локально. Войдите в аккаунт, чтобы отправлять планы напрямую на сервер.',
       )
+      pushApiError(error, 'Сервер недоступен, план сохранен локально.')
     }
   }
 

@@ -1,3 +1,5 @@
+import { toApiError } from './errors'
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:8000/api'
 
@@ -85,7 +87,7 @@ async function apiRequest<T>(path: string, method: 'GET' | 'POST' | 'PATCH', bod
   })
 
   if (!response.ok) {
-    throw new Error(`Auth request failed: ${response.status}`)
+    throw await toApiError(response)
   }
 
   if (response.status === 204) {

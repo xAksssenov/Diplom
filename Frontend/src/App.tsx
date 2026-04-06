@@ -16,6 +16,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipesPage } from './pages/RecipesPage'
 import { ReviewsPage } from './pages/ReviewsPage'
+import { AppNotifications } from './shared/ui/AppNotifications'
 
 function App() {
   const checkSession = useUnit(checkSessionRequested)
@@ -27,6 +28,7 @@ function App() {
   return (
     <Container size="xl" py="md">
       <Stack gap="md" mih="100vh">
+        <AppNotifications />
         <Header />
         <Breadcrumbs />
         <main>

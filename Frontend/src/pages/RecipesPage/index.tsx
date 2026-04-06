@@ -17,6 +17,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchRecipes } from '../../shared/api/foodApi'
+import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { Recipe } from '../../types/domain'
 
@@ -39,7 +40,10 @@ export function RecipesPage() {
           setRecipes(data)
           setStatus('ready')
         })
-        .catch(() => setStatus('error'))
+        .catch((error) => {
+          setStatus('error')
+          pushApiError(error, 'Не удалось загрузить рецепты.')
+        })
     }, 500)
 
     return () => window.clearTimeout(timeoutId)

@@ -26,6 +26,7 @@ import {
   type TargetReview,
   upsertReview,
 } from '../../shared/api/foodApi'
+import { pushApiError, pushError, pushSuccess } from '../../shared/model/notifications'
 import { PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { Recipe } from '../../types/domain'
 
@@ -57,7 +58,10 @@ export function RecipeDetailPage() {
         setReviews(reviewsData)
         setStatus('ready')
       })
-      .catch(() => setStatus('error'))
+      .catch((error) => {
+        setStatus('error')
+        pushApiError(error, 'Не удалось загрузить рецепт.')
+      })
   }, [recipeId, reloadToken])
 
   useEffect(() => {
@@ -68,8 +72,8 @@ export function RecipeDetailPage() {
           items.some((item) => item.target_type === 'recipe' && String(item.target_id) === recipeId),
         )
       })
-      .catch(() => {
-        // no-op
+      .catch((error) => {
+        pushApiError(error, 'Не удалось проверить избранное.')
       })
   }, [authStatus, recipeId])
 
@@ -164,6 +168,7 @@ export function RecipeDetailPage() {
                 onClick={async () => {
                   if (authStatus !== 'auth') {
                     setActionError('Авторизуйтесь, чтобы добавить рецепт в избранное.')
+                    pushError('Авторизуйтесь, чтобы добавить рецепт в избранное.')
                     return
                   }
                   setActionError('')
@@ -179,8 +184,9 @@ export function RecipeDetailPage() {
                       setFavorite(true)
                       setActionMessage('Рецепт добавлен в избранное.')
                     }
-                  } catch {
+                  } catch (error) {
                     setActionError('Не удалось обновить избранное.')
+                    pushApiError(error, 'Не удалось обновить избранное.')
                   } finally {
                     setPendingFavorite(false)
                   }
@@ -236,10 +242,12 @@ export function RecipeDetailPage() {
               onClick={async () => {
                 if (authStatus !== 'auth' || !authUser) {
                   setActionError('Авторизуйтесь, чтобы оставлять отзывы.')
+                  pushError('Авторизуйтесь, чтобы оставлять отзывы.')
                   return
                 }
                 if (!reviewRating) {
                   setActionError('Поставьте оценку от 1 до 5.')
+                  pushError('Поставьте оценку от 1 до 5.')
                   return
                 }
                 setActionError('')
@@ -255,8 +263,10 @@ export function RecipeDetailPage() {
                   const updated = await fetchTargetReviews('recipe', recipe.id)
                   setReviews(updated)
                   setActionMessage('Отзыв сохранен.')
-                } catch {
+                  pushSuccess('Отзыв сохранен.')
+                } catch (error) {
                   setActionError('Не удалось сохранить отзыв.')
+                  pushApiError(error, 'Не удалось сохранить отзыв.')
                 } finally {
                   setPendingReview(false)
                 }

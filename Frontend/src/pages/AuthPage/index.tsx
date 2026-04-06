@@ -1,6 +1,6 @@
 import { Alert, Button, Card, PasswordInput, Stack, Tabs, TextInput, Title } from '@mantine/core'
 import { useUnit } from 'effector-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import {
   $authError,
@@ -11,6 +11,7 @@ import {
   registerFx,
   registerSubmitted,
 } from '../../features/auth/model'
+import { pushError, pushSuccess } from '../../shared/model/notifications'
 
 export function AuthPage() {
   const {
@@ -35,6 +36,19 @@ export function AuthPage() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [healthGoals, setHealthGoals] = useState('')
+
+  useEffect(() => {
+    if (authError) {
+      pushError(authError, 'Ошибка авторизации')
+    }
+  }, [authError])
+
+  useEffect(() => {
+    if (authStatus === 'auth') {
+      pushSuccess('Вы успешно авторизованы.', 'Сессия активна')
+    }
+  }, [authStatus])
+
   if (authStatus === 'auth') {
     return <Navigate to="/profile" replace />
   }

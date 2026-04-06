@@ -27,6 +27,7 @@ import {
   type TargetReview,
   upsertReview,
 } from '../../shared/api/foodApi'
+import { pushApiError, pushError, pushSuccess } from '../../shared/model/notifications'
 import { PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { MealPlan } from '../../types/domain'
 
@@ -57,7 +58,10 @@ export function MealPlanDetailPage() {
         setReviews(reviewsData)
         setStatus('ready')
       })
-      .catch(() => setStatus('error'))
+      .catch((error) => {
+        setStatus('error')
+        pushApiError(error, 'Не удалось загрузить план питания.')
+      })
   }, [planId, reloadToken])
 
   useEffect(() => {
@@ -70,8 +74,8 @@ export function MealPlanDetailPage() {
           ),
         )
       })
-      .catch(() => {
-        // no-op
+      .catch((error) => {
+        pushApiError(error, 'Не удалось проверить избранное.')
       })
   }, [authStatus, planId])
 
@@ -151,6 +155,7 @@ export function MealPlanDetailPage() {
               onClick={async () => {
                 if (authStatus !== 'auth') {
                   setActionError('Авторизуйтесь, чтобы добавить план в избранное.')
+                  pushError('Авторизуйтесь, чтобы добавить план в избранное.')
                   return
                 }
                 setActionError('')
@@ -166,8 +171,9 @@ export function MealPlanDetailPage() {
                     setFavorite(true)
                     setActionMessage('План добавлен в избранное.')
                   }
-                } catch {
+                } catch (error) {
                   setActionError('Не удалось обновить избранное.')
+                  pushApiError(error, 'Не удалось обновить избранное.')
                 } finally {
                   setPendingFavorite(false)
                 }
@@ -243,10 +249,12 @@ export function MealPlanDetailPage() {
             onClick={async () => {
               if (authStatus !== 'auth' || !authUser) {
                 setActionError('Авторизуйтесь, чтобы оставлять отзывы.')
+                pushError('Авторизуйтесь, чтобы оставлять отзывы.')
                 return
               }
               if (!reviewRating) {
                 setActionError('Поставьте оценку от 1 до 5.')
+                pushError('Поставьте оценку от 1 до 5.')
                 return
               }
               setActionError('')
@@ -262,8 +270,10 @@ export function MealPlanDetailPage() {
                 const updated = await fetchTargetReviews('meal_plan', plan.id)
                 setReviews(updated)
                 setActionMessage('Отзыв сохранен.')
-              } catch {
+                pushSuccess('Отзыв сохранен.')
+              } catch (error) {
                 setActionError('Не удалось сохранить отзыв.')
+                pushApiError(error, 'Не удалось сохранить отзыв.')
               } finally {
                 setPendingReview(false)
               }

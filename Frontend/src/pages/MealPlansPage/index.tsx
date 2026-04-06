@@ -16,6 +16,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchMealPlans } from '../../shared/api/foodApi'
+import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { MealPlan } from '../../types/domain'
 
@@ -39,7 +40,10 @@ export function MealPlansPage() {
           setMealPlans(data)
           setStatus('ready')
         })
-        .catch(() => setStatus('error'))
+        .catch((error) => {
+          setStatus('error')
+          pushApiError(error, 'Не удалось получить планы питания.')
+        })
     }, 550)
 
     return () => window.clearTimeout(timeoutId)

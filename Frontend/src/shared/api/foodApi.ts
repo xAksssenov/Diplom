@@ -6,6 +6,7 @@ import type {
   PlanReview,
   Recipe,
 } from '../../types/domain'
+import { toApiError } from './errors'
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '') || 'http://localhost:8000/api'
@@ -78,7 +79,7 @@ async function apiGet<T>(path: string): Promise<T> {
   })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`)
+    throw await toApiError(response)
   }
 
   return (await response.json()) as T
@@ -98,7 +99,7 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
   })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`)
+    throw await toApiError(response)
   }
 
   return (await response.json()) as T
@@ -118,7 +119,7 @@ async function apiPatch<T>(path: string, body: unknown): Promise<T> {
   })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`)
+    throw await toApiError(response)
   }
 
   return (await response.json()) as T
@@ -136,7 +137,7 @@ async function apiDelete(path: string): Promise<void> {
   })
 
   if (!response.ok && response.status !== 204) {
-    throw new Error(`API request failed: ${response.status}`)
+    throw await toApiError(response)
   }
 }
 

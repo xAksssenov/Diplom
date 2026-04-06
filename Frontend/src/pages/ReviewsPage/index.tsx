@@ -2,6 +2,7 @@ import { Badge, Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@man
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchPlanReviews } from '../../shared/api/foodApi'
+import { pushApiError } from '../../shared/model/notifications'
 import { PageEmpty, PageError, PageLoader } from '../../shared/ui/PageStates'
 import type { PlanReview } from '../../types/domain'
 
@@ -20,7 +21,10 @@ export function ReviewsPage() {
           setPlanReviews(data)
           setStatus('ready')
         })
-        .catch(() => setStatus('error'))
+        .catch((error) => {
+          setStatus('error')
+          pushApiError(error, 'Сервис отзывов временно недоступен.')
+        })
     }, 450)
 
     return () => window.clearTimeout(timeoutId)
