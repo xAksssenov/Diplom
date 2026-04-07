@@ -1,14 +1,35 @@
-import { Badge, Box, Button, Card, Group, List, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core'
+import { Badge, Box, Button, Card, Grid, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { Link } from 'react-router-dom'
 import { PreviewCard } from '../../components/PreviewCard'
 import { textKeys } from '../../shared/config/texts'
 
 export function AboutPage() {
+  const sections = [
+    {
+      badge: 'Планирование без хаоса',
+      title: 'Соберите питание под свой ритм',
+      text: 'Выбирайте блюда по целям и ограничениям, добавляйте их в план и сразу видьте итоговую структуру дня.',
+      note: 'Подходит для персонального рациона и для семьи.',
+    },
+    {
+      badge: 'Умный подбор',
+      title: 'Фильтры и поиск помогают найти нужное быстрее',
+      text: 'Используйте калорийность, время приготовления, теги и рейтинг. Списки подгружаются постепенно и не перегружают интерфейс.',
+      note: 'Серверная фильтрация и серверный поиск дают точные результаты.',
+    },
+    {
+      badge: 'Контроль качества',
+      title: 'Планы и рецепты проходят модерацию',
+      text: 'Каждый материал можно отправить на проверку, а статусы отслеживать в личном кабинете. Это повышает доверие к контенту.',
+      note: 'Автор видит изменения статуса и может быстро внести правки.',
+    },
+  ]
+
   return (
     <Stack gap="md">
       <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="md">
-          <Group justify="space-between" align="flex-start">
+          <Group justify="space-between">
             <Stack gap="sm" maw={680}>
               <Badge color="grape" variant="light" w="fit-content">
                 Персональный помощник по питанию
@@ -17,6 +38,10 @@ export function AboutPage() {
               <Text>
                 FoodPlanner объединяет рецепты, планы питания и отзывы в одном месте. Выберите
                 готовый план, адаптируйте его под себя или соберите полностью персональный сценарий.
+              </Text>
+              <Text c="dimmed" size="sm">
+                Делайте рацион системным: от быстрых подборок до собственного плана с сохранением
+                в личном кабинете.
               </Text>
               <Group>
                 <Button component={Link} to="/meal-plans" color="grape" w="fit-content">
@@ -41,82 +66,49 @@ export function AboutPage() {
                 color: '#5b2a8a',
                 fontWeight: 600,
               }}
-            >
-              Placeholder: Hero image
-            </Box>
+            />
           </Group>
         </Stack>
       </Card>
 
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
-        <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
-          <Stack gap="sm">
-            <Title order={3}>Почему FoodPlanner</Title>
-            <List
-              spacing="xs"
-              icon={
-                <ThemeIcon size={20} radius="xl" color="grape">
-                  ✓
-                </ThemeIcon>
-              }
-            >
-              <List.Item>Подбор планов по целям: снижение веса, поддержание, набор массы.</List.Item>
-              <List.Item>Гибкие фильтры: калории, время, диета, пользовательские теги.</List.Item>
-              <List.Item>Конструктор с drag-and-drop и отправкой на модерацию.</List.Item>
-              <List.Item>Избранное, персональные особенности и история статусов в профиле.</List.Item>
-            </List>
-          </Stack>
-        </Card>
-
-        <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
-          <Stack gap="sm">
-            <Title order={3}>Сценарии использования</Title>
-            <Text>Подходит как для новичков, так и для тех, кто ведет питание системно.</Text>
-            <Group gap="xs">
-              <Badge variant="light" color="grape">
-                План на неделю
-              </Badge>
-              <Badge variant="light" color="grape">
-                Быстрые рецепты
-              </Badge>
-              <Badge variant="light" color="grape">
-                Диетические ограничения
-              </Badge>
-            </Group>
-            <Box
-              h={120}
-              style={{
-                borderRadius: 12,
-                border: '1px dashed var(--border-soft)',
-                background:
-                  'linear-gradient(145deg, rgba(255,255,255,0.78) 0%, rgba(167,139,250,0.2) 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#5b2a8a',
-                fontWeight: 600,
-              }}
-            >
-              Placeholder: Lifestyle image
-            </Box>
-          </Stack>
-        </Card>
-      </SimpleGrid>
-
-      <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="md">
-        <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
-          <Title order={4}>Контентный блок</Title>
-          <Text mt={8}>Тут можно разместить кейс или onboarding-инструкцию для новых пользователей.</Text>
-        </Card>
-        <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
-          <Title order={4}>Контентный блок</Title>
-          <Text mt={8}>Подходит для рассказа о модерации, ролях и прозрачности качества рецептов.</Text>
-        </Card>
-        <Card withBorder radius="md" padding="lg" style={{ background: 'var(--bg-surface)' }}>
-          <Title order={4}>Контентный блок</Title>
-          <Text mt={8}>Можно добавить партнерские материалы или полезные советы по рациону.</Text>
-        </Card>
-      </SimpleGrid>
+      {sections.map((section, index) => {
+        const imageFirst = index % 2 === 0
+        return (
+          <Card
+            key={section.title}
+            withBorder
+            radius="md"
+            padding="lg"
+            style={{ background: 'var(--bg-surface)' }}
+          >
+            <Grid align="center" gap="md">
+              <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: imageFirst ? 1 : 2 }}>
+                <Box
+                  h={220}
+                  style={{
+                    borderRadius: 14,
+                    border: '1px dashed var(--border-soft)',
+                    background:
+                      'linear-gradient(145deg, rgba(255,255,255,0.76) 0%, rgba(167,139,250,0.22) 100%)',
+                  }}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 2, md: imageFirst ? 2 : 1 }}>
+                <Stack gap="sm">
+                  <Badge color="grape" variant="light" w="fit-content">
+                    {section.badge}
+                  </Badge>
+                  <Title order={3}>{section.title}</Title>
+                  <Text>{section.text}</Text>
+                  <Text size="sm" c="dimmed">
+                    {section.note}
+                  </Text>
+                </Stack>
+              </Grid.Col>
+            </Grid>
+          </Card>
+        )
+      })}
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
         <PreviewCard

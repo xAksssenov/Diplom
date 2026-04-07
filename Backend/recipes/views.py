@@ -64,6 +64,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             except (TypeError, ValueError):
                 pass
 
+        search_query = (self.request.query_params.get("search") or "").strip()
+        if search_query:
+            search_filter = (
+                Q(title__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(instructions__icontains=search_query)
+                | Q(author__name__icontains=search_query)
+                | Q(tags__name__icontains=search_query)
+            )
+            queryset = queryset.filter(search_filter)
+
         if self.request.user.is_authenticated:
             if self.request.query_params.get("personalized") == "1":
                 preference_query = Q()

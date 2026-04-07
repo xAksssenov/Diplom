@@ -243,6 +243,24 @@ function resolvePlanDiet(value: BackendMealPlan['plan_type']) {
   return 'Сбалансированное'
 }
 
+function formatDaysLabel(days: number) {
+  const normalized = Math.max(1, days)
+  const lastTwo = normalized % 100
+  const last = normalized % 10
+  if (lastTwo >= 11 && lastTwo <= 14) return `${normalized} дней`
+  if (last === 1) return `${normalized} день`
+  if (last >= 2 && last <= 4) return `${normalized} дня`
+  return `${normalized} дней`
+}
+
+function getDurationDays(startDate: string, endDate: string) {
+  const start = new Date(`${startDate}T00:00:00`)
+  const end = new Date(`${endDate}T00:00:00`)
+  const diffMs = end.getTime() - start.getTime()
+  const diffDays = Number.isFinite(diffMs) ? Math.floor(diffMs / (24 * 60 * 60 * 1000)) : 1
+  return Math.max(1, diffDays)
+}
+
 function toMealsByDay(
   items: BackendMealPlanItem[],
   recipesById: Record<number, Recipe>,
@@ -289,6 +307,7 @@ function toUiMealPlan(
   ratingMap: Record<number, number>,
   countMap: Record<number, number>,
 ): MealPlan {
+  const durationDays = getDurationDays(plan.start_date, plan.end_date)
   return {
     id: String(plan.id),
     title: `План #${plan.id}`,
@@ -304,7 +323,7 @@ function toUiMealPlan(
     carbs: 0,
     rating: ratingMap[plan.id] ?? 0,
     reviewsCount: countMap[plan.id] ?? 0,
-    description: `Период: ${plan.start_date} - ${plan.end_date}`,
+    description: `Продолжительность: ${formatDaysLabel(durationDays)}`,
     days: toMealsByDay(plan.items ?? [], recipesById),
   }
 }
@@ -392,6 +411,7 @@ export type RecipeListFilters = {
   minRating?: number
   personalized?: boolean
   userId?: number
+  search?: string
 }
 
 export async function fetchRecipesPage(params: {
@@ -427,6 +447,9 @@ export async function fetchRecipesPage(params: {
   }
   if (typeof filters?.userId === 'number') {
     query.set('user_id', String(filters.userId))
+  }
+  if (filters?.search?.trim()) {
+    query.set('search', filters.search.trim())
   }
 
   const [recipesResponse, reviews, tagsById] = await Promise.all([
@@ -484,6 +507,7 @@ function toUiMealPlanListItem(
   ratingMap: Record<number, number>,
   countMap: Record<number, number>,
 ): MealPlan {
+  const durationDays = getDurationDays(plan.start_date, plan.end_date)
   return {
     id: String(plan.id),
     title: `План #${plan.id}`,
@@ -499,7 +523,7 @@ function toUiMealPlanListItem(
     carbs: 0,
     rating: ratingMap[plan.id] ?? 0,
     reviewsCount: countMap[plan.id] ?? 0,
-    description: `Период: ${plan.start_date} - ${plan.end_date}`,
+    description: `Продолжительность: ${formatDaysLabel(durationDays)}`,
     days: [],
   }
 }
@@ -514,6 +538,7 @@ export async function fetchMealPlansPage(params: {
     minRating?: number
     personalized?: boolean
     userId?: number
+    search?: string
   }
 }): Promise<PaginatedResult<MealPlan>> {
   const query = new URLSearchParams({
@@ -537,6 +562,9 @@ export async function fetchMealPlansPage(params: {
   }
   if (typeof params.filters?.userId === 'number') {
     query.set('user_id', String(params.filters.userId))
+  }
+  if (params.filters?.search?.trim()) {
+    query.set('search', params.filters.search.trim())
   }
 
   const [plansResponse, reviews] = await Promise.all([

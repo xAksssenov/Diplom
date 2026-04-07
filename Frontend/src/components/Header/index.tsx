@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Burger, Button, Drawer, Group, Paper, Stack, Title } from '@mantine/core'
+import { Autocomplete, Box, Burger, Button, Drawer, Group, Loader, Paper, Stack, Title } from '@mantine/core'
 import { useUnit } from 'effector-react'
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
@@ -35,6 +35,7 @@ export function Header() {
   const [searchValue, setSearchValue] = useState('')
   const [mobileMenuOpened, setMobileMenuOpened] = useState(false)
   const [searchOptions, setSearchOptions] = useState<SearchOption[]>(staticSearchOptions)
+  const [searchLoading, setSearchLoading] = useState(false)
   const { authStatus, authUser, logout } = useUnit({
     authStatus: $authStatus,
     authUser: $authUser,
@@ -57,30 +58,54 @@ export function Header() {
   } as const
 
   useEffect(() => {
-    Promise.all([fetchRecipesPage({ limit: 40, offset: 0 }), fetchMealPlansPage({ limit: 40, offset: 0 })])
-      .then(([recipesPage, plansPage]) => {
-        const recipes = recipesPage.items
-        const plans = plansPage.items
-        const recipeItems = recipes.slice(0, 40).map((recipe) => ({
-          value: `recipe-${recipe.id}`,
-          label: `Рецепт: ${recipe.title}`,
-          path: `/recipes/${recipe.id}`,
-        }))
-        const planItems = plans.slice(0, 40).map((plan) => ({
-          value: `plan-${plan.id}`,
-          label: `План: ${plan.title}`,
-          path: `/meal-plans/${plan.id}`,
-        }))
-        const merged = [...staticSearchOptions, ...recipeItems, ...planItems]
-        const deduped = merged.filter(
-          (item, index, array) => array.findIndex((candidate) => candidate.value === item.value) === index,
-        )
-        setSearchOptions(deduped)
-      })
-      .catch(() => {
-        // No-op: header remains usable with static route search.
-      })
-  }, [])
+    const query = searchValue.trim()
+    if (query.length < 2) {
+      setSearchOptions(staticSearchOptions)
+      setSearchLoading(false)
+      return
+    }
+
+    let cancelled = false
+    setSearchLoading(true)
+    const timeoutId = window.setTimeout(() => {
+      Promise.all([
+        fetchRecipesPage({ limit: 6, offset: 0, filters: { search: query } }),
+        fetchMealPlansPage({ limit: 6, offset: 0, filters: { search: query } }),
+      ])
+        .then(([recipesPage, plansPage]) => {
+          if (cancelled) return
+          const recipeItems = recipesPage.items.map((recipe) => ({
+            value: `recipe-${recipe.id}`,
+            label: `Рецепт: ${recipe.title}`,
+            path: `/recipes/${recipe.id}`,
+          }))
+          const planItems = plansPage.items.map((plan) => ({
+            value: `plan-${plan.id}`,
+            label: `План: ${plan.title}`,
+            path: `/meal-plans/${plan.id}`,
+          }))
+          const merged = [...staticSearchOptions, ...recipeItems, ...planItems]
+          const deduped = merged.filter(
+            (item, index, array) => array.findIndex((candidate) => candidate.value === item.value) === index,
+          )
+          setSearchOptions(deduped)
+        })
+        .catch(() => {
+          if (cancelled) return
+          setSearchOptions(staticSearchOptions)
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setSearchLoading(false)
+          }
+        })
+    }, 250)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [searchValue])
 
   return (
     <Paper
@@ -93,20 +118,10 @@ export function Header() {
       <Group justify="space-between" align="center" wrap="wrap" gap="md">
         <Group align="center" gap="md" wrap="wrap">
           <Button
-            variant="subtle"
+            variant="transparent"
             c="white"
             onClick={() => navigate('/')}
             className="header-anim-btn header-logo-btn"
-            styles={{
-              root: {
-                color: 'white',
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.18)',
-                  transform: 'translateY(-1px)',
-                },
-                transition: 'transform .16s ease, background .16s ease',
-              },
-            }}
           >
             <Title order={4} c="white" tt="lowercase">
               {textKeys.appName}
@@ -155,6 +170,7 @@ export function Header() {
             onChange={setSearchValue}
             data={searchData}
             limit={8}
+            rightSection={searchLoading ? <Loader size="xs" /> : null}
             onOptionSubmit={(value) => {
               const target = searchOptions.find((item) => item.value === value)
               if (!target) return
@@ -255,6 +271,7 @@ export function Header() {
             onChange={setSearchValue}
             data={searchData}
             limit={8}
+            rightSection={searchLoading ? <Loader size="xs" /> : null}
             onOptionSubmit={(value) => {
               const target = searchOptions.find((item) => item.value === value)
               if (!target) return

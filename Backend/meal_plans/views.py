@@ -34,6 +34,16 @@ class MealPlanViewSet(viewsets.ModelViewSet):
             except (TypeError, ValueError):
                 pass
 
+        search_query = (self.request.query_params.get("search") or "").strip()
+        if search_query:
+            search_filter = (
+                Q(user__name__icontains=search_query)
+                | Q(items__recipe__title__icontains=search_query)
+                | Q(items__recipe__description__icontains=search_query)
+                | Q(items__recipe__tags__name__icontains=search_query)
+            )
+            queryset = queryset.filter(search_filter)
+
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(status=MealPlan.Status.APPROVED)
 

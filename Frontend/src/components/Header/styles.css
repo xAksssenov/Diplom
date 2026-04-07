@@ -17,6 +17,18 @@
 }
 
 .header-logo-btn:hover {
+  background: rgba(61, 35, 112, 0.55) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, filter 0.18s ease !important;
+  color: #fff !important;
   box-shadow: 0 2px 8px rgba(60, 20, 120, 0.18) !important;
   filter: none !important;
+  transform: translateY(-1px) !important;
+}
+
+.header-logo-btn {
+  color: #fff !important;
+  --button-bg: transparent;
+  --button-hover: rgba(61, 35, 112, 0.55);
+  --button-color: #fff;
+  --button-bd: calc(0.0625rem * var(--mantine-scale)) solid transparent;
 }
