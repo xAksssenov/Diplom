@@ -1,4 +1,5 @@
 import {
+  Accordion,
   Alert,
   Avatar,
   Badge,
@@ -19,7 +20,7 @@ import {
 } from '@mantine/core'
 import { useUnit } from 'effector-react'
 import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { getModerationStatuses as getLocalModerationStatuses } from '../../lib/moderationStorage'
 import {
   $authStatus,
@@ -29,10 +30,14 @@ import {
 import {
   fetchFavoriteMealPlans,
   fetchFavoriteRecipes,
+  fetchModerationQueue,
   fetchMyShoppingLists,
   fetchMyMealPlans,
   fetchMyRecipes,
   fetchModerationStatuses,
+  moderateMealPlan,
+  moderateRecipe,
+  type ModerationQueueItem,
   type UserShoppingList,
 } from '../../shared/api/foodApi'
 import { pushApiError, pushSuccess } from '../../shared/model/notifications'
@@ -50,6 +55,7 @@ const availableTags = [
 ]
 
 export function ProfilePage() {
+  const navigate = useNavigate()
   const {
     authStatus,
     authUser,
@@ -69,6 +75,9 @@ export function ProfilePage() {
   const [myRecipes, setMyRecipes] = useState<Recipe[]>([])
   const [shoppingLists, setShoppingLists] = useState<UserShoppingList[]>([])
   const [moderationStatuses, setModerationStatuses] = useState<ModerationStatusItem[]>([])
+  const [moderationRecipes, setModerationRecipes] = useState<ModerationQueueItem[]>([])
+  const [moderationMealPlans, setModerationMealPlans] = useState<ModerationQueueItem[]>([])
+  const [moderationActionKey, setModerationActionKey] = useState<string | null>(null)
   const [name, setName] = useState(authUser?.name ?? '')
   const [avatarUrl, setAvatarUrl] = useState(authUser?.avatar_url ?? '')
   const [healthGoals, setHealthGoals] = useState(authUser?.health_goals ?? '')
@@ -83,6 +92,9 @@ export function ProfilePage() {
   )
   const [saveMessage, setSaveMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const roleName = authUser?.role?.name ?? 'user'
+  const isStaffRole = roleName === 'moderator' || roleName === 'admin'
+  const roleLabel = roleName === 'moderator' ? 'Модератор' : roleName === 'admin' ? 'Администратор' : ''
 
   useEffect(() => {
     setName(authUser?.name ?? '')
@@ -97,6 +109,25 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (authStatus !== 'auth' || !authUser?.id) return
+    if (isStaffRole) {
+      Promise.all([fetchModerationQueue()])
+        .then(([queue]) => {
+          setShoppingLists([])
+          setModerationRecipes(queue.recipes)
+          setModerationMealPlans(queue.mealPlans)
+          setFavoriteMealPlans([])
+          setFavoriteRecipes([])
+          setMyMealPlans([])
+          setMyRecipes([])
+          setModerationStatuses([])
+        })
+        .catch((error) => {
+          setErrorMessage('Не удалось загрузить профиль модератора.')
+          pushApiError(error, 'Ошибка загрузки панели модератора.')
+        })
+      return
+    }
+
     Promise.all([
       fetchFavoriteMealPlans(),
       fetchFavoriteRecipes(),
@@ -111,6 +142,8 @@ export function ProfilePage() {
         setMyMealPlans(ownPlans)
         setMyRecipes(ownRecipes)
         setShoppingLists(userShoppingLists)
+        setModerationRecipes([])
+        setModerationMealPlans([])
 
         const fromPlans: ModerationStatusItem[] = ownPlans
           .filter((plan) => plan.status !== 'draft')
@@ -138,7 +171,29 @@ export function ProfilePage() {
         setErrorMessage('Не удалось загрузить избранное и статусы модерации.')
         pushApiError(error, 'Ошибка загрузки профиля.')
       })
-  }, [authStatus, authUser?.id])
+  }, [authStatus, authUser?.id, isStaffRole])
+
+  const handleModerationDecision = async (
+    item: ModerationQueueItem,
+    decision: 'approved' | 'rejected',
+  ) => {
+    const actionKey = `${item.type}-${item.id}-${decision}`
+    setModerationActionKey(actionKey)
+    try {
+      if (item.type === 'recipe') {
+        await moderateRecipe(item.id, decision)
+        setModerationRecipes((prev) => prev.filter((candidate) => candidate.id !== item.id))
+      } else {
+        await moderateMealPlan(item.id, decision)
+        setModerationMealPlans((prev) => prev.filter((candidate) => candidate.id !== item.id))
+      }
+      pushSuccess(decision === 'approved' ? 'Заявка одобрена.' : 'Заявка отклонена.')
+    } catch (error) {
+      pushApiError(error, 'Не удалось изменить статус заявки.')
+    } finally {
+      setModerationActionKey(null)
+    }
+  }
 
   if (authStatus !== 'auth') {
     return <Navigate to="/auth" replace />
@@ -154,6 +209,7 @@ export function ProfilePage() {
           <Stack gap={4}>
             <Title order={1}>{name || 'Пользователь'}</Title>
             <Text>Email: {authUser?.email ?? 'unknown@example.com'}</Text>
+            {roleLabel ? <Text>Роль: {roleLabel}</Text> : null}
             <Text>Цель: {healthGoals || 'Не указана'}</Text>
           </Stack>
         </Group>
@@ -168,6 +224,159 @@ export function ProfilePage() {
         )}
       </Card>
 
+      {isStaffRole ? (
+        <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+          <Stack gap="sm">
+            <Title order={3}>Панель модератора</Title>
+            <Text c="dimmed" size="sm">
+              Заявки открываются по нажатию, внутри можно перейти на материал и принять решение.
+            </Text>
+            <Accordion variant="separated" radius="md">
+              <Accordion.Item value="recipes">
+                <Accordion.Control>
+                  Рецепты на ревью ({moderationRecipes.length})
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="xs">
+                    {moderationRecipes.map((item) => (
+                      <Card
+                        key={`recipe-${item.id}`}
+                        withBorder
+                        radius="md"
+                        p="xs"
+                        onClick={() => navigate(`/recipes/${item.id}`)}
+                        style={{
+                          cursor: 'pointer',
+                          transition: 'transform 0.14s ease, box-shadow 0.14s ease',
+                        }}
+                      >
+                        <Stack gap={6}>
+                          <Group gap="xs" justify="space-between">
+                            <Badge color="grape" variant="light" size="sm">
+                              Рецепт
+                            </Badge>
+                            <Text size="xs" c="dimmed">
+                              {item.submittedAt}
+                            </Text>
+                          </Group>
+                          <Title order={6}>{item.title}</Title>
+                          <Text size="xs" c="dimmed">
+                            Автор: {item.author}
+                          </Text>
+                          <Group grow>
+                            <Button
+                              size="xs"
+                              color="green"
+                              variant="light"
+                              loading={moderationActionKey === `recipe-${item.id}-approved`}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                void handleModerationDecision(item, 'approved')
+                              }}
+                            >
+                              Одобрить
+                            </Button>
+                            <Button
+                              size="xs"
+                              color="red"
+                              variant="light"
+                              loading={moderationActionKey === `recipe-${item.id}-rejected`}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                void handleModerationDecision(item, 'rejected')
+                              }}
+                            >
+                              Отклонить
+                            </Button>
+                          </Group>
+                        </Stack>
+                      </Card>
+                    ))}
+                  </SimpleGrid>
+                  {!moderationRecipes.length ? (
+                    <PageEmpty
+                      title="Нет рецептов на модерации"
+                      description="Новые рецепты появятся здесь, как только пользователи отправят их на ревью."
+                    />
+                  ) : null}
+                </Accordion.Panel>
+              </Accordion.Item>
+
+              <Accordion.Item value="plans">
+                <Accordion.Control>
+                  Планы питания на ревью ({moderationMealPlans.length})
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="xs">
+                    {moderationMealPlans.map((item) => (
+                      <Card
+                        key={`meal-plan-${item.id}`}
+                        withBorder
+                        radius="md"
+                        p="xs"
+                        onClick={() => navigate(`/meal-plans/${item.id}`)}
+                        style={{
+                          cursor: 'pointer',
+                          transition: 'transform 0.14s ease, box-shadow 0.14s ease',
+                        }}
+                      >
+                        <Stack gap={6}>
+                          <Group gap="xs" justify="space-between">
+                            <Badge color="blue" variant="light" size="sm">
+                              План питания
+                            </Badge>
+                            <Text size="xs" c="dimmed">
+                              {item.submittedAt}
+                            </Text>
+                          </Group>
+                          <Title order={6}>{item.title}</Title>
+                          <Text size="xs" c="dimmed">
+                            Автор: {item.author}
+                          </Text>
+                          <Group grow>
+                            <Button
+                              size="xs"
+                              color="green"
+                              variant="light"
+                              loading={moderationActionKey === `meal_plan-${item.id}-approved`}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                void handleModerationDecision(item, 'approved')
+                              }}
+                            >
+                              Одобрить
+                            </Button>
+                            <Button
+                              size="xs"
+                              color="red"
+                              variant="light"
+                              loading={moderationActionKey === `meal_plan-${item.id}-rejected`}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                void handleModerationDecision(item, 'rejected')
+                              }}
+                            >
+                              Отклонить
+                            </Button>
+                          </Group>
+                        </Stack>
+                      </Card>
+                    ))}
+                  </SimpleGrid>
+                  {!moderationMealPlans.length ? (
+                    <PageEmpty
+                      title="Нет планов питания на модерации"
+                      description="Новые планы появятся здесь, как только пользователи отправят их на ревью."
+                    />
+                  ) : null}
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+          </Stack>
+        </Card>
+      ) : null}
+
+      {!isStaffRole ? (
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">
           <Title order={3}>Сохраненные списки покупок</Title>
@@ -233,7 +442,9 @@ export function ProfilePage() {
           ) : null}
         </Stack>
       </Card>
+      ) : null}
 
+      {!isStaffRole ? (
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">
           <Title order={3}>Профиль и особенности здоровья</Title>
@@ -284,7 +495,9 @@ export function ProfilePage() {
           ) : null}
         </Stack>
       </Card>
+      ) : null}
 
+      {!isStaffRole ? (
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">
           <Title order={3}>Любимые теги</Title>
@@ -301,7 +514,9 @@ export function ProfilePage() {
           ) : null}
         </Stack>
       </Card>
+      ) : null}
 
+      {!isStaffRole ? (
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">
           <Title order={3}>Ваши материалы</Title>
@@ -367,7 +582,9 @@ export function ProfilePage() {
           </Tabs>
         </Stack>
       </Card>
+      ) : null}
 
+      {!isStaffRole ? (
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">
           <Title order={3}>Избранное</Title>
@@ -453,7 +670,9 @@ export function ProfilePage() {
           </Tabs>
         </Stack>
       </Card>
+      ) : null}
 
+      {!isStaffRole ? (
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">
           <Title order={3}>Статусы модерации</Title>
@@ -491,6 +710,7 @@ export function ProfilePage() {
           ) : null}
         </Stack>
       </Card>
+      ) : null}
 
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Stack gap="sm">

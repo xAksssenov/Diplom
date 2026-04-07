@@ -38,6 +38,8 @@ type BackendRecipe = {
   title: string
   author: number
   author_name: string
+  status: 'pending' | 'approved' | 'rejected'
+  created_at?: string
   description: string
   cooking_time: number
   instructions: string
@@ -65,6 +67,7 @@ type BackendMealPlan = {
   total_calories: string
   status: 'draft' | 'pending' | 'approved' | 'rejected'
   items: BackendMealPlanItem[]
+  created_at?: string
 }
 
 type BackendReview = {
@@ -708,6 +711,14 @@ type BackendNotification = {
   created_at: string
 }
 
+export type ModerationQueueItem = {
+  id: string
+  type: 'recipe' | 'meal_plan'
+  title: string
+  author: string
+  submittedAt: string
+}
+
 type BackendShoppingListItem = {
   id: number
   ingredient_name: string
@@ -805,6 +816,47 @@ function mapNotificationToStatus(item: BackendNotification): ModerationStatusIte
 export async function fetchModerationStatuses() {
   const notifications = await apiGet<BackendNotification[]>('/notifications/')
   return notifications.map(mapNotificationToStatus)
+}
+
+export async function fetchModerationQueue() {
+  const [recipesResponse, plansResponse] = await Promise.all([
+    apiGet<BackendPaginatedResponse<BackendRecipe>>('/recipes/?limit=200&offset=0'),
+    apiGet<BackendPaginatedResponse<BackendMealPlan>>('/meal-plans/?limit=200&offset=0'),
+  ])
+
+  const recipes: ModerationQueueItem[] = recipesResponse.results
+    .filter((recipe) => recipe.status === 'pending')
+    .map((recipe) => ({
+      id: String(recipe.id),
+      type: 'recipe',
+      title: recipe.title,
+      author: recipe.author_name || `Пользователь #${recipe.author}`,
+      submittedAt: recipe.created_at
+        ? new Date(recipe.created_at).toLocaleDateString('ru-RU')
+        : 'Дата не указана',
+    }))
+
+  const mealPlans: ModerationQueueItem[] = plansResponse.results
+    .filter((plan) => plan.status === 'pending')
+    .map((plan) => ({
+      id: String(plan.id),
+      type: 'meal_plan',
+      title: `План #${plan.id}`,
+      author: plan.user_name || `Пользователь #${plan.user}`,
+      submittedAt: plan.created_at
+        ? new Date(plan.created_at).toLocaleDateString('ru-RU')
+        : 'Дата не указана',
+    }))
+
+  return { recipes, mealPlans }
+}
+
+export async function moderateRecipe(recipeId: string, decision: 'approved' | 'rejected') {
+  await apiPost(`/recipes/${recipeId}/moderate/`, { status: decision })
+}
+
+export async function moderateMealPlan(planId: string, decision: 'approved' | 'rejected') {
+  await apiPost(`/meal-plans/${planId}/moderate/`, { status: decision })
 }
 
 export async function fetchTargetReviews(targetType: 'recipe' | 'meal_plan', targetId: string) {
