@@ -69,22 +69,25 @@ export function Header() {
     setSearchLoading(true)
     const timeoutId = window.setTimeout(() => {
       Promise.all([
-        fetchRecipesPage({ limit: 6, offset: 0, filters: { search: query } }),
-        fetchMealPlansPage({ limit: 6, offset: 0, filters: { search: query } }),
+        fetchRecipesPage({ limit: 12, offset: 0, filters: { search: query } }),
+        fetchMealPlansPage({ limit: 12, offset: 0, filters: { search: query } }),
       ])
         .then(([recipesPage, plansPage]) => {
           if (cancelled) return
           const recipeItems = recipesPage.items.map((recipe) => ({
             value: `recipe-${recipe.id}`,
-            label: `Рецепт: ${recipe.title}`,
+            label: recipe.title,
             path: `/recipes/${recipe.id}`,
           }))
           const planItems = plansPage.items.map((plan) => ({
             value: `plan-${plan.id}`,
-            label: `План: ${plan.title}`,
+            label: plan.title,
             path: `/meal-plans/${plan.id}`,
           }))
-          const merged = [...staticSearchOptions, ...recipeItems, ...planItems]
+          const filteredStatic = staticSearchOptions.filter((item) =>
+            item.label.toLowerCase().includes(query.toLowerCase()),
+          )
+          const merged = [...planItems, ...recipeItems, ...filteredStatic]
           const deduped = merged.filter(
             (item, index, array) => array.findIndex((candidate) => candidate.value === item.value) === index,
           )
@@ -169,7 +172,7 @@ export function Header() {
             value={searchValue}
             onChange={setSearchValue}
             data={searchData}
-            limit={8}
+            limit={12}
             rightSection={searchLoading ? <Loader size="xs" /> : null}
             onOptionSubmit={(value) => {
               const target = searchOptions.find((item) => item.value === value)
@@ -270,7 +273,7 @@ export function Header() {
             value={searchValue}
             onChange={setSearchValue}
             data={searchData}
-            limit={8}
+            limit={12}
             rightSection={searchLoading ? <Loader size="xs" /> : null}
             onOptionSubmit={(value) => {
               const target = searchOptions.find((item) => item.value === value)

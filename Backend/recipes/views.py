@@ -1,4 +1,5 @@
-from django.db.models import Avg, Q
+from django.db.models import Avg, CharField, Q
+from django.db.models.functions import Cast
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -66,8 +67,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         search_query = (self.request.query_params.get("search") or "").strip()
         if search_query:
+            queryset = queryset.annotate(id_str=Cast("id", output_field=CharField()))
             search_filter = (
-                Q(title__icontains=search_query)
+                Q(id_str__icontains=search_query)
+                | Q(title__icontains=search_query)
                 | Q(description__icontains=search_query)
                 | Q(instructions__icontains=search_query)
                 | Q(author__name__icontains=search_query)

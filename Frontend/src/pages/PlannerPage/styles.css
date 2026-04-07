@@ -3,6 +3,16 @@
   top: 90px;
 }
 
+.planner-panel-card {
+  height: 760px;
+  display: flex;
+  flex-direction: column;
+}
+
+.planner-panel-scroll {
+  flex: 1;
+}
+
 .planner-note {
   margin-top: 12px;
 }
@@ -42,6 +52,26 @@
   flex-wrap: wrap;
 }
 
+.planner-tags-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.planner-tags-row::-webkit-scrollbar {
+  display: none;
+}
+
+.planner-tag-chip {
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
 .planner-calendar {
   margin-top: 10px;
   display: grid;
@@ -51,8 +81,15 @@
 .planner-day-card {
   border: 1px solid var(--border-soft);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.58);
   padding: 12px;
+}
+
+.planner-day-odd {
+  background: rgba(232, 223, 251, 0.62);
+}
+
+.planner-day-even {
+  background: rgba(236, 242, 255, 0.62);
 }
 
 .planner-day-card h3 {
@@ -116,5 +153,9 @@
 @media (max-width: 980px) {
   .planner-controls {
     position: static;
+  }
+
+  .planner-panel-card {
+    height: auto;
   }
 }

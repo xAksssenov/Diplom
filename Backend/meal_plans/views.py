@@ -1,4 +1,5 @@
-from django.db.models import Avg, Q
+from django.db.models import Avg, CharField, Q
+from django.db.models.functions import Cast
 from decimal import Decimal
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -37,8 +38,10 @@ class MealPlanViewSet(viewsets.ModelViewSet):
 
         search_query = (self.request.query_params.get("search") or "").strip()
         if search_query:
+            queryset = queryset.annotate(id_str=Cast("id", output_field=CharField()))
             search_filter = (
-                Q(user__name__icontains=search_query)
+                Q(id_str__icontains=search_query)
+                | Q(user__name__icontains=search_query)
                 | Q(items__recipe__title__icontains=search_query)
                 | Q(items__recipe__description__icontains=search_query)
                 | Q(items__recipe__tags__name__icontains=search_query)
