@@ -19,4 +19,5 @@ urlpatterns = [
     path("api/meal-plans/", include("meal_plans.urls")),
     path("api/interactions/", include("interactions.urls")),
     path("api/notifications/", include("notifications.urls")),
+    path("api/assistant/", include("assistant.urls")),
 ]

@@ -849,6 +849,13 @@ export async function upsertReview(payload: {
   })
 }
 
+export async function askAssistant(messages: Array<{ role: 'user' | 'assistant'; content: string }>) {
+  const response = await apiPost<{ reply: string }>('/assistant/chat/', {
+    messages,
+  })
+  return response.reply
+}
+
 export type ShoppingChecklistItem = {
   ingredientName: string
   quantity: number

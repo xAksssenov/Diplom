@@ -16,6 +16,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipesPage } from './pages/RecipesPage'
 import { ReviewsPage } from './pages/ReviewsPage'
+import { AssistantWidget } from './shared/ui/AssistantWidget'
 import { AppNotifications } from './shared/ui/AppNotifications'
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
     <Container size="xl" py="md">
       <Stack gap="md" mih="100vh">
         <AppNotifications />
+        <AssistantWidget />
         <Header />
         <Breadcrumbs />
         <main>

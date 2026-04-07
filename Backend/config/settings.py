@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "interactions",
     "moderation",
     "notifications",
+    "assistant",
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,10 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Backend API for recipes, meal plans, moderation and notifications.",
     "VERSION": "1.0.0",
 }
+
+DEEPSEEK_API_KEY = env("DEEPSEEK_API_KEY", default="")
+DEEPSEEK_BASE_URL = env("DEEPSEEK_BASE_URL", default="https://api.deepseek.com")
+DEEPSEEK_MODEL = env("DEEPSEEK_MODEL", default="deepseek-chat")
 
 # Enable strict transport options in production.
 SECURE_HSTS_SECONDS = 0 if DEBUG else 60 * 60 * 24 * 30
