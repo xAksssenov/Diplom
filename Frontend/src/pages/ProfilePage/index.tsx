@@ -313,7 +313,15 @@ export function ProfilePage() {
             <Tabs.Panel value="mealPlans" pt="sm">
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
                 {myMealPlans.map((plan) => (
-                  <Card key={plan.id} withBorder radius="md" p="sm">
+                  <Card
+                    key={plan.id}
+                    withBorder
+                    radius="md"
+                    p="sm"
+                    component={Link}
+                    to={`/meal-plans/${plan.id}`}
+                    style={{ background: 'var(--bg-surface)', cursor: 'pointer' }}
+                  >
                     <Stack gap={6}>
                       <Title order={5}>{plan.title}</Title>
                       <Text size="sm">Автор: {plan.author}</Text>
@@ -332,7 +340,15 @@ export function ProfilePage() {
             <Tabs.Panel value="recipes" pt="sm">
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
                 {myRecipes.map((recipe) => (
-                  <Card key={recipe.id} withBorder radius="md" p="sm">
+                  <Card
+                    key={recipe.id}
+                    withBorder
+                    radius="md"
+                    p="sm"
+                    component={Link}
+                    to={`/recipes/${recipe.id}`}
+                    style={{ background: 'var(--bg-surface)', cursor: 'pointer' }}
+                  >
                     <Stack gap={6}>
                       <Title order={5}>{recipe.title}</Title>
                       <Text size="sm">Автор: {recipe.author}</Text>
@@ -367,7 +383,15 @@ export function ProfilePage() {
             <Tabs.Panel value="mealPlans" pt="sm">
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
                 {favoriteMealPlans.map((plan) => (
-                  <Card key={plan.id} withBorder radius="md" p="sm">
+                  <Card
+                    key={plan.id}
+                    withBorder
+                    radius="md"
+                    p="sm"
+                    component={Link}
+                    to={`/meal-plans/${plan.id}`}
+                    style={{ background: 'var(--bg-surface)', cursor: 'pointer' }}
+                  >
                     <Stack gap={6}>
                       <Title order={5}>{plan.title}</Title>
                       <Text size="sm">Автор: {plan.author}</Text>
@@ -395,7 +419,15 @@ export function ProfilePage() {
             <Tabs.Panel value="recipes" pt="sm">
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
                 {favoriteRecipes.map((recipe) => (
-                  <Card key={recipe.id} withBorder radius="md" p="sm">
+                  <Card
+                    key={recipe.id}
+                    withBorder
+                    radius="md"
+                    p="sm"
+                    component={Link}
+                    to={`/recipes/${recipe.id}`}
+                    style={{ background: 'var(--bg-surface)', cursor: 'pointer' }}
+                  >
                     <Stack gap={6}>
                       <Title order={5}>{recipe.title}</Title>
                       <Text size="sm">{recipe.subtitle}</Text>

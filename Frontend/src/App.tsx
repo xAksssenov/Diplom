@@ -1,7 +1,7 @@
 import { Container, Stack } from '@mantine/core'
 import { useUnit } from 'effector-react'
 import { useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import { Breadcrumbs } from './components/Breadcrumbs'
 import { FallbackCard } from './components/FallbackCard'
 import { Footer } from './components/Footer'
@@ -20,10 +20,15 @@ import { AppNotifications } from './shared/ui/AppNotifications'
 
 function App() {
   const checkSession = useUnit(checkSessionRequested)
+  const location = useLocation()
 
   useEffect(() => {
     checkSession()
   }, [checkSession])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname])
 
   return (
     <Container size="xl" py="md">
