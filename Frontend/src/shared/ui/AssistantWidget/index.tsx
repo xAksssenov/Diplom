@@ -16,6 +16,35 @@ const initialMessages: ChatMessage[] = [
   },
 ]
 
+const normalizeAssistantText = (content: string) =>
+  content
+    .replace(/\r\n/g, '\n')
+    .replace(/\s(\d+\.\s\*\*)/g, '\n\n$1')
+    .replace(/\s\*\s(?=\*\*|[A-Za-zА-Яа-яЁё0-9])/g, '\n• ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+const renderMessageContent = (message: ChatMessage) => {
+  const content =
+    message.role === 'assistant' ? normalizeAssistantText(message.content) : message.content
+  const parts = content.split(/(\*\*[^*]+\*\*)/g)
+
+  return (
+    <Text size="sm" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+      {parts.map((part, index) => {
+        const isBold = part.startsWith('**') && part.endsWith('**') && part.length > 4
+        if (!isBold) return <span key={`${part}-${index}`}>{part}</span>
+
+        return (
+          <Text key={`${part}-${index}`} component="span" fw={700}>
+            {part.slice(2, -2)}
+          </Text>
+        )
+      })}
+    </Text>
+  )
+}
+
 export function AssistantWidget() {
   const [opened, setOpened] = useState(false)
   const [input, setInput] = useState('')
@@ -50,25 +79,27 @@ export function AssistantWidget() {
 
   return (
     <>
-      <ActionIcon
-        size={56}
-        radius="xl"
-        color="grape"
-        variant="filled"
-        onClick={() => setOpened(true)}
-        style={{
-          position: 'fixed',
-          right: 20,
-          bottom: 20,
-          zIndex: 1100,
-          boxShadow: '0 10px 28px rgba(95, 54, 170, 0.35)',
-        }}
-        aria-label="Открыть AI ассистента"
-      >
-        <Text c="white" fw={700}>
-          AI
-        </Text>
-      </ActionIcon>
+      {!opened ? (
+        <ActionIcon
+          size={56}
+          radius="xl"
+          color="grape"
+          variant="filled"
+          onClick={() => setOpened(true)}
+          style={{
+            position: 'fixed',
+            right: 20,
+            bottom: 20,
+            zIndex: 1100,
+            boxShadow: '0 10px 28px rgba(95, 54, 170, 0.35)',
+          }}
+          aria-label="Открыть AI ассистента"
+        >
+          <Text c="white" fw={700}>
+            AI
+          </Text>
+        </ActionIcon>
+      ) : null}
 
       <Drawer
         opened={opened}
@@ -76,12 +107,20 @@ export function AssistantWidget() {
         position="right"
         title="AI ассистент по рациону"
         size={420}
+        styles={{
+          body: {
+            display: 'flex',
+            flexDirection: 'column',
+            height: '95%',
+            overflow: 'hidden',
+          },
+        }}
       >
         <Stack
           gap="sm"
-          style={{ height: 'calc(100vh - 130px)', minHeight: 420 }}
+          style={{ flex: 1, minHeight: 0 }}
         >
-          <ScrollArea style={{ flex: 1 }}>
+          <ScrollArea style={{ flex: 1, minHeight: 0 }}>
             <Stack gap="xs" pr={6}>
               {messages.map((message, index) => (
                 <Stack
@@ -99,7 +138,7 @@ export function AssistantWidget() {
                   <Text size="xs" c="dimmed">
                     {message.role === 'assistant' ? 'Ассистент' : 'Вы'}
                   </Text>
-                  <Text size="sm">{message.content}</Text>
+                  {renderMessageContent(message)}
                 </Stack>
               ))}
               {pending ? (
@@ -120,19 +159,19 @@ export function AssistantWidget() {
           <Stack
             gap="xs"
             style={{
-              position: 'sticky',
-              bottom: 0,
+              marginTop: 'auto',
               background: 'white',
               paddingTop: 8,
+              paddingBottom: 12,
             }}
           >
             <Textarea
               value={input}
               onChange={(event) => setInput(event.currentTarget.value)}
               placeholder="Спросите, что добавить в рацион..."
-              minRows={2}
+              minRows={4}
               autosize
-              maxRows={5}
+              maxRows={8}
             />
             <Button color="grape" onClick={sendMessage} loading={pending}>
               Отправить
