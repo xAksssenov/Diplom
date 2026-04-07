@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Group,
   Rating,
   SimpleGrid,
@@ -20,9 +21,12 @@ import { $authStatus, $authUser } from '../../features/auth/model'
 import {
   addFavorite,
   fetchRecipeById,
+  fetchShoppingListByTarget,
   fetchTargetReviews,
   fetchUserFavorites,
   removeFavorite,
+  saveShoppingListForTarget,
+  type ShoppingChecklistItem,
   type TargetReview,
   upsertReview,
 } from '../../shared/api/foodApi'
@@ -44,6 +48,10 @@ export function RecipeDetailPage() {
   const [actionError, setActionError] = useState('')
   const [pendingFavorite, setPendingFavorite] = useState(false)
   const [pendingReview, setPendingReview] = useState(false)
+  const [shoppingSyncPending, setShoppingSyncPending] = useState(false)
+  const [ingredientChecks, setIngredientChecks] = useState<ShoppingChecklistItem[]>([])
+  const [lastSavedSignature, setLastSavedSignature] = useState('')
+  const [hasSavedShoppingList, setHasSavedShoppingList] = useState(false)
   const { authStatus, authUser } = useUnit({
     authStatus: $authStatus,
     authUser: $authUser,
@@ -56,6 +64,20 @@ export function RecipeDetailPage() {
       .then(([data, reviewsData]) => {
         setRecipe(data)
         setReviews(reviewsData)
+        const parsed = data.ingredients.map((line) => {
+          const [namePart, restPart] = line.split(' - ')
+          const cleanedName = namePart?.trim() || line.trim()
+          const quantityMatch = (restPart || '').match(/^([\d.,]+)\s*(.*)$/)
+          const quantity = quantityMatch ? Number((quantityMatch[1] || '1').replace(',', '.')) : 1
+          const unit = quantityMatch?.[2]?.trim() || 'шт'
+          return {
+            ingredientName: cleanedName,
+            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+            unit,
+            hasIngredient: false,
+          }
+        })
+        setIngredientChecks(parsed)
         setStatus('ready')
       })
       .catch((error) => {
@@ -76,6 +98,41 @@ export function RecipeDetailPage() {
         pushApiError(error, 'Не удалось проверить избранное.')
       })
   }, [authStatus, recipeId])
+
+  useEffect(() => {
+    if (!recipeId || authStatus !== 'auth' || !ingredientChecks.length) return
+    fetchShoppingListByTarget('recipe', recipeId)
+      .then((list) => {
+        if (!list) {
+          setHasSavedShoppingList(false)
+          setLastSavedSignature(currentSignature)
+          return
+        }
+        setHasSavedShoppingList(true)
+        const missing = new Set(list.items.map((item) => item.ingredientName.toLowerCase()))
+        setIngredientChecks((prev) => {
+          const next = prev.map((item) => ({
+            ...item,
+            hasIngredient: !missing.has(item.ingredientName.toLowerCase()),
+          }))
+          const nextSignature = JSON.stringify(
+            next
+              .map((item) => ({
+                name: item.ingredientName.toLowerCase(),
+                quantity: Number(item.quantity || 0),
+                unit: (item.unit || '').toLowerCase(),
+                hasIngredient: item.hasIngredient,
+              }))
+              .sort((a, b) => `${a.name}:${a.unit}`.localeCompare(`${b.name}:${b.unit}`)),
+          )
+          setLastSavedSignature(nextSignature)
+          return next
+        })
+      })
+      .catch(() => {
+        // silent: local state is still usable
+      })
+  }, [authStatus, ingredientChecks.length, recipeId])
 
   useEffect(() => {
     if (!authUser || !reviews.length) return
@@ -112,6 +169,55 @@ export function RecipeDetailPage() {
   const averageRating = reviews.length
     ? Number((reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length).toFixed(1))
     : recipe.rating
+  const missingItems = ingredientChecks.filter((item) => !item.hasIngredient)
+  const currentSignature = JSON.stringify(
+    ingredientChecks
+      .map((item) => ({
+        name: item.ingredientName.toLowerCase(),
+        quantity: Number(item.quantity || 0),
+        unit: (item.unit || '').toLowerCase(),
+        hasIngredient: item.hasIngredient,
+      }))
+      .sort((a, b) => `${a.name}:${a.unit}`.localeCompare(`${b.name}:${b.unit}`)),
+  )
+  const shoppingListText = missingItems.length
+    ? missingItems
+        .map((item, index) => `${index + 1}. ${item.ingredientName} - ${item.quantity} ${item.unit}`)
+        .join('\n')
+    : 'Все ингредиенты уже есть.'
+
+  const syncShoppingList = async (nextItems: ShoppingChecklistItem[], showToast = false) => {
+    if (!recipeId || authStatus !== 'auth') return
+    const nextSignature = JSON.stringify(
+      nextItems
+        .map((item) => ({
+          name: item.ingredientName.toLowerCase(),
+          quantity: Number(item.quantity || 0),
+          unit: (item.unit || '').toLowerCase(),
+          hasIngredient: item.hasIngredient,
+        }))
+        .sort((a, b) => `${a.name}:${a.unit}`.localeCompare(`${b.name}:${b.unit}`)),
+    )
+    if (nextSignature === lastSavedSignature) return
+    setShoppingSyncPending(true)
+    try {
+      await saveShoppingListForTarget({
+        targetType: 'recipe',
+        targetId: recipeId,
+        title: `Покупки для рецепта: ${recipe.title}`,
+        items: nextItems,
+      })
+      setHasSavedShoppingList(true)
+      setLastSavedSignature(nextSignature)
+      if (showToast) {
+        pushSuccess('Список покупок сохранен в профиль.')
+      }
+    } catch (error) {
+      pushApiError(error, 'Не удалось сохранить список покупок.')
+    } finally {
+      setShoppingSyncPending(false)
+    }
+  }
 
   return (
     <Stack gap="md">
@@ -297,14 +403,84 @@ export function RecipeDetailPage() {
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
         <Accordion defaultValue="ingredients" variant="separated">
           <Accordion.Item value="ingredients">
-            <Accordion.Control>Ингредиенты</Accordion.Control>
+            <Accordion.Control>
+              Ингредиенты - сформируйте свой список покупок из ингредиентов этого блюда
+            </Accordion.Control>
             <Accordion.Panel>
-              <Stack gap={6}>
-                {recipe.ingredients.map((ingredient) => (
-                  <Text key={ingredient} size="sm">
-                    - {ingredient}
+              <Stack gap="sm">
+                {hasSavedShoppingList ? (
+                  <Text size="sm" c="dimmed">
+                    Вы уже добавляли список ингредиентов в свой профиль.
                   </Text>
-                ))}
+                ) : null}
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    color="grape"
+                    variant="light"
+                    loading={shoppingSyncPending}
+                    disabled={
+                      authStatus !== 'auth' ||
+                      shoppingSyncPending ||
+                      (hasSavedShoppingList && currentSignature === lastSavedSignature)
+                    }
+                    onClick={() => syncShoppingList(ingredientChecks, true)}
+                  >
+                    {hasSavedShoppingList ? 'Отредактировать список покупок' : 'Сохранить в профиль'}
+                  </Button>
+                  <Button
+                    size="xs"
+                    color="grape"
+                    variant="outline"
+                    onClick={() => {
+                      const blob = new Blob([shoppingListText], { type: 'text/plain;charset=utf-8' })
+                      const link = document.createElement('a')
+                      link.href = URL.createObjectURL(blob)
+                      link.download = `shopping-recipe-${recipe.id}.txt`
+                      link.click()
+                      URL.revokeObjectURL(link.href)
+                    }}
+                  >
+                    Скачать список
+                  </Button>
+                  <Button
+                    size="xs"
+                    color="grape"
+                    variant="subtle"
+                    onClick={() => window.print()}
+                  >
+                    Напечатать
+                  </Button>
+                </Group>
+                <Stack gap={6}>
+                  {ingredientChecks.map((ingredient) => (
+                    <Checkbox
+                      key={`${ingredient.ingredientName}-${ingredient.unit}`}
+                      checked={ingredient.hasIngredient}
+                      label={`${ingredient.ingredientName} - ${ingredient.quantity} ${ingredient.unit}`}
+                      onChange={(event) => {
+                        const next = ingredientChecks.map((item) =>
+                          item.ingredientName === ingredient.ingredientName && item.unit === ingredient.unit
+                            ? { ...item, hasIngredient: event.currentTarget.checked }
+                            : item,
+                        )
+                        setIngredientChecks(next)
+                      }}
+                    />
+                  ))}
+                  {!ingredientChecks.length ? (
+                    <Text size="sm" c="dimmed">
+                      Ингредиенты не указаны.
+                    </Text>
+                  ) : null}
+                </Stack>
+                {missingItems.length ? (
+                  <Alert color="yellow">
+                    Не хватает ингредиентов: {missingItems.map((item) => item.ingredientName).join(', ')}
+                  </Alert>
+                ) : (
+                  <Alert color="green">Все ингредиенты отмечены как доступные.</Alert>
+                )}
               </Stack>
             </Accordion.Panel>
           </Accordion.Item>

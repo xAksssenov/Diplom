@@ -88,6 +88,10 @@ class MealPlanItem(models.Model):
 
 
 class ShoppingList(models.Model):
+    class TargetType(models.TextChoices):
+        RECIPE = "recipe", "Recipe"
+        MEAL_PLAN = "meal_plan", "Meal plan"
+
     class Status(models.TextChoices):
         ACTIVE = "active", "Active"
         COMPLETED = "completed", "Completed"
@@ -98,13 +102,26 @@ class ShoppingList(models.Model):
         on_delete=models.CASCADE,
         related_name="shopping_lists",
     )
+    target_type = models.CharField(max_length=16, choices=TargetType.choices, blank=True, default="")
+    target_id = models.PositiveBigIntegerField(null=True, blank=True)
+    title = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.ACTIVE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
-        indexes = [models.Index(fields=["user"]), models.Index(fields=["status"])]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["target_type", "target_id"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "target_type", "target_id"],
+                name="unique_user_target_shopping_list",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"ShoppingList #{self.id}"
@@ -120,7 +137,10 @@ class ShoppingListItem(models.Model):
         "recipes.Ingredient",
         on_delete=models.CASCADE,
         related_name="shopping_list_items",
+        null=True,
+        blank=True,
     )
+    ingredient_name = models.CharField(max_length=255, blank=True)
     quantity = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)]
     )

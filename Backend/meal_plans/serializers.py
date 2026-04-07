@@ -51,7 +51,7 @@ class MealPlanSerializer(serializers.ModelSerializer):
 class ShoppingListItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShoppingListItem
-        fields = ("id", "ingredient", "quantity", "unit", "is_purchased")
+        fields = ("id", "ingredient", "ingredient_name", "quantity", "unit", "is_purchased")
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
@@ -59,7 +59,17 @@ class ShoppingListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShoppingList
-        fields = ("id", "user", "status", "items", "created_at", "updated_at")
+        fields = (
+            "id",
+            "user",
+            "target_type",
+            "target_id",
+            "title",
+            "status",
+            "items",
+            "created_at",
+            "updated_at",
+        )
         read_only_fields = ("user", "created_at", "updated_at")
 
     def create(self, validated_data):

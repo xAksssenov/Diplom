@@ -1,4 +1,5 @@
 from django.db.models import Avg, Q
+from decimal import Decimal
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -8,7 +9,7 @@ from interactions.models import Review
 from notifications.models import Notification
 from users.permissions import IsModeratorOrAdminRole
 
-from .models import MealPlan, ShoppingList
+from .models import MealPlan, ShoppingList, ShoppingListItem
 from .serializers import MealPlanSerializer, ShoppingListSerializer
 
 
@@ -173,7 +174,67 @@ class ShoppingListViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return super().get_queryset().filter(user=self.request.user)
+        queryset = super().get_queryset().filter(user=self.request.user)
+        target_type = (self.request.query_params.get("target_type") or "").strip()
+        target_id_raw = self.request.query_params.get("target_id")
+        if target_type:
+            queryset = queryset.filter(target_type=target_type)
+        if target_id_raw not in (None, ""):
+            try:
+                queryset = queryset.filter(target_id=int(target_id_raw))
+            except (TypeError, ValueError):
+                return queryset.none()
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=["post"], url_path="sync-target")
+    def sync_target(self, request):
+        target_type = request.data.get("target_type")
+        target_id_raw = request.data.get("target_id")
+        title = (request.data.get("title") or "").strip()
+        items_payload = request.data.get("items") or []
+
+        if target_type not in {ShoppingList.TargetType.RECIPE, ShoppingList.TargetType.MEAL_PLAN}:
+            return Response({"detail": "Invalid target_type."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            target_id = int(target_id_raw)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid target_id."}, status=status.HTTP_400_BAD_REQUEST)
+
+        shopping_list, _ = ShoppingList.objects.update_or_create(
+            user=request.user,
+            target_type=target_type,
+            target_id=target_id,
+            defaults={
+                "title": title,
+                "status": ShoppingList.Status.ACTIVE,
+            },
+        )
+        shopping_list.items.all().delete()
+
+        for item in items_payload:
+            has_ingredient = bool(item.get("has_ingredient"))
+            if has_ingredient:
+                continue
+            ingredient_name = (item.get("ingredient_name") or "").strip()
+            if not ingredient_name:
+                continue
+            quantity_raw = item.get("quantity")
+            try:
+                quantity = Decimal(str(quantity_raw if quantity_raw is not None else "1"))
+                if quantity <= 0:
+                    quantity = Decimal("1")
+            except Exception:
+                quantity = Decimal("1")
+            ShoppingListItem.objects.create(
+                shopping_list=shopping_list,
+                ingredient_name=ingredient_name,
+                quantity=quantity,
+                unit=(item.get("unit") or "шт").strip() or "шт",
+                is_purchased=False,
+            )
+
+        serializer = self.get_serializer(shopping_list)
+        return Response(serializer.data)

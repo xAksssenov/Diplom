@@ -708,6 +708,25 @@ type BackendNotification = {
   created_at: string
 }
 
+type BackendShoppingListItem = {
+  id: number
+  ingredient_name: string
+  quantity: string
+  unit: string
+  is_purchased: boolean
+}
+
+type BackendShoppingList = {
+  id: number
+  target_type: 'recipe' | 'meal_plan' | ''
+  target_id: number | null
+  title: string
+  status: string
+  items: BackendShoppingListItem[]
+  created_at: string
+  updated_at: string
+}
+
 type BackendPaginatedResponse<T> = {
   count: number
   next_offset: number | null
@@ -828,4 +847,75 @@ export async function upsertReview(payload: {
     rating: payload.rating,
     comment: payload.comment,
   })
+}
+
+export type ShoppingChecklistItem = {
+  ingredientName: string
+  quantity: number
+  unit: string
+  hasIngredient: boolean
+}
+
+export type UserShoppingList = {
+  id: string
+  targetType: 'recipe' | 'meal_plan' | ''
+  targetId: string
+  title: string
+  updatedAt: string
+  items: Array<{
+    id: string
+    ingredientName: string
+    quantity: number
+    unit: string
+    isPurchased: boolean
+  }>
+}
+
+function toUiShoppingList(list: BackendShoppingList): UserShoppingList {
+  return {
+    id: String(list.id),
+    targetType: list.target_type,
+    targetId: list.target_id ? String(list.target_id) : '',
+    title: list.title || 'Список покупок',
+    updatedAt: new Date(list.updated_at).toLocaleDateString('ru-RU'),
+    items: (list.items ?? []).map((item) => ({
+      id: String(item.id),
+      ingredientName: item.ingredient_name || 'Ингредиент',
+      quantity: parseNumber(item.quantity),
+      unit: item.unit || 'шт',
+      isPurchased: item.is_purchased,
+    })),
+  }
+}
+
+export async function fetchShoppingListByTarget(targetType: 'recipe' | 'meal_plan', targetId: string) {
+  const query = new URLSearchParams({ target_type: targetType, target_id: targetId })
+  const lists = await apiGet<BackendShoppingList[]>(`/meal-plans/shopping-lists/?${query.toString()}`)
+  const list = lists[0]
+  return list ? toUiShoppingList(list) : null
+}
+
+export async function saveShoppingListForTarget(payload: {
+  targetType: 'recipe' | 'meal_plan'
+  targetId: string
+  title: string
+  items: ShoppingChecklistItem[]
+}) {
+  const response = await apiPost<BackendShoppingList>('/meal-plans/shopping-lists/sync-target/', {
+    target_type: payload.targetType,
+    target_id: Number(payload.targetId),
+    title: payload.title,
+    items: payload.items.map((item) => ({
+      ingredient_name: item.ingredientName,
+      quantity: item.quantity,
+      unit: item.unit,
+      has_ingredient: item.hasIngredient,
+    })),
+  })
+  return toUiShoppingList(response)
+}
+
+export async function fetchMyShoppingLists() {
+  const lists = await apiGet<BackendShoppingList[]>('/meal-plans/shopping-lists/')
+  return lists.map(toUiShoppingList)
 }

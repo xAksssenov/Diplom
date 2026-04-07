@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Group,
   Rating,
   SimpleGrid,
@@ -21,9 +22,12 @@ import { MealInfo } from '../../components/MealInfo'
 import {
   addFavorite,
   fetchMealPlanById,
+  fetchShoppingListByTarget,
   fetchTargetReviews,
   fetchUserFavorites,
   removeFavorite,
+  saveShoppingListForTarget,
+  type ShoppingChecklistItem,
   type TargetReview,
   upsertReview,
 } from '../../shared/api/foodApi'
@@ -42,6 +46,10 @@ export function MealPlanDetailPage() {
   const [reviewComment, setReviewComment] = useState('')
   const [pendingFavorite, setPendingFavorite] = useState(false)
   const [pendingReview, setPendingReview] = useState(false)
+  const [shoppingSyncPending, setShoppingSyncPending] = useState(false)
+  const [ingredientChecks, setIngredientChecks] = useState<ShoppingChecklistItem[]>([])
+  const [lastSavedSignature, setLastSavedSignature] = useState('')
+  const [hasSavedShoppingList, setHasSavedShoppingList] = useState(false)
   const [actionMessage, setActionMessage] = useState('')
   const [actionError, setActionError] = useState('')
   const { authStatus, authUser } = useUnit({
@@ -56,6 +64,37 @@ export function MealPlanDetailPage() {
       .then(([planData, reviewsData]) => {
         setPlan(planData)
         setReviews(reviewsData)
+        const ingredientMap = new Map<string, ShoppingChecklistItem>()
+        planData.days.forEach((day) => {
+          const meals = [day.meals.breakfast, day.meals.lunch, day.meals.dinner, ...day.meals.snacks]
+          meals.forEach((meal) => {
+            const parts = (meal.ingredients || '')
+              .split(',')
+              .map((value) => value.trim())
+              .filter(Boolean)
+            parts.forEach((line) => {
+              const [namePart, restPart] = line.split(' - ')
+              const ingredientName = (namePart || line).trim()
+              if (!ingredientName || ingredientName === 'Нет данных') return
+              const quantityMatch = (restPart || '').match(/^([\d.,]+)\s*(.*)$/)
+              const quantity = quantityMatch ? Number((quantityMatch[1] || '1').replace(',', '.')) : 1
+              const unit = quantityMatch?.[2]?.trim() || 'шт'
+              const key = `${ingredientName.toLowerCase()}::${unit}`
+              const prev = ingredientMap.get(key)
+              if (prev) {
+                prev.quantity += Number.isFinite(quantity) && quantity > 0 ? quantity : 1
+              } else {
+                ingredientMap.set(key, {
+                  ingredientName,
+                  quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+                  unit,
+                  hasIngredient: false,
+                })
+              }
+            })
+          })
+        })
+        setIngredientChecks(Array.from(ingredientMap.values()))
         setStatus('ready')
       })
       .catch((error) => {
@@ -78,6 +117,41 @@ export function MealPlanDetailPage() {
         pushApiError(error, 'Не удалось проверить избранное.')
       })
   }, [authStatus, planId])
+
+  useEffect(() => {
+    if (!planId || authStatus !== 'auth' || !ingredientChecks.length) return
+    fetchShoppingListByTarget('meal_plan', planId)
+      .then((list) => {
+        if (!list) {
+          setHasSavedShoppingList(false)
+          setLastSavedSignature(currentSignature)
+          return
+        }
+        setHasSavedShoppingList(true)
+        const missing = new Set(list.items.map((item) => item.ingredientName.toLowerCase()))
+        setIngredientChecks((prev) => {
+          const next = prev.map((item) => ({
+            ...item,
+            hasIngredient: !missing.has(item.ingredientName.toLowerCase()),
+          }))
+          const nextSignature = JSON.stringify(
+            next
+              .map((item) => ({
+                name: item.ingredientName.toLowerCase(),
+                quantity: Number(item.quantity || 0),
+                unit: (item.unit || '').toLowerCase(),
+                hasIngredient: item.hasIngredient,
+              }))
+              .sort((a, b) => `${a.name}:${a.unit}`.localeCompare(`${b.name}:${b.unit}`)),
+          )
+          setLastSavedSignature(nextSignature)
+          return next
+        })
+      })
+      .catch(() => {
+        // fallback to local state
+      })
+  }, [authStatus, ingredientChecks.length, planId])
 
   const filteredReviews = useMemo(
     () => reviews.filter((review) => review.targetId === (planId ?? '')),
@@ -123,6 +197,55 @@ export function MealPlanDetailPage() {
         ),
       )
     : plan.rating
+  const missingItems = ingredientChecks.filter((item) => !item.hasIngredient)
+  const currentSignature = JSON.stringify(
+    ingredientChecks
+      .map((item) => ({
+        name: item.ingredientName.toLowerCase(),
+        quantity: Number(item.quantity || 0),
+        unit: (item.unit || '').toLowerCase(),
+        hasIngredient: item.hasIngredient,
+      }))
+      .sort((a, b) => `${a.name}:${a.unit}`.localeCompare(`${b.name}:${b.unit}`)),
+  )
+  const shoppingListText = missingItems.length
+    ? missingItems
+        .map((item, index) => `${index + 1}. ${item.ingredientName} - ${item.quantity} ${item.unit}`)
+        .join('\n')
+    : 'Все ингредиенты уже есть.'
+
+  const syncShoppingList = async (nextItems: ShoppingChecklistItem[], showToast = false) => {
+    if (!planId || authStatus !== 'auth') return
+    const nextSignature = JSON.stringify(
+      nextItems
+        .map((item) => ({
+          name: item.ingredientName.toLowerCase(),
+          quantity: Number(item.quantity || 0),
+          unit: (item.unit || '').toLowerCase(),
+          hasIngredient: item.hasIngredient,
+        }))
+        .sort((a, b) => `${a.name}:${a.unit}`.localeCompare(`${b.name}:${b.unit}`)),
+    )
+    if (nextSignature === lastSavedSignature) return
+    setShoppingSyncPending(true)
+    try {
+      await saveShoppingListForTarget({
+        targetType: 'meal_plan',
+        targetId: planId,
+        title: `Покупки для плана: ${plan.title}`,
+        items: nextItems,
+      })
+      setHasSavedShoppingList(true)
+      setLastSavedSignature(nextSignature)
+      if (showToast) {
+        pushSuccess('Список покупок сохранен в профиль.')
+      }
+    } catch (error) {
+      pushApiError(error, 'Не удалось сохранить список покупок.')
+    } finally {
+      setShoppingSyncPending(false)
+    }
+  }
 
   return (
     <Stack gap="md">
@@ -301,6 +424,90 @@ export function MealPlanDetailPage() {
             </Text>
           ) : null}
         </Stack>
+      </Card>
+
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Accordion defaultValue="shopping" variant="separated">
+          <Accordion.Item value="shopping">
+            <Accordion.Control>
+              Ингредиенты - сформируйте свой список покупок из ингредиентов этого плана
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="sm">
+                {hasSavedShoppingList ? (
+                  <Text size="sm" c="dimmed">
+                    Вы уже добавляли список ингредиентов в свой профиль.
+                  </Text>
+                ) : null}
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    color="grape"
+                    variant="light"
+                    loading={shoppingSyncPending}
+                    disabled={
+                      authStatus !== 'auth' ||
+                      shoppingSyncPending ||
+                      (hasSavedShoppingList && currentSignature === lastSavedSignature)
+                    }
+                    onClick={() => syncShoppingList(ingredientChecks, true)}
+                  >
+                    {hasSavedShoppingList ? 'Отредактировать список покупок' : 'Сохранить в профиль'}
+                  </Button>
+                  <Button
+                    size="xs"
+                    color="grape"
+                    variant="outline"
+                    onClick={() => {
+                      const blob = new Blob([shoppingListText], { type: 'text/plain;charset=utf-8' })
+                      const link = document.createElement('a')
+                      link.href = URL.createObjectURL(blob)
+                      link.download = `shopping-plan-${plan.id}.txt`
+                      link.click()
+                      URL.revokeObjectURL(link.href)
+                    }}
+                  >
+                    Скачать список
+                  </Button>
+                  <Button size="xs" color="grape" variant="subtle" onClick={() => window.print()}>
+                    Напечатать
+                  </Button>
+                </Group>
+
+                <Stack gap={6}>
+                  {ingredientChecks.map((ingredient) => (
+                    <Checkbox
+                      key={`${ingredient.ingredientName}-${ingredient.unit}`}
+                      checked={ingredient.hasIngredient}
+                      label={`${ingredient.ingredientName} - ${ingredient.quantity} ${ingredient.unit}`}
+                      onChange={(event) => {
+                        const next = ingredientChecks.map((item) =>
+                          item.ingredientName === ingredient.ingredientName && item.unit === ingredient.unit
+                            ? { ...item, hasIngredient: event.currentTarget.checked }
+                            : item,
+                        )
+                        setIngredientChecks(next)
+                      }}
+                    />
+                  ))}
+                  {!ingredientChecks.length ? (
+                    <Text size="sm" c="dimmed">
+                      Для этого плана не удалось собрать ингредиенты.
+                    </Text>
+                  ) : null}
+                </Stack>
+
+                {missingItems.length ? (
+                  <Alert color="yellow">
+                    Не хватает ингредиентов: {missingItems.map((item) => item.ingredientName).join(', ')}
+                  </Alert>
+                ) : (
+                  <Alert color="green">Все ингредиенты отмечены как доступные.</Alert>
+                )}
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
       </Card>
     </Stack>
   )

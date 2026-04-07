@@ -6,6 +6,7 @@ import {
   Card,
   Group,
   MultiSelect,
+  ScrollArea,
   SimpleGrid,
   Stack,
   Select,
@@ -18,7 +19,7 @@ import {
 } from '@mantine/core'
 import { useUnit } from 'effector-react'
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { getModerationStatuses as getLocalModerationStatuses } from '../../lib/moderationStorage'
 import {
   $authStatus,
@@ -28,9 +29,11 @@ import {
 import {
   fetchFavoriteMealPlans,
   fetchFavoriteRecipes,
+  fetchMyShoppingLists,
   fetchMyMealPlans,
   fetchMyRecipes,
   fetchModerationStatuses,
+  type UserShoppingList,
 } from '../../shared/api/foodApi'
 import { pushApiError, pushSuccess } from '../../shared/model/notifications'
 import { PageEmpty } from '../../shared/ui/PageStates'
@@ -64,6 +67,7 @@ export function ProfilePage() {
   const [favoriteRecipes, setFavoriteRecipes] = useState<Recipe[]>([])
   const [myMealPlans, setMyMealPlans] = useState<MealPlan[]>([])
   const [myRecipes, setMyRecipes] = useState<Recipe[]>([])
+  const [shoppingLists, setShoppingLists] = useState<UserShoppingList[]>([])
   const [moderationStatuses, setModerationStatuses] = useState<ModerationStatusItem[]>([])
   const [name, setName] = useState(authUser?.name ?? '')
   const [avatarUrl, setAvatarUrl] = useState(authUser?.avatar_url ?? '')
@@ -98,13 +102,15 @@ export function ProfilePage() {
       fetchFavoriteRecipes(),
       fetchMyMealPlans(authUser.id),
       fetchMyRecipes(authUser.id),
+      fetchMyShoppingLists(),
       fetchModerationStatuses(),
     ])
-      .then(([plans, recipes, ownPlans, ownRecipes, statuses]) => {
+      .then(([plans, recipes, ownPlans, ownRecipes, userShoppingLists, statuses]) => {
         setFavoriteMealPlans(plans)
         setFavoriteRecipes(recipes)
         setMyMealPlans(ownPlans)
         setMyRecipes(ownRecipes)
+        setShoppingLists(userShoppingLists)
 
         const fromPlans: ModerationStatusItem[] = ownPlans
           .filter((plan) => plan.status !== 'draft')
@@ -160,6 +166,72 @@ export function ProfilePage() {
             Фото профиля пока не задано. Добавьте URL ниже.
           </Text>
         )}
+      </Card>
+
+      <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
+        <Stack gap="sm">
+          <Title order={3}>Сохраненные списки покупок</Title>
+          <ScrollArea type="auto" offsetScrollbars>
+            <Group gap="sm" wrap="nowrap" align="stretch">
+              {shoppingLists.map((list) => (
+                <Card
+                  key={list.id}
+                  withBorder
+                  radius="md"
+                  p="sm"
+                  style={{ minWidth: 400, maxWidth: 400, display: 'flex' }}
+                >
+                  <Stack gap={6} style={{ flex: 1 }}>
+                  <Text size="sm">
+                    <strong>{list.title}</strong>
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    Источник: {list.targetType === 'recipe' ? 'Рецепт' : 'План питания'} #{list.targetId}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    Обновлено: {list.updatedAt}
+                  </Text>
+                  {list.items.length ? (
+                    <Stack gap={4}>
+                      {list.items.map((item) => (
+                        <Text key={item.id} size="sm">
+                          - {item.ingredientName} ({item.quantity} {item.unit})
+                        </Text>
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Text size="sm" c="dimmed">
+                      Все ингредиенты отмечены как доступные.
+                    </Text>
+                  )}
+                  {list.targetId ? (
+                    <Button
+                      size="xs"
+                      variant="light"
+                      color="grape"
+                      component={Link}
+                      mt="auto"
+                      to={
+                        list.targetType === 'recipe'
+                          ? `/recipes/${list.targetId}`
+                          : `/meal-plans/${list.targetId}`
+                      }
+                    >
+                      Перейти к {list.targetType === 'recipe' ? 'рецепту' : 'плану'}
+                    </Button>
+                  ) : null}
+                </Stack>
+              </Card>
+              ))}
+            </Group>
+          </ScrollArea>
+          {!shoppingLists.length ? (
+            <PageEmpty
+              title="Списков покупок пока нет"
+              description="Отметьте ингредиенты на странице рецепта или плана, и список появится здесь."
+            />
+          ) : null}
+        </Stack>
       </Card>
 
       <Card withBorder radius="md" p="lg" style={{ background: 'var(--bg-surface)' }}>
