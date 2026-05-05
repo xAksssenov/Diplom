@@ -1,52 +1,155 @@
-\chapter{{\fontsize{14pt}{21pt}\selectfont\MakeUppercase{Заголовок}}}
+\chapter{{\fontsize{14pt}{21pt}\selectfont\MakeUppercase{Тестирование, развертывание и внедрение системы}}}
+\label{cha:testing}
 
-\section{Заголовок}
+\section{Тестирование системы}
 
-В рамках ВКР удалось реализовать следующие ключевые функции:
+Тестирование выполнено для подтверждения соответствия реализованного решения функциональным и нефункциональным требованиям, сформулированным в главе~1. Проверка включала серверную часть, клиентский интерфейс и интеграционные пользовательские сценарии.
 
-\begin{enumerate}
-\item список
-\end{enumerate}
+Тестирование серверной части
 
-Пример изображения и ссылки на него \ref{fig:CVE}.
+Для backend-части (Django + DRF) использован модульный подход:
+\begin{compactlist}
+  \item проверка корректности доменных моделей и ограничений целостности;
+  \item проверка прав доступа по ролевой модели \texttt{user/moderator/admin};
+  \item проверка сценариев модерации, обработки жалоб и уведомлений;
+  \item проверка валидации входных данных и обработки ошибок API.
+\end{compactlist}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{CVE-2025-29927.png}
-\captionof{figure}{Обработка запросов на переход без заголовка}
-\label{fig:CVE}
-\end{figure}
+Критериями приемки серверной части являются:
+\begin{compactlist}
+  \item успешное применение миграций и отсутствие конфликтов схемы БД;
+  \item корректная работа основных API-методов (CRUD и служебные actions);
+  \item отсутствие критических ошибок в системной проверке Django.
+\end{compactlist}
 
-Пример кода и ссылка на него \ref{listing:CSRF}.
+Тестирование клиентской части
+
+Для frontend-части (React + Effector) проведено функциональное тестирование ключевых пользовательских потоков:
+\begin{compactlist}
+  \item авторизация и работа с профилем пользователя;
+  \item просмотр и фильтрация каталогов рецептов и планов;
+  \item формирование плана питания в конструкторе;
+  \item работа с отзывами, избранным и списками покупок;
+  \item обработка ошибок запросов и отображение уведомлений.
+\end{compactlist}
+
+Отдельно проверены граничные условия конструктора плана питания:
+\begin{compactlist}
+  \item длительность плана задается в диапазоне от 1 до 30 дней;
+  \item шаг изменения длительности составляет 1 день;
+  \item количество перекусов задается в диапазоне от 0 до 5 в сутки.
+\end{compactlist}
+
+Интеграционное тестирование
+
+Интеграционная проверка выполнена на уровне бизнес-сценариев:
+\begin{compactlist}
+  \item регистрация пользователя и заполнение профиля;
+  \item создание рецепта, отправка на модерацию, изменение статуса;
+  \item формирование плана питания и генерация списка покупок;
+  \item публикация отзыва, создание жалобы, получение уведомления;
+  \item обращение к ИИ-ассистенту через серверный прокси.
+\end{compactlist}
+
+Результаты тестирования подтвердили работоспособность основных сценариев использования системы и согласованность работы клиентской и серверной частей.
+
+\section{Развертывание на сервере}
+
+Сборка и контейнеризация серверной части
+
+Для унификации окружения и воспроизводимости развертывания приложение упаковано в Docker-контейнеры. Проект включает:
+\begin{compactlist}
+  \item контейнер базы данных PostgreSQL;
+  \item контейнер backend-сервиса (Django + Gunicorn);
+  \item контейнер frontend-сервиса (Vite + React).
+\end{compactlist}
+
+Конфигурация backend-контейнера приведена в листинге~\ref{listing:backend-dockerfile}.
 
 \begin{listing}[H]
-\caption{Подключение CSRF-токена}
-\label{listing:CSRF}
+\caption{Dockerfile серверной части}
+\label{listing:backend-dockerfile}
 \begin{mdframed}
-\begin{minted}{typescript}
-import cookieParser from 'cookie-parser';
-import csurf from 'csurf';
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.use(cookieParser());
-  app.use(
-    csurf({
-      cookie: {
-        httpOnly: true, // токен CSRF недоступен через JS
-        secure: true,
-        sameSite: 'strict',
-      },
-    }),
-  );
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  app.enableCors({origin: process.env.CORS, credentials: true});
-  await app.listen(process.env.PORT ?? 3000);
-}
+\begin{minted}[breaklines=true]{bash}
+FROM python:3.13-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY . /app
+EXPOSE 8000
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
 \end{minted}
 \end{mdframed}
 \end{listing}
 
-\section{Вывод}
+Конфигурация frontend-контейнера приведена в листинге~\ref{listing:frontend-dockerfile}.
 
-Вывод по главе
+\begin{listing}[H]
+\caption{Dockerfile клиентской части}
+\label{listing:frontend-dockerfile}
+\begin{mdframed}
+\begin{minted}[breaklines=true]{bash}
+FROM node:22-alpine
+WORKDIR /app
+COPY package.json package-lock.json /app/
+RUN npm ci
+COPY . /app
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+\end{minted}
+\end{mdframed}
+\end{listing}
+
+Оркестрация сервисов
+
+Для запуска полного стенда используется \texttt{docker-compose.yml}, включающий базы данных, backend и frontend (листинг~\ref{listing:compose-file}).
+
+\begin{listing}[H]
+\caption{Фрагмент docker-compose.yml}
+\label{listing:compose-file}
+\begin{mdframed}
+\begin{minted}[breaklines=true]{yaml}
+services:
+  db:
+    image: postgres:16-alpine
+  backend:
+    build: ./Backend
+    ports: ["8000:8000"]
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+  frontend:
+    build: ./Frontend
+    ports: ["5173:5173"]
+\end{minted}
+\end{mdframed}
+\end{listing}
+
+Порядок запуска
+
+Последовательность развертывания:
+\begin{compactlist}
+  \item перейти в корневую директорию проекта;
+  \item скачать (при необходимости обновить) образы командой \texttt{docker compose pull};
+  \item выполнить сборку контейнеров командой \texttt{docker compose build};
+  \item запустить окружение командой \texttt{docker compose up -d};
+  \item проверить доступность сервисов: frontend (\texttt{http://localhost:5173}), backend API (\texttt{http://localhost:8000/api/health/}).
+\end{compactlist}
+
+Такой подход сокращает время подготовки среды и обеспечивает идентичное поведение приложения на разных хостах.
+
+\section{Перспективы развития системы}
+
+Дальнейшее развитие FoodPlanner целесообразно выполнять по следующим направлениям:
+\begin{compactlist}
+  \item расширение доменной персонализации (сезонность, бюджет, расширенные медицинские ограничения);
+  \item развитие рекомендательных алгоритмов и повышение качества ИИ-консультаций;
+  \item интеграция с внешними сервисами (трекеры активности, носимые устройства, продуктовые каталоги);
+  \item расширение аналитики пользовательского прогресса и поведенческих метрик;
+  \item усиление контуров качества: автоматизированные e2e-тесты, CI/CD и централизованная телеметрия.
+\end{compactlist}
+
+\section{Выводы по главе}
+
+В третьей главе представлены результаты тестирования, подтверждающие работоспособность ключевых пользовательских и служебных сценариев системы. Показано развертывание приложения в контейнерной среде Docker с использованием единого файла оркестрации сервисов. Также определены приоритетные направления дальнейшего развития, направленные на повышение качества персонализации, масштабируемости и эксплуатационной зрелости платформы.

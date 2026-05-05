@@ -1,0 +1,7 @@
+Django>=6.0,<6.1
+djangorestframework>=3.17,<3.18
+drf-spectacular>=0.29,<0.30
+django-cors-headers>=4.9,<5.0
+django-environ>=0.13,<0.14
+psycopg[binary]>=3.3,<3.4
+gunicorn>=23.0,<24.0

@@ -22,6 +22,8 @@ citecolor=black, menucolor=black, filecolor=black,
 \urlstyle{same}
 
 \usepackage{pdfpages}
+\usepackage[all]{hypcap}
+\usepackage{needspace}
 
 % Изменение начертания шрифта --- после чего выглядит таймсоподобно.
 % apt-get install scalable-cyrfonts-tex
@@ -77,6 +79,7 @@ citecolor=black, menucolor=black, filecolor=black,
 \renewcommand*\l@section{\@dottedtocline{1}{0em}{2.3em}}
 \renewcommand*\l@subsection{\@dottedtocline{2}{0em}{3.2em}}
 \renewcommand*\l@subsubsection{\@dottedtocline{3}{0em}{4.1em}}
+\renewcommand\@dotsep{2.2}
 \makeatother
 
 
@@ -121,17 +124,40 @@ rightmargin=0pt % Reduces right outer margin
 
 \ifoverleafmode
   \usepackage{listings}
+  \usepackage{newfloat}
+  \DeclareFloatingEnvironment[
+    fileext=lol,
+    listname={Листинги},
+    name=Листинг
+  ]{listing}
   \lstset{
       basicstyle=\ttfamily\small,
       numbers=left,
-      numbersep=5pt,
+      numberstyle=\scriptsize\color{gray},
+      numbersep=8pt,
       breaklines=true,
-      breakatwhitespace=false
+      breakatwhitespace=false,
+      columns=fullflexible,
+      keepspaces=true,
+      showstringspaces=false,
+      xleftmargin=2.4em,
+      framexleftmargin=2.0em,
+      tabsize=2,
+      backgroundcolor=\color{black!3},
+      keywordstyle=\color{blue!70!black}\bfseries,
+      commentstyle=\color{green!45!black}\itshape,
+      stringstyle=\color{red!65!black}
   }
-  \renewcommand{\lstlistingname}{Листинг}
-  \renewcommand{\lstlistlistingname}{Листинги}
+  \lstnewenvironment{minted}[2][]{
+    \lstset{
+      language=#2,
+      #1
+    }
+  }{}
+  \newcommand{\inputminted}[3][]{\lstinputlisting[language=#2,#1]{#3}}
 \else
   \usepackage[chapter]{minted}
+  \usemintedstyle{friendly}
 
   % Configure captions for minted's listing environment
   \captionsetup[listing]{
@@ -153,6 +179,7 @@ rightmargin=0pt % Reduces right outer margin
       breakanywhere=true,
       breakautoindent=true,
       breaklines=true,
+      bgcolor=black!3,
   }
 
   \renewcommand{\listingscaption}{Листинг}
@@ -178,11 +205,11 @@ rightmargin=0pt % Reduces right outer margin
 \makeatother
 
 \ifoverleafmode\else
-\AtEndEnvironment{listing}{\vspace{-10pt}}
+\AtEndEnvironment{listing}{\vspace{-4pt}}
 \fi
-\AtEndEnvironment{table}{\vspace{-10pt}}
-\AtEndEnvironment{center}{\vspace{-14pt}}
-\AtEndEnvironment{figure}{\vspace{-14pt}}
+\AtEndEnvironment{table}{\vspace{0pt}}
+\AtEndEnvironment{center}{\vspace{0pt}}
+\AtEndEnvironment{figure}{\vspace{0pt}}
 
 
 \usepackage{fontspec}
@@ -197,5 +224,18 @@ rightmargin=0pt % Reduces right outer margin
 \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
 \renewcommand{\@seccntformat}[1]{%
   {\fontsize{14pt}{21pt}\selectfont\bfseries \csname the#1\endcsname}\hspace{1em}%
+}
+\makeatother
+
+% Keep normal spacing after section titles.
+\setlength\GostAfterTitleSkip{3.2ex}
+
+% Remove bottom spacing for second-level headings (\section).
+\makeatletter
+\renewcommand\section{%
+ \@afterindenttrue
+ \@startsection{section}{1}%
+ {\GostTitleIndent}{\GostBeforTitleSkip}{0.6ex}%
+ {\GostTitleStyle}%
 }
 \makeatother
