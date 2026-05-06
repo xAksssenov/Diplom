@@ -83,7 +83,7 @@ CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
 \end{mdframed}
 \end{listing}
 
-Конфигурация frontend-контейнера приведена в листинге~\ref{listing:frontend-dockerfile}.
+Конфигурация frontend-контейнера приведена в листинге~\ref{listing:frontend-dockerfile}. Сборка выполняется через \texttt{npm ci}, а запуск dev-сервера --- через Vite \cite{npm_docs_2026,vite_docs_2026,vite_deploy_docs_2026}.
 
 \begin{listing}[H]
 \caption{Dockerfile клиентской части}
