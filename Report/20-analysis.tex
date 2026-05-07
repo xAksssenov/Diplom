@@ -271,17 +271,238 @@ Ovkuse & Базовые функции подбора рецептов и фор
   \item сопровождаемость: модульная структура frontend/backend и документированные контракты API.
 \end{compactlist}
 
-\section{Модели данных}
+\section{Проектирование архитектуры системы}
 
-Модель данных проектируемой системы отражает доменные сущности планирования питания и связи между ними. Центральными таблицами являются \texttt{users}, \texttt{recipes}, \texttt{ingredients}, \texttt{meal\_plans}, \texttt{reviews}, \texttt{complaints}, \texttt{favorites}, \texttt{notifications}, а также связующие таблицы \texttt{recipe\_ingredients}, \texttt{meal\_plan\_items}, \texttt{shopping\_list\_items}.
+Общая структура данных в приложении
 
-Таблица \texttt{users} хранит учетные записи и связана со справочником ролей \texttt{roles}, что обеспечивает ролевое разграничение доступа. Таблица \texttt{recipes} содержит рецепты и связана с таблицами \texttt{categories}, \texttt{tags} и \texttt{recipe\_ingredients}, что обеспечивает нормализованное хранение состава блюда и пищевой ценности.
+Общая структура данных и потоков в FoodPlanner может быть формализована через DFD-представление. Контекстная диаграмма отражает взаимодействие системы с ключевыми внешними сущностями:
+\begin{compactlist}
+  \item пользователь платформы (формирование рациона, работа с рецептами и планами);
+  \item модератор и администратор (контроль качества контента и управление системой);
+  \item клиентское веб-приложение (SPA), выступающее основным каналом пользовательского взаимодействия;
+  \item внешние сервисы (например, API ИИ-ассистента).
+\end{compactlist}
 
-Блок планирования реализован таблицами \texttt{meal\_plans} и \texttt{meal\_plan\_items}: первая хранит параметры плана и его статус, вторая --- структуру по дням и приемам пищи. На основе этих данных формируются \texttt{shopping\_lists} и \texttt{shopping\_list\_items}.
+Контекстная DFD-диаграмма представлена на рисунке~\ref{fig:dfd-context}.
 
-Социальный и модерационный контур представлен таблицами \texttt{reviews}, \texttt{complaints}, \texttt{moderation\_logs}, \texttt{recipe\_ingredient\_change\_notices}, \texttt{notifications}. Такая структура покрывает сценарии обратной связи, обработки жалоб, уведомлений и аудита модерационных действий.
+\begin{figure}[H]
+  \centering
+  \IfFileExists{images/dfd-context.png}{
+    \includegraphics[width=0.95\textwidth]{dfd-context.png}
+  }{
+    \fbox{\parbox{0.9\textwidth}{\centering Место для контекстной DFD-диаграммы\\
+    Файл: \texttt{Report/images/dfd-context.png}}}
+  }
+  \caption{Контекстная DFD-диаграмма FoodPlanner}
+  \label{fig:dfd-context}
+\end{figure}
 
-Внешние ключи и ограничения уникальности обеспечивают целостность данных, а индексация по идентификаторам пользователей, рецептов, планов и статусам обеспечивает приемлемую производительность для типовых пользовательских запросов.
+При детализации DFD-уровня выделяются основные процессы и хранилища данных.
+
+Процессы:
+\begin{compactlist}
+  \item управление пользователями и аутентификацией;
+  \item управление рецептами, тегами, категориями и ингредиентами;
+  \item управление планами питания и генерацией списков покупок;
+  \item модерация пользовательского контента и обработка жалоб;
+  \item управление отзывами, избранным и уведомлениями;
+  \item взаимодействие с внешним API ИИ-ассистента.
+\end{compactlist}
+
+Хранилища данных:
+\begin{compactlist}
+  \item DS1: учетные записи, роли и настройки профилей пользователей;
+  \item DS2: рецепты, планы питания, структура рационов и shopping list;
+  \item DS3: отзывы, жалобы, модерационные журналы и уведомления.
+\end{compactlist}
+
+Детализированная DFD-диаграмма представлена на рисунке~\ref{fig:dfd-level1}.
+
+\begin{figure}[H]
+  \centering
+  \IfFileExists{images/dfd-level1.png}{
+    \includegraphics[width=0.95\textwidth]{dfd-level1.png}
+  }{
+    \fbox{\parbox{0.9\textwidth}{\centering Место для детализированной DFD-диаграммы\\
+    Файл: \texttt{Report/images/dfd-level1.png}}}
+  }
+  \caption{DFD-диаграмма процессов и хранилищ данных FoodPlanner}
+  \label{fig:dfd-level1}
+\end{figure}
+
+Такая организация данных и потоков обеспечивает целостность информации и упрощает масштабирование системы при росте количества пользователей и контента.
+
+Выбор архитектуры веб-сервиса
+
+Для FoodPlanner выбрана клиент-серверная архитектура: клиентская часть (React + TypeScript) и серверная часть (Django + DRF) реализованы как независимые модули с единым API-контрактом. Альтернативным вариантом могла быть микросервисная архитектура, однако для текущего масштаба проекта и размера команды она избыточна по операционной сложности.
+
+Схематичное представление клиент-серверной архитектуры и микросервисного подхода показано на рисунках~\ref{fig:arch-client-server} и~\ref{fig:arch-microservices}.
+
+\begin{figure}[H]
+  \centering
+  \IfFileExists{images/arch-client-server.png}{
+    \includegraphics[width=0.95\textwidth]{arch-client-server.png}
+  }{
+    \fbox{\parbox{0.9\textwidth}{\centering Место для схемы клиент-серверной архитектуры\\
+    Файл: \texttt{Report/images/arch-client-server.png}}}
+  }
+  \caption{Клиент-серверная архитектура FoodPlanner}
+  \label{fig:arch-client-server}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \IfFileExists{images/arch-microservices.png}{
+    \includegraphics[width=0.95\textwidth]{arch-microservices.png}
+  }{
+    \fbox{\parbox{0.9\textwidth}{\centering Место для схемы микросервисной архитектуры\\
+    Файл: \texttt{Report/images/arch-microservices.png}}}
+  }
+  \caption{Микросервисная архитектура (альтернативный подход)}
+  \label{fig:arch-microservices}
+\end{figure}
+
+Сравнительный анализ клиент-серверной и микросервисной архитектур приведен в таблице~\ref{tab:arch-compare}.
+
+\begin{table}[H]
+\caption{Сравнение клиент-серверной и микросервисной архитектур}
+\label{tab:arch-compare}
+\small
+\begin{tabularx}{\textwidth}{|p{0.21\textwidth}|p{0.36\textwidth}|X|}
+\hline
+\multicolumn{1}{|c|}{Критерий} & \multicolumn{1}{c|}{Клиент-серверная архитектура} & \multicolumn{1}{c|}{Микросервисная архитектура} \\ \hline
+Принцип & Единый централизованный backend для обслуживания клиентов & Набор автономных сервисов, каждый отвечает за свою предметную область \\ \hline
+Компоненты & SPA-клиент, API-сервер, единая БД & Набор сервисов, API-шлюз, межсервисное взаимодействие, распределенные БД \\ \hline
+Масштабируемость & Масштабирование преимущественно на уровне всего backend & Независимое масштабирование отдельных сервисов \\ \hline
+Развертывание & Единый релизный контур и более простой процесс деплоя & Независимые релизы, более сложная инфраструктура CI/CD \\ \hline
+Сложность разработки & Ниже, проще старт и сопровождение малой командой & Выше из-за распределенности и усложнения инфраструктуры \\ \hline
+Надежность при сбоях & Критические сбои затрагивают сервис целиком & Сбой одного сервиса ограниченно влияет на систему в целом \\ \hline
+Коммуникация & Централизованные HTTP-запросы к одному API & HTTP/gRPC + асинхронные шины и очереди \\ \hline
+Тестирование & Проще сквозное тестирование & Требуется отдельно тестировать сервисы и интеграции \\ \hline
+\end{tabularx}
+\normalsize
+\end{table}
+
+Для текущих требований FoodPlanner, объема команды и ресурсов клиент-серверная архитектура обеспечивает оптимальный баланс между скоростью разработки и эксплуатационной устойчивостью, сохраняя возможность дальнейшего масштабирования.
+
+Для дальнейшей детализации архитектуры используется C4-подход, разделяющий описание системы на уровни абстракции:
+\begin{compactlist}
+  \item Context --- система в окружении пользователей и внешних сервисов;
+  \item Container --- клиент, backend, база данных и внешние интеграции;
+  \item Component --- внутренние модули backend и frontend по доменным областям;
+  \item Code --- уровень классов/модулей и программной реализации.
+\end{compactlist}
+
+Проектирование базы данных
+
+При выборе модели хранения данных для FoodPlanner рассматривались основные типы баз данных:
+\begin{compactlist}
+  \item реляционные БД --- строгая схема, SQL, ACID-транзакции, высокая целостность;
+  \item документо-ориентированные БД --- гибкая схема и высокая адаптивность форматов;
+  \item key-value и колоночные БД --- высокая производительность в специализированных сценариях.
+\end{compactlist}
+
+Сравнительная характеристика моделей данных представлена в таблице~\ref{tab:db-model-compare}.
+
+\begin{table}[H]
+\caption{Сравнительная характеристика моделей баз данных}
+\label{tab:db-model-compare}
+\small
+\begin{tabularx}{\textwidth}{|p{0.22\textwidth}|p{0.24\textwidth}|X|}
+\hline
+\multicolumn{1}{|c|}{Критерий} & \multicolumn{1}{c|}{Реляционная модель} & \multicolumn{1}{c|}{Гибкие NoSQL-модели} \\ \hline
+Структура данных & Таблицы, связи, строгая схема & Документы/ключ-значение/колонки, схема гибкая \\ \hline
+Целостность & Высокая за счет ограничений и внешних ключей & Часто контролируется на уровне приложения \\ \hline
+Транзакционность & Полная поддержка ACID & Поддержка зависит от конкретной СУБД \\ \hline
+Язык запросов & Стандартизированный SQL & Специфичные API и языки запросов \\ \hline
+Оптимальный сценарий & Бизнес-системы с богатой связностью данных и требованиями целостности & Высоконагруженные узкоспециализированные сценарии \\ \hline
+\end{tabularx}
+\normalsize
+\end{table}
+
+Для FoodPlanner выбрана реляционная модель с использованием PostgreSQL, так как система оперирует связанной доменной моделью (пользователи, рецепты, планы, отзывы, жалобы, уведомления), для которой критичны целостность, предсказуемость запросов и транзакционная согласованность.
+
+Логическая схема данных отражает ключевые сущности предметной области и связи между ними. Центральными таблицами являются \texttt{users}, \texttt{recipes}, \texttt{ingredients}, \texttt{meal\_plans}, \texttt{reviews}, \texttt{complaints}, \texttt{favorites}, \texttt{notifications}, а также связующие таблицы \texttt{recipe\_ingredients}, \texttt{meal\_plan\_items}, \texttt{shopping\_list\_items}.
+
+Внешние ключи, ограничения уникальности и индексы обеспечивают корректность и производительность типовых пользовательских запросов.
+
+Ключевые элементы логической модели представлены ниже фрагментами реальной серверной реализации.
+
+\begin{listing}[H]
+\caption{Модель ролей и пользователей}
+\label{listing:user-role-model}
+\begin{mdframed}
+\begin{minted}[breaklines=true]{python}
+class Role(models.Model):
+    class RoleNames(models.TextChoices):
+        USER = "user", "User"
+        MODERATOR = "moderator", "Moderator"
+        ADMIN = "admin", "Admin"
+
+    name = models.CharField(max_length=32, unique=True, choices=RoleNames.choices)
+
+class User(AbstractUser):
+    username = None
+    email = models.EmailField(unique=True)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
+    health_features = models.JSONField(default=list, blank=True)
+    favorite_tags = models.JSONField(default=list, blank=True)
+    USERNAME_FIELD = "email"
+\end{minted}
+\end{mdframed}
+\end{listing}
+
+\begin{listing}[H]
+\caption{Фрагмент модели рецептов и состава ингредиентов}
+\label{listing:recipe-model}
+\begin{mdframed}
+\begin{minted}[breaklines=true]{python}
+class Recipe(models.Model):
+    title = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    status = models.CharField(max_length=16, choices=ModerationStatus.choices)
+    tags = models.ManyToManyField(Tag, related_name="recipes", blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["author"]),
+            models.Index(fields=["category"]),
+            models.Index(fields=["status"]),
+        ]
+
+class RecipeIngredient(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients")
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+\end{minted}
+\end{mdframed}
+\end{listing}
+
+\begin{listing}[H]
+\caption{Фрагмент модели плана питания и списка покупок}
+\label{listing:mealplan-shopping-model}
+\begin{mdframed}
+\begin{minted}[breaklines=true]{python}
+class MealPlan(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.DRAFT)
+
+class MealPlanItem(models.Model):
+    meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE, related_name="items")
+    day_number = models.PositiveSmallIntegerField()
+    meal_type = models.CharField(max_length=16, choices=MealType.choices)
+    recipe = models.ForeignKey("recipes.Recipe", on_delete=models.CASCADE)
+
+class ShoppingList(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    target_type = models.CharField(max_length=16, choices=TargetType.choices, blank=True, default="")
+    target_id = models.PositiveBigIntegerField(null=True, blank=True)
+\end{minted}
+\end{mdframed}
+\end{listing}
 
 \begin{figure}[H]
   \centering
@@ -291,7 +512,7 @@ Ovkuse & Базовые функции подбора рецептов и фор
     \fbox{\parbox{0.9\textwidth}{\centering Место для ER-диаграммы\\
     Файл: \texttt{Report/images/data-model.png}}}
   }
-  \caption{Модель данных FoodPlanner}
+  \caption{Логическая модель данных FoodPlanner}
   \label{fig:data-model}
 \end{figure}
 

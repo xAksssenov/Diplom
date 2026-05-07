@@ -18,11 +18,13 @@
 
 % \nobreakingbeforechapters
 % \breakingbeforechapters
-\ifoverleafmode
-% Title PDF is disabled for Overleaf mode.
-\else
-\includepdf[pages={1-5}]{./extra/Title.pdf}
-\fi
+\IfFileExists{./Title.pdf}{
+  \includepdf[pages=-]{./Title.pdf}
+}{
+  \IfFileExists{./extra/Title.pdf}{
+    \includepdf[pages=-]{./extra/Title.pdf}
+  }{}
+}
 
 
 \include{00-abstract}
