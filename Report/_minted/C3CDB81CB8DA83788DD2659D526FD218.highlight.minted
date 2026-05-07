@@ -1,0 +1,13 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{environ}
+
+\PYG{n}{BASE\PYGZus{}DIR} \PYG{o}{=} \PYG{n}{Path}\PYG{p}{(}\PYG{n+nv+vm}{\PYGZus{}\PYGZus{}file\PYGZus{}\PYGZus{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{resolve}\PYG{p}{()}\PYG{o}{.}\PYG{n}{parent}\PYG{o}{.}\PYG{n}{parent}
+\PYG{n}{env} \PYG{o}{=} \PYG{n}{environ}\PYG{o}{.}\PYG{n}{Env}\PYG{p}{(}
+    \PYG{n}{DEBUG}\PYG{o}{=}\PYG{p}{(}\PYG{n+nb}{bool}\PYG{p}{,} \PYG{k+kc}{True}\PYG{p}{),}
+    \PYG{n}{SECRET\PYGZus{}KEY}\PYG{o}{=}\PYG{p}{(}\PYG{n+nb}{str}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}django\PYGZhy{}insecure\PYGZhy{}change\PYGZhy{}me\PYGZdq{}}\PYG{p}{),}
+\PYG{p}{)}
+\PYG{n}{environ}\PYG{o}{.}\PYG{n}{Env}\PYG{o}{.}\PYG{n}{read\PYGZus{}env}\PYG{p}{(}\PYG{n}{BASE\PYGZus{}DIR} \PYG{o}{/} \PYG{l+s+s2}{\PYGZdq{}.env\PYGZdq{}}\PYG{p}{)}
+
+\PYG{n}{DEBUG} \PYG{o}{=} \PYG{n}{env}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}DEBUG\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{SECRET\PYGZus{}KEY} \PYG{o}{=} \PYG{n}{env}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}SECRET\PYGZus{}KEY\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

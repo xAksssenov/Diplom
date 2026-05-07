@@ -1,0 +1,9 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+FROM\PYG{+w}{ }node:22\PYGZhy{}alpine
+WORKDIR\PYG{+w}{ }/app
+COPY\PYG{+w}{ }package.json\PYG{+w}{ }package\PYGZhy{}lock.json\PYG{+w}{ }/app/
+RUN\PYG{+w}{ }npm\PYG{+w}{ }ci
+COPY\PYG{+w}{ }.\PYG{+w}{ }/app
+EXPOSE\PYG{+w}{ }\PYG{l+m}{5173}
+CMD\PYG{+w}{ }\PYG{o}{[}\PYG{l+s+s2}{\PYGZdq{}npm\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}run\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}dev\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{}\PYGZhy{}\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{}\PYGZhy{}host\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}0.0.0.0\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{}\PYGZhy{}port\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}5173\PYGZdq{}}\PYG{o}{]}
+\end{MintedVerbatim}

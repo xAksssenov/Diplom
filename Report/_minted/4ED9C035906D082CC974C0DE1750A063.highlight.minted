@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{checkSessionRequested}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createEvent}\PYG{p}{()}
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{loginSubmitted}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createEvent}\PYG{o}{\PYGZlt{}}\PYG{n+nx}{LoginPayload}\PYG{o}{\PYGZgt{}}\PYG{p}{()}
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{logoutRequested}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createEvent}\PYG{p}{()}
+
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{checkSessionFx}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createEffect}\PYG{p}{(}\PYG{k}{async}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{getMe}\PYG{p}{())}
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{loginFx}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createEffect}\PYG{p}{(}\PYG{k}{async}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{payload}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{LoginPayload}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{login}\PYG{p}{(}\PYG{n+nx}{payload}\PYG{p}{))}
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{logoutFx}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createEffect}\PYG{p}{(}\PYG{k}{async}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{logout}\PYG{p}{())}
+
+\PYG{k}{export}\PYG{+w}{ }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{\PYGZdl{}authStatus}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{createStore}\PYG{o}{\PYGZlt{}}\PYG{n+nx}{AuthStatus}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}checking\PYGZsq{}}\PYG{p}{)}
+\PYG{+w}{  }\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{n+nx}{checkSessionFx}\PYG{p}{.}\PYG{n+nx}{done}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}auth\PYGZsq{}}\PYG{p}{)}
+\PYG{+w}{  }\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{n+nx}{checkSessionFx}\PYG{p}{.}\PYG{n+nx}{fail}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}guest\PYGZsq{}}\PYG{p}{)}
+\PYG{+w}{  }\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{n+nx}{loginFx}\PYG{p}{.}\PYG{n+nx}{done}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}auth\PYGZsq{}}\PYG{p}{)}
+\PYG{+w}{  }\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{n+nx}{logoutFx}\PYG{p}{.}\PYG{n+nx}{done}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}guest\PYGZsq{}}\PYG{p}{)}
+
+\PYG{n+nx}{sample}\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{clock}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{checkSessionRequested}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{target}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{checkSessionFx}\PYG{+w}{ }\PYG{p}{\PYGZcb{})}
+\PYG{n+nx}{sample}\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{clock}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{loginSubmitted}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{target}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{loginFx}\PYG{+w}{ }\PYG{p}{\PYGZcb{})}
+\PYG{n+nx}{sample}\PYG{p}{(\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{clock}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{logoutRequested}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{target}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{logoutFx}\PYG{+w}{ }\PYG{p}{\PYGZcb{})}
+\end{MintedVerbatim}

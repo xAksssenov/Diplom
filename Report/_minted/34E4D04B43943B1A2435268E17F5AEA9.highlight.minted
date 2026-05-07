@@ -1,0 +1,17 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{Role}\PYG{p}{(}\PYG{n}{models}\PYG{o}{.}\PYG{n}{Model}\PYG{p}{):}
+    \PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{RoleNames}\PYG{p}{(}\PYG{n}{models}\PYG{o}{.}\PYG{n}{TextChoices}\PYG{p}{):}
+        \PYG{n}{USER} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}user\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}User\PYGZdq{}}
+        \PYG{n}{MODERATOR} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}moderator\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Moderator\PYGZdq{}}
+        \PYG{n}{ADMIN} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}admin\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}Admin\PYGZdq{}}
+
+    \PYG{n}{name} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{CharField}\PYG{p}{(}\PYG{n}{max\PYGZus{}length}\PYG{o}{=}\PYG{l+m+mi}{32}\PYG{p}{,} \PYG{n}{unique}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{choices}\PYG{o}{=}\PYG{n}{RoleNames}\PYG{o}{.}\PYG{n}{choices}\PYG{p}{)}
+
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{User}\PYG{p}{(}\PYG{n}{AbstractUser}\PYG{p}{):}
+    \PYG{n}{username} \PYG{o}{=} \PYG{k+kc}{None}
+    \PYG{n}{email} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{EmailField}\PYG{p}{(}\PYG{n}{unique}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{n}{role} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{ForeignKey}\PYG{p}{(}\PYG{n}{Role}\PYG{p}{,} \PYG{n}{on\PYGZus{}delete}\PYG{o}{=}\PYG{n}{models}\PYG{o}{.}\PYG{n}{SET\PYGZus{}NULL}\PYG{p}{,} \PYG{n}{null}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{blank}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{n}{health\PYGZus{}features} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{JSONField}\PYG{p}{(}\PYG{n}{default}\PYG{o}{=}\PYG{n+nb}{list}\PYG{p}{,} \PYG{n}{blank}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{n}{favorite\PYGZus{}tags} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{JSONField}\PYG{p}{(}\PYG{n}{default}\PYG{o}{=}\PYG{n+nb}{list}\PYG{p}{,} \PYG{n}{blank}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{n}{USERNAME\PYGZus{}FIELD} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}email\PYGZdq{}}
+\end{MintedVerbatim}

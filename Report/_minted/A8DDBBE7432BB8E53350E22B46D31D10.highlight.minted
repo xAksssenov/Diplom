@@ -1,0 +1,18 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{MealPlan}\PYG{p}{(}\PYG{n}{models}\PYG{o}{.}\PYG{n}{Model}\PYG{p}{):}
+    \PYG{n}{user} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{ForeignKey}\PYG{p}{(}\PYG{n}{settings}\PYG{o}{.}\PYG{n}{AUTH\PYGZus{}USER\PYGZus{}MODEL}\PYG{p}{,} \PYG{n}{on\PYGZus{}delete}\PYG{o}{=}\PYG{n}{models}\PYG{o}{.}\PYG{n}{CASCADE}\PYG{p}{)}
+    \PYG{n}{start\PYGZus{}date} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{DateField}\PYG{p}{()}
+    \PYG{n}{end\PYGZus{}date} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{DateField}\PYG{p}{()}
+    \PYG{n}{status} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{CharField}\PYG{p}{(}\PYG{n}{max\PYGZus{}length}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{,} \PYG{n}{choices}\PYG{o}{=}\PYG{n}{Status}\PYG{o}{.}\PYG{n}{choices}\PYG{p}{,} \PYG{n}{default}\PYG{o}{=}\PYG{n}{Status}\PYG{o}{.}\PYG{n}{DRAFT}\PYG{p}{)}
+
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{MealPlanItem}\PYG{p}{(}\PYG{n}{models}\PYG{o}{.}\PYG{n}{Model}\PYG{p}{):}
+    \PYG{n}{meal\PYGZus{}plan} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{ForeignKey}\PYG{p}{(}\PYG{n}{MealPlan}\PYG{p}{,} \PYG{n}{on\PYGZus{}delete}\PYG{o}{=}\PYG{n}{models}\PYG{o}{.}\PYG{n}{CASCADE}\PYG{p}{,} \PYG{n}{related\PYGZus{}name}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}items\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{day\PYGZus{}number} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{PositiveSmallIntegerField}\PYG{p}{()}
+    \PYG{n}{meal\PYGZus{}type} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{CharField}\PYG{p}{(}\PYG{n}{max\PYGZus{}length}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{,} \PYG{n}{choices}\PYG{o}{=}\PYG{n}{MealType}\PYG{o}{.}\PYG{n}{choices}\PYG{p}{)}
+    \PYG{n}{recipe} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{ForeignKey}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}recipes.Recipe\PYGZdq{}}\PYG{p}{,} \PYG{n}{on\PYGZus{}delete}\PYG{o}{=}\PYG{n}{models}\PYG{o}{.}\PYG{n}{CASCADE}\PYG{p}{)}
+
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{ShoppingList}\PYG{p}{(}\PYG{n}{models}\PYG{o}{.}\PYG{n}{Model}\PYG{p}{):}
+    \PYG{n}{user} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{ForeignKey}\PYG{p}{(}\PYG{n}{settings}\PYG{o}{.}\PYG{n}{AUTH\PYGZus{}USER\PYGZus{}MODEL}\PYG{p}{,} \PYG{n}{on\PYGZus{}delete}\PYG{o}{=}\PYG{n}{models}\PYG{o}{.}\PYG{n}{CASCADE}\PYG{p}{)}
+    \PYG{n}{target\PYGZus{}type} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{CharField}\PYG{p}{(}\PYG{n}{max\PYGZus{}length}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{,} \PYG{n}{choices}\PYG{o}{=}\PYG{n}{TargetType}\PYG{o}{.}\PYG{n}{choices}\PYG{p}{,} \PYG{n}{blank}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{default}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}}\PYG{p}{)}
+    \PYG{n}{target\PYGZus{}id} \PYG{o}{=} \PYG{n}{models}\PYG{o}{.}\PYG{n}{PositiveBigIntegerField}\PYG{p}{(}\PYG{n}{null}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{blank}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+\end{MintedVerbatim}

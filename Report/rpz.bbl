@@ -1,0 +1,370 @@
+\begin{thebibliography}{10}
+\def\selectlanguageifdefined#1{
+\expandafter\ifx\csname date#1\endcsname\relax
+\else\language\csname l@#1\endcsname\fi}
+\ifx\undefined\url\def\url#1{{\small #1}}\else\fi
+\ifx\undefined\BibUrl\def\BibUrl#1{\url{#1}}\else\fi
+\ifx\undefined\BibAnnote\long\def\BibAnnote#1{}\else\fi
+\ifx\undefined\BibEmph\def\BibEmph#1{\emph{#1}}\else\fi
+
+\bibitem{who2025stats}
+\selectlanguageifdefined{english}
+{{World Health Organization}}. World Health Statistics 2025: Monitoring Health
+  for the SDGs~/ ~{World Health Organization}. --
+\newblock Geneva: World Health Organization, 2025. --
+\newblock 76 p.
+
+\bibitem{who_healthy_diet_2026}
+\selectlanguageifdefined{english}
+Healthy Diet. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.who.int/news-room/fact-sheets/detail/healthy-diet}.
+
+\bibitem{takzdorovo_healthy_2026}
+\selectlanguageifdefined{english}
+Здоровое питание. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.takzdorovo.ru/profilaktika/zozh/dostupno-i-polezno/}.
+
+\bibitem{rpn_healthy_food_2026}
+\selectlanguageifdefined{english}
+Рекомендации по здоровому питанию. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://здоровое-питание.рф/}.
+
+\bibitem{nutristeppe_diaries_2026}
+\selectlanguageifdefined{english}
+10 лучших дневников питания в телефоне. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://ncn.nutristeppe.com/blog/10-luchshih-dnevnikov-pitaniya-v-telefone}.
+
+\bibitem{institutfitnesa_apps_2026}
+\selectlanguageifdefined{english}
+10 лучших приложений по правильному
+  питанию. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://institutfitnesa.by/10-luchshih-prilozheniy-po-pravilnomu-pitaniyu/}.
+
+\bibitem{sportmaster_apps_2026}
+\selectlanguageifdefined{english}
+5 лучших приложений, чтобы следить за
+  питанием и здоровьем. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.sportmaster.ru/media/articles/45888845/}.
+
+\bibitem{sektascience_bzhu_2026}
+\selectlanguageifdefined{english}
+Главное, что нужно знать о белках, жирах и
+  углеводах. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://sektascience.com/food/all-about-bzhu/}.
+
+\bibitem{kirillina_bpm_2022}
+\selectlanguageifdefined{english}
+{Кириллина,~Ю.~В.} Моделирование
+  бизнес-процессов~/ Ю.~В.~Кириллина,
+  И.~А.~Семичастнов. --
+\newblock МИРЭА -- Российский технологический
+  университет, 2022. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://e.lanbook.com/book/256733}.
+
+\bibitem{mindalev_idef_2016}
+\selectlanguageifdefined{english}
+{Миндалёв,~И.~В.} Моделирование
+  бизнес-процессов с помощью IDEF0, DFD, BPMN за 7
+  дней~/ И.~В.~Миндалёв. --
+\newblock Красноярский государственный
+  аграрный университет, 2016. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://e.lanbook.com/book/103833}.
+
+\bibitem{sadt_intro_ross}
+\selectlanguageifdefined{english}
+SADT Overview and Origins. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.idef.com/idef0/sadt-history/}.
+
+\bibitem{idef0_fips_183}
+\selectlanguageifdefined{english}
+Integration Definition for Function Modeling (IDEF0), FIPS PUB 183. --
+\newblock 1993. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.nist.gov/publications/integration-definition-function-modeling-idef0}.
+
+\bibitem{zueva_bpmn_2021}
+\selectlanguageifdefined{english}
+{Зуева,~А.~Н.} Моделирование
+  бизнес-процессов в нотации BPMN 2.0: учебное
+  пособие~/ А.~Н.~Зуева. --
+\newblock МИРЭА -- Российский технологический
+  университет, 2021. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://e.lanbook.com/book/176564}.
+
+\bibitem{bpmn_spec_2014}
+\selectlanguageifdefined{english}
+Business Process Model and Notation (BPMN) Version 2.0.2. --
+\newblock 2014. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.omg.org/spec/BPMN/2.0.2/}.
+
+\bibitem{povarenok2026}
+\selectlanguageifdefined{english}
+Поварёнок.ру. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.povarenok.ru/}.
+
+\bibitem{eda2026}
+\selectlanguageifdefined{english}
+Еда.ру. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{ https://eda.ru/}.
+
+\bibitem{myfitnesspal2026}
+\selectlanguageifdefined{english}
+MyFitnessPal. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.myfitnesspal.com/}.
+
+\bibitem{supercook2026}
+\selectlanguageifdefined{english}
+SuperCook. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.supercook.com/}.
+
+\bibitem{ovkuse2026}
+\selectlanguageifdefined{english}
+Овкусе.ру. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{ https://ovkuse.ru/}.
+
+\bibitem{owasp_top10_2021}
+\selectlanguageifdefined{english}
+OWASP Top 10:2021. --
+\newblock 2021. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://owasp.org/www-project-top-ten/}.
+
+\bibitem{owasp_csrf_cheatsheet}
+\selectlanguageifdefined{english}
+OWASP Cross-Site Request Forgery Prevention Cheat Sheet. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html}.
+
+\bibitem{owasp_xss_cheatsheet}
+\selectlanguageifdefined{english}
+OWASP Cross Site Scripting Prevention Cheat Sheet. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html}.
+
+\bibitem{owasp_sqli_cheatsheet}
+\selectlanguageifdefined{english}
+OWASP SQL Injection Prevention Cheat Sheet. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html}.
+
+\bibitem{django_cors_headers_docs_2026}
+\selectlanguageifdefined{english}
+django-cors-headers Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://github.com/adamchainz/django-cors-headers}.
+
+\bibitem{python_docs_2026}
+\selectlanguageifdefined{english}
+Python Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.python.org/3/}.
+
+\bibitem{django_docs_2026}
+\selectlanguageifdefined{english}
+Django Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.djangoproject.com/en/stable/}.
+
+\bibitem{drf_docs_2026}
+\selectlanguageifdefined{english}
+Django REST Framework Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.django-rest-framework.org/}.
+
+\bibitem{postgresql_docs_2026}
+\selectlanguageifdefined{english}
+PostgreSQL Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.postgresql.org/docs/}.
+
+\bibitem{docker_docs_2026}
+\selectlanguageifdefined{english}
+Docker Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.docker.com/}.
+
+\bibitem{docker_compose_docs_2026}
+\selectlanguageifdefined{english}
+Docker Compose Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.docker.com/compose/}.
+
+\bibitem{react_docs_2026}
+\selectlanguageifdefined{english}
+React Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{ https://react.dev/}.
+
+\bibitem{typescript_docs_2026}
+\selectlanguageifdefined{english}
+TypeScript Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.typescriptlang.org/docs/}.
+
+\bibitem{effector_docs_2026}
+\selectlanguageifdefined{english}
+Effector Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://effector.dev/}.
+
+\bibitem{mantine_docs_2026}
+\selectlanguageifdefined{english}
+Mantine Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://mantine.dev/}.
+
+\bibitem{vite_docs_2026}
+\selectlanguageifdefined{english}
+Vite Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://vite.dev/guide/}.
+
+\bibitem{java_docs_2026}
+\selectlanguageifdefined{english}
+Java Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.oracle.com/en/java/}.
+
+\bibitem{nodejs_docs_2026}
+\selectlanguageifdefined{english}
+Node.js Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://nodejs.org/docs/latest/api/}.
+
+\bibitem{go_docs_2026}
+\selectlanguageifdefined{english}
+The Go Programming Language Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{ https://go.dev/doc/}.
+
+\bibitem{django_environ_docs_2026}
+\selectlanguageifdefined{english}
+django-environ Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://django-environ.readthedocs.io/}.
+
+\bibitem{psycopg_docs_2026}
+\selectlanguageifdefined{english}
+Psycopg 3 Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.psycopg.org/psycopg3/docs/}.
+
+\bibitem{drf_spectacular_docs_2026}
+\selectlanguageifdefined{english}
+drf-spectacular Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://drf-spectacular.readthedocs.io/}.
+
+\bibitem{gunicorn_docs_2026}
+\selectlanguageifdefined{english}
+Gunicorn Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.gunicorn.org/}.
+
+\bibitem{fielding_rest_2000}
+\selectlanguageifdefined{english}
+{Fielding,~Roy~T.} Architectural Styles and the Design of Network-based
+  Software Architectures. --
+\newblock PhD thesis, University of California, Irvine. --
+\newblock 2000. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm}.
+
+\bibitem{rfc9110_http}
+\selectlanguageifdefined{english}
+RFC 9110: HTTP Semantics. --
+\newblock 2022. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://www.rfc-editor.org/rfc/rfc9110}.
+
+\bibitem{openapi_spec_3_1}
+\selectlanguageifdefined{english}
+OpenAPI Specification 3.1.0. --
+\newblock 2021. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://spec.openapis.org/oas/v3.1.0}.
+
+\bibitem{insomnia_docs_2026}
+\selectlanguageifdefined{english}
+Insomnia Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.insomnia.rest/}.
+
+\bibitem{postman_docs_2026}
+\selectlanguageifdefined{english}
+Postman Learning Center. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://learning.postman.com/}.
+
+\bibitem{react_router_docs_2026}
+\selectlanguageifdefined{english}
+React Router Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://reactrouter.com/}.
+
+\bibitem{npm_docs_2026}
+\selectlanguageifdefined{english}
+npm CLI Documentation. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://docs.npmjs.com/cli/v10/commands/npm-ci}.
+
+\bibitem{vite_deploy_docs_2026}
+\selectlanguageifdefined{english}
+Vite Deployment Guide. --
+\newblock 2026. --
+\newblock [Электронный ресурс]. \BibUrl{
+  https://vite.dev/guide/static-deploy.html}.
+
+\end{thebibliography}

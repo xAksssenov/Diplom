@@ -1,0 +1,10 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+FROM\PYG{+w}{ }python:3.13\PYGZhy{}slim
+ENV\PYG{+w}{ }\PYG{n+nv}{PYTHONDONTWRITEBYTECODE}\PYG{o}{=}\PYG{l+m}{1}\PYG{+w}{ }\PYG{n+nv}{PYTHONUNBUFFERED}\PYG{o}{=}\PYG{l+m}{1}
+WORKDIR\PYG{+w}{ }/app
+COPY\PYG{+w}{ }requirements.txt\PYG{+w}{ }/app/requirements.txt
+RUN\PYG{+w}{ }pip\PYG{+w}{ }install\PYG{+w}{ }\PYGZhy{}\PYGZhy{}no\PYGZhy{}cache\PYGZhy{}dir\PYG{+w}{ }\PYGZhy{}r\PYG{+w}{ }/app/requirements.txt
+COPY\PYG{+w}{ }.\PYG{+w}{ }/app
+EXPOSE\PYG{+w}{ }\PYG{l+m}{8000}
+CMD\PYG{+w}{ }\PYG{o}{[}\PYG{l+s+s2}{\PYGZdq{}gunicorn\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}config.wsgi:application\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{}\PYGZhy{}bind\PYGZdq{}},\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}0.0.0.0:8000\PYGZdq{}}\PYG{o}{]}
+\end{MintedVerbatim}

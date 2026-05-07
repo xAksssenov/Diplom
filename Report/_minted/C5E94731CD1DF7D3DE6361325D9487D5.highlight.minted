@@ -1,0 +1,16 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{LoginSerializer}\PYG{p}{(}\PYG{n}{serializers}\PYG{o}{.}\PYG{n}{Serializer}\PYG{p}{):}
+    \PYG{n}{email} \PYG{o}{=} \PYG{n}{serializers}\PYG{o}{.}\PYG{n}{EmailField}\PYG{p}{()}
+    \PYG{n}{password} \PYG{o}{=} \PYG{n}{serializers}\PYG{o}{.}\PYG{n}{CharField}\PYG{p}{(}\PYG{n}{write\PYGZus{}only}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+    \PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{validate}\PYG{p}{(}\PYG{n+nb+bp}{self}\PYG{p}{,} \PYG{n}{attrs}\PYG{p}{):}
+        \PYG{n}{user} \PYG{o}{=} \PYG{n}{authenticate}\PYG{p}{(}
+            \PYG{n}{request}\PYG{o}{=}\PYG{n+nb+bp}{self}\PYG{o}{.}\PYG{n}{context}\PYG{o}{.}\PYG{n}{get}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}request\PYGZdq{}}\PYG{p}{),}
+            \PYG{n}{username}\PYG{o}{=}\PYG{n}{attrs}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}email\PYGZdq{}}\PYG{p}{],}
+            \PYG{n}{password}\PYG{o}{=}\PYG{n}{attrs}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}password\PYGZdq{}}\PYG{p}{],}
+        \PYG{p}{)}
+        \PYG{k}{if} \PYG{o+ow}{not} \PYG{n}{user}\PYG{p}{:}
+            \PYG{k}{raise} \PYG{n}{serializers}\PYG{o}{.}\PYG{n}{ValidationError}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}Invalid credentials.\PYGZdq{}}\PYG{p}{)}
+        \PYG{n}{attrs}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}user\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{user}
+        \PYG{k}{return} \PYG{n}{attrs}
+\end{MintedVerbatim}

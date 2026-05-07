@@ -1,0 +1,24 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{export}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{ensureCsrfCookie}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{  }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{getCookie}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}csrftoken\PYGZsq{}}\PYG{p}{))}\PYG{+w}{ }\PYG{k}{return}
+\PYG{+w}{  }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{fetch}\PYG{p}{(}\PYG{l+s+sb}{`}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{API\PYGZus{}BASE\PYGZus{}URL}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{/health/`}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{n+nx}{credentials}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}include\PYGZsq{}}\PYG{+w}{ }\PYG{p}{\PYGZcb{})}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{apiRequest}\PYG{o}{\PYGZlt{}}\PYG{n+nx}{T}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n+nx}{path}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{string}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{method}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}GET\PYGZsq{}}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}POST\PYGZsq{}}\PYG{+w}{ }\PYG{o}{|}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}PATCH\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{body?}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{unknown}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{  }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{method}\PYG{+w}{ }\PYG{o}{!==}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}GET\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{ensureCsrfCookie}\PYG{p}{()}
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{csrfToken}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{getCookie}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}csrftoken\PYGZsq{}}\PYG{p}{)}
+
+\PYG{+w}{  }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{response}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{fetch}\PYG{p}{(}\PYG{l+s+sb}{`}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{API\PYGZus{}BASE\PYGZus{}URL}\PYG{l+s+si}{\PYGZcb{}\PYGZdl{}\PYGZob{}}\PYG{n+nx}{path}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{method}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{credentials}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}include\PYGZsq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{headers}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{method}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}GET\PYGZsq{}}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{k+kc}{undefined}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{      }\PYG{l+s+s1}{\PYGZsq{}Content\PYGZhy{}Type\PYGZsq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}application/json\PYGZsq{}}\PYG{p}{,}
+\PYG{+w}{      }\PYG{l+s+s1}{\PYGZsq{}X\PYGZhy{}CSRFToken\PYGZsq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{csrfToken}\PYG{p}{,}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{},}
+\PYG{+w}{    }\PYG{n+nx}{body}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kt}{body}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n+nb}{JSON}\PYG{p}{.}\PYG{n+nx}{stringify}\PYG{p}{(}\PYG{n+nx}{body}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{k+kc}{undefined}\PYG{p}{,}
+\PYG{+w}{  }\PYG{p}{\PYGZcb{})}
+
+\PYG{+w}{  }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{ok}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{throw}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{toApiError}\PYG{p}{(}\PYG{n+nx}{response}\PYG{p}{)}
+\PYG{+w}{  }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{status}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mf}{204}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kc}{undefined}\PYG{+w}{ }\PYG{k+kr}{as}\PYG{+w}{ }\PYG{n+nx}{T}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{p}{((}\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{json}\PYG{p}{())}\PYG{+w}{ }\PYG{k+kr}{as}\PYG{+w}{ }\PYG{n+nx}{T}\PYG{p}{)}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}
