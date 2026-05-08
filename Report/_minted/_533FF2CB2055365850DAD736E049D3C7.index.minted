@@ -1,7 +1,7 @@
 {
   "jobname": "rpz",
   "md5": "533FF2CB2055365850DAD736E049D3C7",
-  "timestamp": "20260507141108",
+  "timestamp": "20260507143953",
   "cachefiles": [
     "34E4D04B43943B1A2435268E17F5AEA9.highlight.minted",
     "4E205DBD80AFD17003FFF475BA61C50C.highlight.minted",
@@ -16,6 +16,6 @@
     "C5E94731CD1DF7D3DE6361325D9487D5.highlight.minted",
     "FC0E1841BCD29637681947B948CF6546.highlight.minted",
     "_533FF2CB2055365850DAD736E049D3C7.index.minted",
-    "friendly.style.minted"
+    "default.style.minted"
   ]
 }

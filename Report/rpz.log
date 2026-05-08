@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.5.5)  7 MAY 2026 14:12
+This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.5.5)  8 MAY 2026 12:24
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1628,264 +1628,300 @@ Underfull \hbox (badness 2409) in paragraph at lines 170--170
  []
 
 [19] [20]
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-[]|\TU/TimesNewRoman(0)/m/n/12 Большой каталог
+Underfull \hbox (badness 10000) in paragraph at lines 187--187
+[]|\TU/TimesNewRoman(0)/m/n/12 Праздничные сценарии
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-\TU/TimesNewRoman(0)/m/n/12 пользовательских
+Underfull \hbox (badness 1308) in paragraph at lines 187--187
+\TU/TimesNewRoman(0)/m/n/12 хорошее создание плана
  []
 
 
-Underfull \hbox (badness 2961) in paragraph at lines 192--192
-\TU/TimesNewRoman(0)/m/n/12 рецептов и развитое
+Underfull \hbox (badness 3646) in paragraph at lines 188--188
+\TU/TimesNewRoman(0)/m/n/12 ция рецептов, развитый
  []
 
 
-Underfull \hbox (badness 1831) in paragraph at lines 192--192
-\TU/TimesNewRoman(0)/m/n/12 планирования и автоматического формирова-
+Underfull \hbox (badness 10000) in paragraph at lines 189--189
+\TU/TimesNewRoman(0)/m/n/12 активное сообщество,
  []
 
 
-Underfull \hbox (badness 2005) in paragraph at lines 192--192
-[]|\TU/TimesNewRoman(0)/m/n/12 Качественный редак-
+Underfull \hbox (badness 1014) in paragraph at lines 189--189
+\TU/TimesNewRoman(0)/m/n/12 ко по подписке; нет полноценного кон-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-\TU/TimesNewRoman(0)/m/n/12 ционный контент и
+Underfull \hbox (badness 5147) in paragraph at lines 190--190
+[]|\TU/TimesNewRoman(0)/m/n/12 Крупная база рецептов,
  []
 
 
-Underfull \hbox (badness 3942) in paragraph at lines 192--192
-[]|\TU/TimesNewRoman(0)/m/n/12 Сильный учет кало-
+Underfull \hbox (badness 10000) in paragraph at lines 190--190
+\TU/TimesNewRoman(0)/m/n/12 БЖУ, дневники, Q&A,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-[]|\TU/TimesNewRoman(0)/m/n/12 Эффективный поиск
+Underfull \hbox (badness 10000) in paragraph at lines 190--190
+[]|\TU/TimesNewRoman(0)/m/n/12 Устаревший интерфейс; нет ИИ-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-[]|\TU/TimesNewRoman(0)/m/n/12 Базовые функции
+Underfull \hbox (badness 6332) in paragraph at lines 190--190
+\TU/TimesNewRoman(0)/m/n/12 помощника и нет конструктора плана
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-\TU/TimesNewRoman(0)/m/n/12 подбора рецептов
+Underfull \hbox (badness 6380) in paragraph at lines 191--191
+[]|\TU/TimesNewRoman(0)/m/n/12 Сильный онбординг по
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-\TU/TimesNewRoman(0)/m/n/12 и формирования
- []
-
-
-Underfull \hbox (badness 2753) in paragraph at lines 192--192
-\TU/TimesNewRoman(0)/m/n/12 статочная персонализация под долгосрочные
+Underfull \hbox (badness 1264) in paragraph at lines 191--191
+\TU/TimesNewRoman(0)/m/n/12 целям, трекинг прогрес-
  []
 
 [21]
-Underfull \hbox (badness 1776) in paragraph at lines 200--201
+File: images/competitor-menubook.png Graphic file (type bmp)
+<images/competitor-menubook.png>
+
+Underfull \hbox (badness 3250) in paragraph at lines 205--205
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 6 – |Интерфейс платформы MenuBook| 
+ []
+
+
+Underfull \hbox (badness 1609) in paragraph at lines 209--210
+\TU/TimesNewRoman(0)/m/n/14.4 выбор рецептов, статей и тематических подборок с 
+удобной навигаци-
+ []
+
+[22]
+File: images/competitor-eda-rambler.png Graphic file (type bmp)
+<images/competitor-eda-rambler.png>
+
+Underfull \hbox (badness 2277) in paragraph at lines 218--218
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 7 – |Интерфейс платформы Еда (Rambler)
+| 
+ []
+
+File: images/competitor-ovkuse.png Graphic file (type bmp)
+<images/competitor-ovkuse.png>
+
+Underfull \hbox (badness 4479) in paragraph at lines 231--231
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 8 – |Интерфейс платформы Ovkuse| 
+ []
+
+[23]
+File: images/competitor-povarenok.png Graphic file (type bmp)
+<images/competitor-povarenok.png>
+
+Underfull \hbox (badness 3179) in paragraph at lines 244--244
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 9 – |Интерфейс платформы Поварёнок| 
+ []
+
+[24]
+File: images/competitor-myfitnesspal.png Graphic file (type bmp)
+<images/competitor-myfitnesspal.png>
+
+Underfull \hbox (badness 2229) in paragraph at lines 257--257
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 10 – |Интерфейс платформы MyFitnessPal
+| 
+ []
+
+[25]
+Underfull \hbox (badness 1776) in paragraph at lines 265--266
 []\TU/TimesNewRoman(0)/m/n/14.4 В данном разделе требования к системе представл
 ены в порядке
  []
 
-
-Underfull \hbox (badness 5217) in paragraph at lines 207--208
+[26]
+Underfull \hbox (badness 5217) in paragraph at lines 272--273
 []\TU/TimesNewRoman(0)/m/n/14.4 конверсия из просмотра каталога в создание план
 а питания:
  []
 
 
-Underfull \hbox (badness 1655) in paragraph at lines 211--212
+Underfull \hbox (badness 1655) in paragraph at lines 276--277
 []\TU/TimesNewRoman(0)/m/n/14.4 доля контента с прозрачным отображением статуса
  модерации:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 219--220
+Underfull \hbox (badness 10000) in paragraph at lines 284--285
 []\TU/TimesNewRoman(0)/m/n/14.4 жизненный цикл пользовательского контента фикси
 рован:
  []
 
-[22]
-Underfull \hbox (badness 1072) in paragraph at lines 244--244
+
+Underfull \hbox (badness 1072) in paragraph at lines 309--309
 []|\TU/TimesNewRoman(0)/m/n/12 Система управления акка-
  []
 
 
-Underfull \hbox (badness 1412) in paragraph at lines 244--244
+Underfull \hbox (badness 1412) in paragraph at lines 309--309
 []|\TU/TimesNewRoman(0)/m/n/12 Система модерации и об-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 244--244
+Underfull \hbox (badness 10000) in paragraph at lines 309--309
 []|\TU/TimesNewRoman(0)/m/n/12 Система избранного и
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 244--244
+Underfull \hbox (badness 10000) in paragraph at lines 309--309
 []|\TU/TimesNewRoman(0)/m/n/12 Система уведомлений и
  []
 
-
-Underfull \hbox (badness 3557) in paragraph at lines 248--250
+[27]
+Underfull \hbox (badness 3557) in paragraph at lines 313--315
 []\TU/TimesNewRoman(0)/m/n/14.4 На основании указанных подсистем сформулированы
  следующие
  []
 
-[23]
-Underfull \hbox (badness 1472) in paragraph at lines 270--271
+[28]
+Underfull \hbox (badness 1472) in paragraph at lines 335--336
 []\TU/TimesNewRoman(0)/m/n/14.4 безопасность: CSRF, ограничение CORS, хэширован
 ие паролей,
  []
 
-[24]
+[29]
 File: images/dfd-context.png Graphic file (type bmp)
 <images/dfd-context.png>
 
-Underfull \hbox (badness 1337) in paragraph at lines 296--296
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 6 – |Контекстная DFD-диаграмма FoodPla
-nner| 
+Underfull \hbox (badness 1152) in paragraph at lines 361--361
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 11 – |Контекстная DFD-диаграмма FoodPl
+anner| 
  []
 
-[25] [26]
+[30]
 File: images/dfd-level1.png Graphic file (type bmp)
 <images/dfd-level1.png>
- [27] [28]
+ [31] [32]
 File: images/arch-client-server.png Graphic file (type bmp)
 <images/arch-client-server.png>
-
-Underfull \hbox (badness 1062) in paragraph at lines 349--349
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 8 – |Клиент-серверная архитектура Food
-Planner| 
- []
-
 File: images/arch-microservices.png Graphic file (type bmp)
 <images/arch-microservices.png>
-[29]
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+ [33]
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Единый централизованный
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 \TU/TimesNewRoman(0)/m/n/12 backend для обслуживания
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Набор автономных сервисов,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 \TU/TimesNewRoman(0)/m/n/12 каждый отвечает за свою
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Набор сервисов, API-шлюз,
  []
 
 
-Underfull \hbox (badness 1789) in paragraph at lines 382--382
+Underfull \hbox (badness 1789) in paragraph at lines 447--447
 \TU/TimesNewRoman(0)/m/n/12 межсервисное взаимодействие,
  []
 
 
-Overfull \hbox (2.16pt too wide) in paragraph at lines 382--382
+Overfull \hbox (2.16pt too wide) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Масштабируемость| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Масштабирование преимуще-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Независимые релизы, более
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Сложность разра-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Надежность при
  []
 
 
-Underfull \hbox (badness 3323) in paragraph at lines 382--382
+Underfull \hbox (badness 3323) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Критические сбои затрагивают
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 382--382
+Underfull \hbox (badness 10000) in paragraph at lines 447--447
 []|\TU/TimesNewRoman(0)/m/n/12 Централизованные HTTP-
  []
 
-[30] [31]
-Underfull \hbox (badness 10000) in paragraph at lines 419--419
+[34] [35]
+Underfull \hbox (badness 10000) in paragraph at lines 484--484
 []|\TU/TimesNewRoman(0)/m/n/12 Документы/ключ-значение/колонки,
  []
 
 
-Underfull \hbox (badness 5316) in paragraph at lines 419--419
+Underfull \hbox (badness 5316) in paragraph at lines 484--484
 \TU/TimesNewRoman(0)/m/n/12 ничений и внешних
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 419--419
+Underfull \hbox (badness 10000) in paragraph at lines 484--484
 []|\TU/TimesNewRoman(0)/m/n/12 Полная поддержка
  []
 
 
-Overfull \hbox (2.57256pt too wide) in paragraph at lines 419--419
+Overfull \hbox (2.57256pt too wide) in paragraph at lines 484--484
 []|\TU/TimesNewRoman(0)/m/n/12 Стандартизированный
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 419--419
+Underfull \hbox (badness 10000) in paragraph at lines 484--484
 []|\TU/TimesNewRoman(0)/m/n/12 Оптимальный
  []
 
 
-Underfull \hbox (badness 1708) in paragraph at lines 419--419
+Underfull \hbox (badness 1708) in paragraph at lines 484--484
 \TU/TimesNewRoman(0)/m/n/12 ных и требованиями
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 419--419
+Underfull \hbox (badness 10000) in paragraph at lines 484--484
 []|\TU/TimesNewRoman(0)/m/n/12 Высоконагруженные узкоспециализиро-
  []
 
 
-Underfull \hbox (badness 3724) in paragraph at lines 423--424
+Underfull \hbox (badness 3724) in paragraph at lines 488--489
 []\TU/TimesNewRoman(0)/m/n/14.4 Для FoodPlanner выбрана реляционная модель с ис
 пользованием
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 425--426
+Underfull \hbox (badness 10000) in paragraph at lines 490--491
 []\TU/TimesNewRoman(0)/m/n/14.4 Логическая схема данных отражает ключевые сущно
 сти пред-
  []
 
 
-Underfull \hbox (badness 5578) in paragraph at lines 425--426
+Underfull \hbox (badness 5578) in paragraph at lines 490--491
 \TU/TimesNewRoman(0)/m/n/14.4 метной области и связи между ними. Центральными т
 аблицами яв-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 425--426
+Underfull \hbox (badness 10000) in paragraph at lines 490--491
 \TU/TimesNewRoman(0)/m/n/14.4 ляются \TU/CourierNew(0)/m/n/14.4 users\TU/TimesN
 ewRoman(0)/m/n/14.4 , \TU/CourierNew(0)/m/n/14.4 recipes\TU/TimesNewRoman(0)/m/
 n/14.4 , \TU/CourierNew(0)/m/n/14.4 ingredients\TU/TimesNewRoman(0)/m/n/14.4 , 
@@ -1893,88 +1929,88 @@ n/14.4 , \TU/CourierNew(0)/m/n/14.4 ingredients\TU/TimesNewRoman(0)/m/n/14.4 ,
 rNew(0)/m/n/14.4 reviews\TU/TimesNewRoman(0)/m/n/14.4 ,
  []
 
-[32]
+[36]
 Package hyperref Info: bookmark level for unknown listing defaults to 0 on inpu
-t line 432.
+t line 497.
 \pydata@fh@0=\write7
 \openout7 = `_533FF2CB2055365850DAD736E049D3C7.data.minted'.
 
-runsystem(latexminted config  --timestamp 20260507141211 533FF2CB2055365850DAD7
+runsystem(latexminted config  --timestamp 20260508122426 533FF2CB2055365850DAD7
 36E049D3C7)...executed.
 
  (./_533FF2CB2055365850DAD736E049D3C7.config.minted)
-runsystem(latexminted cleanconfig  --timestamp 20260507141211 533FF2CB205536585
+runsystem(latexminted cleanconfig  --timestamp 20260508122426 533FF2CB205536585
 0DAD736E049D3C7)...executed.
 
 
-(./_minted/friendly.style.minted)
+(./_minted/default.style.minted)
 (./_minted/34E4D04B43943B1A2435268E17F5AEA9.highlight.minted)
 Package mdframed Info: mdframed inside float 
- mdframed uses option nobreak mdframed on input line 452.
+ mdframed uses option nobreak mdframed on input line 517.
 Package mdframed Info: mdframed inside a box 
- mdframed uses option nobreak mdframed on input line 452.
+ mdframed uses option nobreak mdframed on input line 517.
 
 (./_minted/A04800E79B718CF545F95D7CA4F5FDCE.highlight.minted)
 Package mdframed Info: mdframed inside float 
- mdframed uses option nobreak mdframed on input line 479.
+ mdframed uses option nobreak mdframed on input line 544.
 Package mdframed Info: mdframed inside a box 
- mdframed uses option nobreak mdframed on input line 479.
- [33]
+ mdframed uses option nobreak mdframed on input line 544.
+ [37]
 (./_minted/A8DDBBE7432BB8E53350E22B46D31D10.highlight.minted)
 Package mdframed Info: mdframed inside float 
- mdframed uses option nobreak mdframed on input line 504.
+ mdframed uses option nobreak mdframed on input line 569.
 Package mdframed Info: mdframed inside a box 
- mdframed uses option nobreak mdframed on input line 504.
- [34]
+ mdframed uses option nobreak mdframed on input line 569.
+ [38]
 File: images/data-model.png Graphic file (type bmp)
 <images/data-model.png>
 
-Underfull \hbox (badness 1490) in paragraph at lines 515--515
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 10 – |Логическая модель данных FoodPla
+Underfull \hbox (badness 1490) in paragraph at lines 580--580
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 15 – |Логическая модель данных FoodPla
 nner| 
  []
 
-[35]
-Underfull \hbox (badness 10000) in paragraph at lines 539--539
+[39]
+Underfull \hbox (badness 10000) in paragraph at lines 604--604
 \TU/TimesNewRoman(0)/m/n/14.4 CPU-интенсивных задачах
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 539--539
+Underfull \hbox (badness 10000) in paragraph at lines 604--604
 []|\TU/TimesNewRoman(0)/m/n/14.4 Более высокая сложность
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 539--539
+Underfull \hbox (badness 10000) in paragraph at lines 604--604
 []|\TU/TimesNewRoman(0)/m/n/14.4 Node.js
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 539--539
+Underfull \hbox (badness 10000) in paragraph at lines 604--604
 []|\TU/TimesNewRoman(0)/m/n/14.4 Единый язык для
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 539--539
+Underfull \hbox (badness 10000) in paragraph at lines 604--604
 \TU/TimesNewRoman(0)/m/n/14.4 frontend/backend, высокая
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 539--539
+Underfull \hbox (badness 10000) in paragraph at lines 604--604
 \TU/TimesNewRoman(0)/m/n/14.4 циплины архитектуры в
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 539--539
+Underfull \hbox (badness 10000) in paragraph at lines 604--604
 []|\TU/TimesNewRoman(0)/m/n/14.4 Высокая производитель-
  []
 
 
-Underfull \hbox (badness 1789) in paragraph at lines 539--539
+Underfull \hbox (badness 1789) in paragraph at lines 604--604
 []|\TU/TimesNewRoman(0)/m/n/14.4 Меньшая гибкость и более
  []
 
-[36] [37]) [38]
+[40] [41]) [42]
 \openout2 = `30-design.aux'.
 
  (./30-design.tex
@@ -1992,11 +2028,11 @@ Underfull \hbox (badness 4001) in paragraph at lines 6--7
 File: images/image_7.png Graphic file (type bmp)
 <images/image_7.png>
 
-Underfull \hbox (badness 4193) in paragraph at lines 20--20
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 11 – |Главная страница приложения| 
+Underfull \hbox (badness 4156) in paragraph at lines 20--20
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 16 – |Главная страница приложения| 
  []
 
-[39
+[43
 
 
 
@@ -2011,35 +2047,35 @@ File: images/image_8.png Graphic file (type bmp)
 <images/image_8.png>
 
 Underfull \hbox (badness 10000) in paragraph at lines 36--36
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 12 – |Страница рецептов| 
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 17 – |Страница рецептов| 
  []
 
-[40]
+[44]
 File: images/image_9.png Graphic file (type bmp)
 <images/image_9.png>
 
 Underfull \hbox (badness 3930) in paragraph at lines 52--52
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 13 – |Страница конкретного рецепта| 
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 18 – |Страница конкретного рецепта| 
  []
 
-[41]
+[45]
 File: images/image_10.png Graphic file (type bmp)
 <images/image_10.png>
 
 Underfull \hbox (badness 6078) in paragraph at lines 68--68
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 14 – |Страница планов питания| 
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 19 – |Страница планов питания| 
  []
 
-[42]
+[46]
 File: images/image_11.png Graphic file (type bmp)
 <images/image_11.png>
 
 Underfull \hbox (badness 1939) in paragraph at lines 84--84
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 15 – |Страница конкретного плана питан
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 20 – |Страница конкретного плана питан
 ия| 
  []
 
-[43]
+[47]
 Underfull \hbox (badness 1603) in paragraph at lines 90--91
 []\TU/TimesNewRoman(0)/m/n/14.4 Пользователь одновременно видит доступный конте
 нт и текущую
@@ -2049,46 +2085,46 @@ File: images/image_12.png Graphic file (type bmp)
 <images/image_12.png>
 
 Underfull \hbox (badness 1715) in paragraph at lines 100--100
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 16 – |Страница конструктора плана пита
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 21 – |Страница конструктора плана пита
 ния| 
  []
 
-[44]
+[48]
 File: images/image_13.png Graphic file (type bmp)
 <images/image_13.png>
 
 Underfull \hbox (badness 1005) in paragraph at lines 116--116
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 17 – |Личный кабинет модератора с моде
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 22 – |Личный кабинет модератора с моде
 рацией| 
  []
 
-[45]
+[49]
 File: images/image_14.png Graphic file (type bmp)
 <images/image_14.png>
 
 Underfull \hbox (badness 4181) in paragraph at lines 132--132
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 18 – |Личный кабинет пользователя| 
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 23 – |Личный кабинет пользователя| 
  []
 
-[46]
+[50]
 File: images/image_15.png Graphic file (type bmp)
 <images/image_15.png>
 
 Underfull \hbox (badness 4181) in paragraph at lines 144--144
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 19 – |Личный кабинет пользователя| 
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 24 – |Личный кабинет пользователя| 
  []
 
-[47]
+[51]
 File: images/image_16.png Graphic file (type bmp)
 <images/image_16.png>
 File: images/image_17.png Graphic file (type bmp)
 <images/image_17.png>
 
 Underfull \hbox (badness 5245) in paragraph at lines 176--176
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 21 – |Страница оценок и отзывов| 
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 26 – |Страница оценок и отзывов| 
  []
 
-[48] [49]
+[52] [53]
 Underfull \hbox (badness 5175) in paragraph at lines 196--197
 []\TU/CourierNew(0)/m/n/14.4 /Backend/assistant \TU/TimesNewRoman(0)/m/n/14.4 —
  модуль ИИ-ассистента: серверный
@@ -2106,16 +2142,16 @@ Underfull \hbox (badness 1325) in paragraph at lines 198--199
 eed_demo_data\TU/TimesNewRoman(0)/m/n/14.4 ) для ускорения тестирования
  []
 
-[50]
+[54]
 File: images/image_18.png Graphic file (type bmp)
 <images/image_18.png>
 
 Underfull \hbox (badness 2393) in paragraph at lines 211--211
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 22 – |Структура серверной части проект
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 27 – |Структура серверной части проект
 а| 
  []
 
-[51]
+[55]
 Underfull \hbox (badness 10000) in paragraph at lines 218--219
 []\TU/TimesNewRoman(0)/m/n/14.4 уровень бизнес-логики (доменные правила в прило
 жениях,
@@ -2127,7 +2163,7 @@ Underfull \hbox (badness 1701) in paragraph at lines 218--219
  жизненного цикла
  []
 
-[52] [53]
+[56] [57]
 Underfull \hbox (badness 2875) in paragraph at lines 251--252
 []\TU/TimesNewRoman(0)/m/n/14.4 Пример получения пользователя при авторизации ч
 ерез сериали-
@@ -2173,13 +2209,13 @@ Package mdframed Info: mdframed inside float
  mdframed uses option nobreak mdframed on input line 302.
 Package mdframed Info: mdframed inside a box 
  mdframed uses option nobreak mdframed on input line 302.
- [54]
+ [58]
 (./_minted/C3CDB81CB8DA83788DD2659D526FD218.highlight.minted)
 Package mdframed Info: mdframed inside float 
  mdframed uses option nobreak mdframed on input line 324.
 Package mdframed Info: mdframed inside a box 
  mdframed uses option nobreak mdframed on input line 324.
- [55] [56]
+ [59] [60]
 Underfull \hbox (badness 10000) in paragraph at lines 360--365
 []\TU/TimesNewRoman(0)/m/n/14.4 аутентификация и профиль пользователя: \TU/Cour
 ierNew(0)/m/n/14.4 POST
@@ -2222,7 +2258,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 368--375
 /m/n/14.4 , \TU/CourierNew(0)/m/n/14.4 GET
  []
 
-[57]
+[61]
 Underfull \hbox (badness 10000) in paragraph at lines 375--382
 []\TU/TimesNewRoman(0)/m/n/14.4 планы питания и списки покупок:
  []
@@ -2296,16 +2332,16 @@ Underfull \hbox (badness 10000) in paragraph at lines 392--396
 T
  []
 
-[58]
+[62]
 File: images/image_19.png Graphic file (type bmp)
 <images/image_19.png>
 
 Underfull \hbox (badness 2103) in paragraph at lines 425--425
- []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 23 – |Структура проекта клиентской час
+ []\TU/TimesNewRoman(0)/m/n/14.4 Рисунок 28 – |Структура проекта клиентской час
 ти| 
  []
 
-[59]
+[63]
 Underfull \hbox (badness 2460) in paragraph at lines 436--437
 \TU/TimesNewRoman(0)/m/n/14.4 ле 2.1: каталог рецептов, карточка рецепта, планы
  питания, конструк-
@@ -2317,7 +2353,7 @@ Underfull \hbox (badness 1383) in paragraph at lines 436--437
 ации используется
  []
 
-[60] (./_minted/4E205DBD80AFD17003FFF475BA61C50C.highlight.minted)
+[64] (./_minted/4E205DBD80AFD17003FFF475BA61C50C.highlight.minted)
 Package mdframed Info: mdframed inside float 
  mdframed uses option nobreak mdframed on input line 456.
 Package mdframed Info: mdframed inside a box 
@@ -2333,14 +2369,14 @@ Package mdframed Info: mdframed inside float
  mdframed uses option nobreak mdframed on input line 484.
 Package mdframed Info: mdframed inside a box 
  mdframed uses option nobreak mdframed on input line 484.
- [61]
+ [65]
 (./_minted/FC0E1841BCD29637681947B948CF6546.highlight.minted)
 Package mdframed Info: mdframed inside float 
  mdframed uses option nobreak mdframed on input line 517.
 Package mdframed Info: mdframed inside a box 
  mdframed uses option nobreak mdframed on input line 517.
- [62]) [63]
-[64]
+ [66]) [67]
+[68]
 \openout2 = `40-impl.aux'.
 
  (./40-impl.tex
@@ -2354,7 +2390,7 @@ Underfull \hbox (badness 1675) in paragraph at lines 21--22
 служебные
  []
 
-[65
+[69
 
 
 
@@ -2364,7 +2400,7 @@ Package mdframed Info: mdframed inside float
  mdframed uses option nobreak mdframed on input line 83.
 Package mdframed Info: mdframed inside a box 
  mdframed uses option nobreak mdframed on input line 83.
- [66]
+ [70]
 (./_minted/892327E798048D81F25EA9BBC908581B.highlight.minted)
 Package mdframed Info: mdframed inside float 
  mdframed uses option nobreak mdframed on input line 101.
@@ -2376,7 +2412,7 @@ Package mdframed Info: mdframed inside float
  mdframed uses option nobreak mdframed on input line 126.
 Package mdframed Info: mdframed inside a box 
  mdframed uses option nobreak mdframed on input line 126.
- [67]
+ [71]
 Underfull \hbox (badness 10000) in paragraph at lines 135--136
 []\TU/TimesNewRoman(0)/m/n/14.4 выполнить сборку контейнеров командой \TU/Couri
 erNew(0)/m/n/14.4 docker compose
@@ -2393,7 +2429,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 137--138
 \TU/TimesNewRoman(0)/m/n/14.4 ), backend API
  []
 
-[68]) [69]
+[72]) [73]
 \openout2 = `80-conclusion.aux'.
 
  (./80-conclusion.tex
@@ -2414,83 +2450,101 @@ Underfull \hbox (badness 1033) in paragraph at lines 15--16
 х и админи-
  []
 
-[70
+[74
 
 
 
 
-]) [71]
+]) [75]
 \openout2 = `81-biblio.aux'.
 
  (./81-biblio.tex (./rpz.bbl
-Underfull \hbox (badness 1210) in paragraph at lines 47--52
+Underfull \hbox (badness 1895) in paragraph at lines 26--31
+[]\TU/TimesNewRoman(0)/m/n/14.4 Здоровое питание. –  2026. –  [Электронный ресу
+рс]. (дата
+ []
+
+
+Underfull \hbox (badness 1210) in paragraph at lines 49--55
 []\TU/TimesNewRoman(0)/m/n/14.4 10 лучших приложений по правильному питанию. – 
  2026. –
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 71--78
+Underfull \hbox (badness 10000) in paragraph at lines 74--81
 []\TU/TimesNewRoman(0)/m/n/14.4 Кириллина, Ю. В. Моделирование бизнес-процессов
  /
  []
 
 
-Underfull \hbox (badness 5893) in paragraph at lines 71--78
+Underfull \hbox (badness 5893) in paragraph at lines 74--81
 \TU/TimesNewRoman(0)/m/n/14.4 Ю. В. Кириллина, И. А. Семичастнов. –  МИРЭА – Ро
 ссийский
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 71--78
+Underfull \hbox (badness 4291) in paragraph at lines 74--81
 \TU/TimesNewRoman(0)/m/n/14.4 технологический университет, 2022. –  [Электронны
-й ресурс].
+й ресурс]. (дата
  []
 
 
-Underfull \hbox (badness 1270) in paragraph at lines 81--88
+Underfull \hbox (badness 1270) in paragraph at lines 84--91
 []\TU/TimesNewRoman(0)/m/n/14.4 Миндалёв, И. В. Моделирование бизнес-процессов 
 с помощью
  []
 
 
-Underfull \hbox (badness 2573) in paragraph at lines 81--88
+Underfull \hbox (badness 2573) in paragraph at lines 84--91
 \TU/TimesNewRoman(0)/m/n/14.4 IDEF0, DFD, BPMN за 7 дней / И. В. Миндалёв. –  К
 расноярский
  []
 
-[72
+[76
 
 
 
 
-]
-Underfull \hbox (badness 6396) in paragraph at lines 176--180
+] [77]
+Underfull \hbox (badness 6396) in paragraph at lines 184--189
 []\TU/TimesNewRoman(0)/m/n/14.4 OWASP SQL Injection Prevention Cheat Sheet. –  
 2026. –
  []
 
-[73]
-Underfull \hbox (badness 6741) in paragraph at lines 280--283
+
+Underfull \hbox (badness 1342) in paragraph at lines 269--273
+[]\TU/TimesNewRoman(0)/m/n/14.4 Vite Documentation. –  2026. –  [Электронный ре
+сурс]. (дата
+ []
+
+[78]
+Underfull \hbox (badness 1221) in paragraph at lines 276--280
+[]\TU/TimesNewRoman(0)/m/n/14.4 Java Documentation. –  2026. –  [Электронный ре
+сурс]. (дата
+ []
+
+
+Underfull \hbox (badness 6741) in paragraph at lines 290--294
 []\TU/TimesNewRoman(0)/m/n/14.4 The Go Programming Language Documentation. –  2
 026. –
  []
 
-[74])) [75] (./rpz.aux (./00-abstract.aux) (./12-intro.aux) (./20-analysis.aux)
+[79])) [80] (./rpz.aux (./00-abstract.aux) (./12-intro.aux) (./20-analysis.aux)
 (./30-design.aux) (./40-impl.aux) (./80-conclusion.aux) (./81-biblio.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `rpz.out' has not changed.
-(rerunfilecheck)             Checksum: BCBBDACFEC71FE715B27EA561B2E0C35;6158.
+(rerunfilecheck)             Checksum: 64EF0C3813E6495750E0749A0EF22B81;6158.
  ) 
 Here is how much of TeX's memory you used:
- 38383 strings out of 468961
- 798888 string characters out of 5456697
- 1338890 words of memory out of 5000000
- 66236 multiletter control sequences out of 15000+600000
- 636418 words of font info for 129 fonts, out of 8000000 for 9000
+ 38428 strings out of 468961
+ 800390 string characters out of 5456697
+ 1335183 words of memory out of 5000000
+ 66279 multiletter control sequences out of 15000+600000
+ 636394 words of font info for 126 fonts, out of 8000000 for 9000
  987 hyphenation exceptions out of 8191
- 132i,17n,135p,749b,1345s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 132i,17n,135p,749b,1321s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on rpz.pdf (75 pages).
+Output written on rpz.pdf (80 pages).
